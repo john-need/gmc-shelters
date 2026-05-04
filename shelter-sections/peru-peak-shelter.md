@@ -1,0 +1,3 @@
+LT Mile 62.6 — Division 4 — Elev. 2550 ft
+
+This log structure, with space for 10, was built in 1935 by the Civilian Conservation Corps and rebuilt by the Youth Conservation Corps and U S Forest Service in 1979 Water is found at the nearby brook. t has been in use from 1935 to present. [GB 24th Edition 19961 This shelter was named Griffith Shelter in the 17th Edition of the GB in 1963 This shelter was named USFS Shelter in the 10th Edition of the GB 1935. This shelter was originally called the Griffith Shelter prior to 1966 It probably should be listed as two individual shelters for purposes of this History [LT News, November 1966]

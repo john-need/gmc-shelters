@@ -1,0 +1,1 @@
+See Stratton Pond Shelter

@@ -1,0 +1,3 @@
+LT Mile 107.3 — Division 6 — Elev. 2300 ft
+
+The land around Noyes Pond has not yet been acquired by the Federal Government and the Forestry Service will not build camps on and not owned by them The Proctor Section therefore has had to replace the old shelter at Noyes Pond This camp will probably be completed this week end as it is all finished except the roof, doors, shutters and bunks [LT News, July, 1937] The cost was $137.64. It was ow due to use of some of the material from the old shelter and to some volunteer labor. [LT News Nov 1937] The Rolston Rest Shelter was built about 3/4 mile south of this location on the Jimmie Deane Brook as a replacement in 1966 [LT News, November 1966]

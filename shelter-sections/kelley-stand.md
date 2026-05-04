@@ -1,0 +1,1 @@
+Located on Arlington Wardsboro Road This was once the headquarters of a lumbering concern, but for the past few years the place has been kept open for boarding by Mrs. Robert Lawler. One is always welcome and may get something to eat when hungry. [GB 1st Edition 1917]

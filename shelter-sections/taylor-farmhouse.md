@@ -1,0 +1,1 @@
+Mrs. J. H. Taylor provided lodging and meals at her farmhouse situated on the public road leading from Somerset Bridge to Somerset Dam about halfway between the bridge and the dam. A trail relocation shown in GB 8th Edition 1930 over Glastenbury Mt. making this place no longer a LT hiker stop.

@@ -1,0 +1,1 @@
+Across the highway (Rte. 4) from the Clubhouse and a few rods back into the woods is a shelter built and maintained by the Killington Section for those who wish to camp. It is provided with bunks, a stove and is supplied with running water. A small charge is made for its use. Immediately back of the shelter are the cliffs of Deer Leap. [O'Kane 1926]

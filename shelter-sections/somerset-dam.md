@@ -1,0 +1,1 @@
+Meals and lodging at caretaker's house. Address several days in advance, B.B. Leonard, Somerset, Vermont. Trail relocation over Glastenbury Mt shown in GB 8th Edition 1930. No longer used by hikers on the LT.

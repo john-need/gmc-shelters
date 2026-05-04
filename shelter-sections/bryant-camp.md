@@ -1,0 +1,3 @@
+In the upper clearing before reaching Bolton Lodge, a fine cabin belonging to Mr. E. S. Bryant of Bolton, is used as a ski camp in winter; it is not open to hikers unless special arrangement is made with Mr. Bryant.
+
+The Burlington Section has not been wholly outdone for camps; it has had its Camp Bryant. One of the section's members, Edward S. Bryant, opened his fine ski camp near the LT in Bolton to the exclusive use of the Burlington Section these past two seasons. The camp has become increasingly popular for both skiers and snowshoes as well as plain relaxers of the section. The section also staged its first bird study hike of the season at the camp early this spring. [LT News, May 1945]

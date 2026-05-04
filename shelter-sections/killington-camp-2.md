@@ -1,0 +1,5 @@
+LT Mile 95.3 — Division 5 — Elev. 3850 ft
+
+Cooper Lodge is the 3rd shelter in the area.
+
+A new stone lodge has been erected on Killington Mt. about 1/10 of a mile above Killington Camp (old). It has a large fireplace and accommodates 10 persons. [Supplement to GB 6th Edition, July 1927] A caretaker is usually kept here by the Killington Section and a small charge is made for accommodations. He also keeps a few simple supplies for sale. [GB 9th Edition 1932] The stone construction was necessary because of its exposure to the fury of the elements and the destructive efforts of vandals and hedgehogs, which combined to wreck the metal hut. The new shelter stands about 200 yards further up the mountain than the old one. [LT News, Dec. 1926] 500 people registered coming from 22 States. [LT News, Oct. 1929] Also known as Porky Lodge, it was constructed in 1926 by the Killington Section and had a fireplace and bunks. It cost the section $500.00 and was then the only one of its kind on the LT. It was built very near the site of the metal hut shelter. [LT News, August 1977]

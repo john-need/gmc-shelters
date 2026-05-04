@@ -1,0 +1,1 @@
+This place is shown on O'Kane's LT map just north of the N. Shrewsbury to N. Clarendon Road. It is not mentioned in the trail description. Marjorie Murray, P.O., and Phone Cuttingsville, VT, board and lodging. [GB 3rd Edition 1921] Now abandoned. [GB 9th Edition 1932]

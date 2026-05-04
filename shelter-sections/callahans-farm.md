@@ -1,0 +1,1 @@
+Mentioned in GB 2nd Edition 1920 near present day parking lot on east side of Camel's Hump. Phone in Callahan's house connects With Camel's Hump Club huts so meals and lodging may be ordered before party st211s ascent Autos may get to Callahan's farm. [GB 4th Edition 1922]

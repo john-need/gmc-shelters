@@ -1,0 +1,5 @@
+LT Mile 90.5 — Division 5 — Elev. 1850 ft
+
+This shelter is located in an overgrown field near a dirt road. This stone structure was built in 1929 by the family of William H. Field of Mendon and named for Percival W. Clement, governor of Vermont, 1919 - 1921. There is bunk space for 10 and abundant water is available at the brook 200 ft to the east. Unfortunately, this shelter is subject to unexpected nocturnal visits by uninvited carousers. The GMC discourages the use of this shelter. In use from 1929 to present. [GB 24th Edition 1996] This shelter was built at the site of the Herb Haley Farm.' Due to the efforts of the Ogden boys, Kevin Hogan, and Churchill Scott, the Gov. Clement Shelter is now in A-1 condition. In August 1967, the roof was replaced for the first time since 1929 to the best of our memory. [LT News, Feb. 1968]
+
+I used this shelter with Keith Edson in 1963. It was very buggy, had many porcupines attracted by the dump site and was not a comfortable place even back then. We used a smudge fire to ward off the swarms of flying insects. We left this inhospitable place at about 4:15 in the morning. [Paul Woodward]

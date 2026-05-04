@@ -1,0 +1,5 @@
+Mile 0.5 Journey's End Trail — Division 12 — Elev. 1515 ft
+
+Built in 1931, the framed camp has stove and bunks for 10 or 12, water in brook to the north. [GB 10th Edition 1935] This camp had a splendid view of Owl's Head and other peaks to the northeast according to GB 50th Anniversary Edition 1960 (16th). This framed cabin was built in 1933 by the LT Patrol and has space for 8. Water is found at a brook 300 ft north. It has been in use from 1933 to present [GB 24th Edition 1996] We have a suggestion for obviating the inconsistency of naming the camp to be built at the junction of the Trail with the Canadian boundary "Journey's End." That is, to call it "Journey's End" on the south end and "Journey's Beginning" on the north end. This would have the advantage of being true on both ends, and the camp would have the distinction of being the only one on the Trail. or probably anywhere else, with two perfectly good names. [LT News, Sept. 1933]
+
+I believe the trees have obscured this view today. The ice storm of 1998 did considerable damage to the roof. [Paul Woodward]

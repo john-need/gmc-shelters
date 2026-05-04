@@ -1,0 +1,3 @@
+LT Mile 79.3 — Division 5 — Elev. 1600 ft
+
+Crossing the highway (Rte. 140) the LT follows an old public road uphill for about 3/4 mile. Then proceeds a few minutes' walk to this Club shelter with bunks for 20 to 24 persons. [O'Kane 1926] Built in 1922 having bunks for 12 and a stove. Brook water 30 ft west. [GB 50th Anniversary Edition 1960 (16th)] Through the generosity of Mr. Merton C. Fisher of New Bedford. Mass., new roofing has been applied to this shelter. Early last summer Mr. Fisher visited the shelter and noticed that the paper roofing was badly torn. He wrote asking permission to have it fixed. Now Buffum shelter is in good condition again. We need more people like Mr. Fisher. [LT News, May 1950]
