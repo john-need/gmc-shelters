@@ -21,21 +21,39 @@ const normalizeImageName = (name) => {
     const parsed = path.parse(name);
     const normalized = parsed.name
         .toLowerCase()
-        .replace(/_/g, "-")
-        .replace(/\s+/g, "-")
-        .replace(/--+/g, "-")
-        .trim();
-    return `${normalized}${parsed.ext.toLowerCase()}`;
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    return `${normalized || "image"}${parsed.ext.toLowerCase()}`;
+};
+
+const createTemporaryPath = (targetPath) => {
+    const parsed = path.parse(targetPath);
+    let attempt = 0;
+
+    while (true) {
+        const candidate = path.join(
+            parsed.dir,
+            `${parsed.name}.__rename_tmp__${process.pid}_${Date.now()}_${attempt}${parsed.ext}`
+        );
+
+        if (!fs.existsSync(candidate)) {
+            return candidate;
+        }
+
+        attempt += 1;
+    }
 };
 
 const renamePath = (currPath, newPath, options = {}) => {
     const { dryRun = false } = options;
+    const isCaseOnlyChange = currPath.toLowerCase() === newPath.toLowerCase();
 
     if (currPath === newPath) {
         return newPath;
     }
 
-    if (fs.existsSync(newPath)) {
+    if (fs.existsSync(newPath) && !isCaseOnlyChange) {
         console.log(`${dryRun ? "[DRY-RUN] " : ""}Skipping rename because target already exists: ${newPath}`);
         return currPath;
     }
@@ -46,7 +64,13 @@ const renamePath = (currPath, newPath, options = {}) => {
     }
 
     try {
-        fs.renameSync(currPath, newPath);
+        if (isCaseOnlyChange) {
+            const temporaryPath = createTemporaryPath(newPath);
+            fs.renameSync(currPath, temporaryPath);
+            fs.renameSync(temporaryPath, newPath);
+        } else {
+            fs.renameSync(currPath, newPath);
+        }
         console.log(`Renamed: ${path.basename(currPath)} -> ${path.basename(newPath)}`);
         return newPath;
     } catch (err) {
