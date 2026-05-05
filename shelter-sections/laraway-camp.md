@@ -1,1 +1,0 @@
-On an old road near Laraway Mountain was a shack that was not in condition for occupancy. [O'Kane, 1926] I would imagine that it was used in earlier years or would not have been mentioned. Mentioned in the GB 6th Edition 1924 as not being restored yet. In ruins according to GB 9th Edition 1932.

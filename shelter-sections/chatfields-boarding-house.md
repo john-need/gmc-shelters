@@ -1,1 +1,0 @@
-Located on approach trail from South Lincoln via Lewis Chatfield's, hence autos can usually get to within a mile of an old boarding house which is half ruined but with some shelter. It is about 2 miles from main trail. [GB 5th Edition 1924]

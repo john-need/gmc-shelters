@@ -1,3 +1,0 @@
-(Abandoned farm) 1 1/2 miles from West Bridgewater village. [GB 1st Edition 1917]
-
-The Juggernaut Trail - "The interest in the projects of the GMC developed in Woodstock resulted in funds being subscribed to build a trail up Killington Peak from West Bridgewater, was completed in late August 1913. The trail follows a wood road to an abandoned lumber camp called "The Juggernaut". The origin of this unique name is lost unless a high mortality attended the operations of the camp. The trail proper starts at the camp and winds up at the eastern slope of Killington to the summit. 3 miles." [The Making of the Long Trail by Dr. Lewis J. Paris]

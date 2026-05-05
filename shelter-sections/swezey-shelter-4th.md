@@ -1,9 +1,0 @@
-Mile 10.6 — Division 3 — Elev. 2170 ft
-
-March 10, 1955, most of the meeting of the Brattleboro Section was devoted to the planning of the new Swezey Camp. Work was to start on the weekend of April 23rd. It would take forty trees to build a 12 x 12-foot shelter, each log would be about 14 ft The secretary received a reply from Christopher Swezey, Jr. in which he still gave the club permission to build a log shelter as planned 2 years ago. [LT News, May 1955]
-
-Early in May 1955 a work party of 10 cut and peeled logs. Camp was started early in June, but party was deterred by fierce flies. In October, Brandon and Bill Douglas went into camp and worked all day. Starting down the jeep road about dark they found the road blocked with huge boulders and a giant bulldozer. Soon Christopher Swezey drove up and said that he was fixing the road. The Douglases went back. to camp to wait for the road crew. Mr. Swezey also gave the logs to the GMC as well as boards for the roof from his mill. [LT News, Feb. 1956]
-
-This log lean-to, completed by the Brattleboro Section in 1956, has bunks for 10. Drinking water is to be had at a spring 50 ft south via LT. [GB 20th Edition 1971] In late 1973 the Brattleboro Section voted to change the name of the Swezey Shelter to William B. Douglas Shelter to honor the man who had contributed much time and effort to its planning and construction. [LT News, August 1977]
-
-William B. Douglas Shelter - This shelter is 0. 5 mile south of the LT. It is a log lean to, completed by the Brattleboro Section in 1956, has bunks for 10. There is a spring on the trail 50 ft to the south. It is located in the Lye Brook Wilderness. A logging railroad passes this shelter which the Branch Pond Trail utilizes much of the distance from Bourn Pond. This trail was the LT prior to 1980 when it was relocated to the east. It has been used from 1956 to present. [GB 24th Edition 1996]

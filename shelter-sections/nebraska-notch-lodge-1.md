@@ -1,1 +1,0 @@
-See Taylor Lodge

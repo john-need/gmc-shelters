@@ -1,1 +1,0 @@
-One may follow down the steep hillside to the home of Wells Dickinson where meals and lodging may be had, and parcel post sent by RFD. Peru. VT. This is the house nearest to the high-point of the Peru-Manchester Turnpike and is 1 1/2 miles east from where the LT crosses the same pike. [GB 4th Edition 1922]

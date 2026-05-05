@@ -1,5 +1,0 @@
-Mile 9.3 — Division 1 — Elev. 2480 ft
-
-1st & 3rd were Deerview.
-
-On Bennington-Heartwell Road abandoned sixty years ago, is Camp Thendara with 10 bunks and stove. Built n 1929 [GB 8th Edition 19301 Thendara camp is finished This camp is located near Harmon Hill in the Bennington section and takes the place of the old Deerview cabin, which died of old age It was built with funds supplied by the Thendara Camp of the New York Section in New Jersey [LT News Dec 1929] This lodge has been enlarged [LT News. Feb. 1933] This shelter was destroyed by heavy snows in early 1958. It was replaced by the Deer View Shelter in 1958 by the Bennington Section. Ray Darrenougue, who joined the GMC 47 years ago, died April 4, at age 78 He was also very active on outside work at Thendara and his most recent project was the replacement of the water pump Contribution in lieu of flowers were made to a Memorial Fund and income from this fund is to be used for any purpose at Camp Thendara or any successor camp maintained by the Section or for- any other purpose approved by its Board of Directors [LT News August 1977]

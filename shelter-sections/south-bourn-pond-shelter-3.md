@@ -1,3 +1,0 @@
-Mile 7.3 Branch Pond Tr. — Division 3 — Elev. 2540 ft
-
-It is a framed lean-to with space for 8, built by the U. S. Forest Service in 1966 on a bluff overlooking the south shore of Bourn Pond. Water is supplied by the stream and a boxed spring located on a spur trail 250 ft east of the shelter. [GB 24th Edition 1996] This location is very nice. We have camped at this site since we started backpacking in 1963. As recently as 1995, this area had only minimal campers however, people have found Bourn Pond and the shelter and sites along the Pond get heavy use now. It has been used from 1966 to present. [Paul Woodward]

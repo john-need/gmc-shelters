@@ -1,3 +1,0 @@
-Mile 19.4 — Division 6 — Elev. 2564 ft
-
-This framed shelter was built by the LT Patrol in 1964, a gift of Mortimer R. Proctor, governor of Vermont from 1945 to 1947 and former president of the GMC. It has space for 8 and water is located at a brook 200 ft south. It replaced an older version of Sunrise Shelter which was located 200 ft south in a clearing where water is located. It has been in use from 1964 to present. [GB 24th Edition 1996] This shelter was dedicated on Oct. 11, 1964, with a two-inch layer of snow on the ground which was ordered by Roy Buchanan. Twenty-five persons gathered for the dedication. Mortimer Proctor, donor of funds for the construction, was unable to attend the ceremony but sent a letter to be read.

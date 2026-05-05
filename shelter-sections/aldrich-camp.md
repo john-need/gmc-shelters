@@ -1,1 +1,0 @@
-This GMC camp is on the GB 5th Edition map but is not mentioned in the text. Not mentioned as a place for shelter in GB 8th Edition 1930. I did not find in GB text that this camp was ever established, however. it was noted on GB 3rd Edition that it was to be built in 1921.

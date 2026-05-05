@@ -1,1 +1,0 @@
-Location is on the right up the hill a few rods after reaching the upper road in Cuttingsville. Mrs. Valier Bersaw provides food, lodging, and phone. Mail may also be sent in her care. [GB 11th Edition 1937]

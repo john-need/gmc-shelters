@@ -1,3 +1,0 @@
-LT Mile 84.8 — Division 5 — Elev. 1350 ft
-
-This camp is situated in a hillside pasture near a brook with accommodations for 20 persons. [O’Kane 1926] This camp has a stove and bunks for twenty people. This is on a brook and in a pasture; keep porch gate closed on account of cattle. [GB 7th Edition 1928] This shelter is an old favorite of many in the Killington Section. It was built in 1921 and has weathered many a storm. Now it is old and leaky, but still a welcome sight to many who hike over the LT. It is situated in a beautiful pine grove, close to an ever-flowing brook. It needs a new roof. A benefit card party is planned to raise money for major repairs at the home of Vera Perkins in Rutland. [LT News, Feb. 1952]

@@ -1,1 +1,0 @@
-Located on the road one mile south of Gov. Clement Camp a few rods east of where the trail crosses the highway is the home of M's. Edmund Balch, a good place for hikers to stop. Boarders are also desired, and in the winter, she will take parties of 6 to 8 provided reservation is made. Address, North Clarendon, VT., RFD.

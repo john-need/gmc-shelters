@@ -1,1 +1,0 @@
-This cabin was on land purchased by the National Park Service for the AT corridor. It was located near a drivable road just west of Route 12. It was a framed 16' x28' cabin which could not serve as a hiker shelter due to lack of water and road accessibility. Telephone Pioneers of America and the Ottauquechee Section dismantled this shelter. [LTN August 1989]

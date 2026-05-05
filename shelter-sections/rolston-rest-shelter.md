@@ -1,3 +1,0 @@
-Mile 5.4 — Division 6 — Elev. 2240 ft
-
-This framed lean-to with space for B was built by the LT Patrol in 1966. It was named for Ben Rolston, a former GMC guidebook editor and trail maintainer. A small brook crosses the LT just south of the shelter which provides water. It has been in use from 1966 to present. [GB 24th Edition 1996] At last we have been able to give Ben's name to a shelter. The hew shelter built last summer about a mile south of Noyes Pond is now Rolston's Rest. The trustees named it on October 8, and it was dedicated the next day. Ben was there and we think we took him by surprise. [LT News, Feb. 1967]

@@ -1,3 +1,0 @@
-Mile 2.8 — Division 1 — Elev. 2200 ft
-
-Peter Grasso and Bill MacArthur have decided on a new site for Seth Warner Shelter, across the brook- from its present location and away from the dirt road now used by motorcyclists. It is hoped that this move will soon be accomplished thus completing our relocation project. [LTN Feb. 1970 & May 1971l This shelter was to be moved in early April 1971, but due to heavy snow condi1ions, it stayed put until late in May. It has been at its new location since then on the blue trail closer to last year's LT relocation. On the day of the move the shelter was jacked up, placed on skids, and dragged to the site with help of a bulldozer and encouragement from Bill MacArthur's whip. [LTN August 1971]

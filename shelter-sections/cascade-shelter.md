@@ -1,1 +1,0 @@
-See Duck Brook Shelter

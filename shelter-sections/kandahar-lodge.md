@@ -1,1 +1,0 @@
-On Rte. 11, 1/4 mile east of the Trail is the homelike all-the-year-round lodge with comfortable quarters and meals for hikers Mail and parcels may be sent to the lodge to be picked up by hikers Address Peru. Vt. [GB 13th Edition 1947]
