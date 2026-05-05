@@ -1119,20 +1119,6 @@
     "is_gmc": "1",
     "notes": ""
   },
-  "east-shore-shelter-at-little-rock-pond": {
-    "id": "82",
-    "slug": "east-shore-shelter-at-little-rock-pond                                               ",
-    "name": "East Shore Shelter at Little Rock Pond",
-    "start_year": "1962",
-    "end_year": "1972",
-    "is_extant": "0",
-    "latitude": "43.3986051125589",
-    "longitude": "-72.9553976411466",
-    "W3W": "",
-    "architecture": "Wood Frame",
-    "is_gmc": "1",
-    "notes": "Moved south .2 miles and renamed Lula Tye, photo shown is in new location with new name"
-  },
   "ellen-cabin": {
     "id": "83",
     "slug": "ellen-cabin",
@@ -2117,7 +2103,7 @@
     "id": "157",
     "slug": "lula-tye-shelter",
     "name": "Lula Tye Shelter - B",
-    "start_year": "1973",
+    "start_year": "1962",
     "end_year": "2011",
     "is_extant": "0",
     "latitude": "43.397594",
