@@ -1,0 +1,7 @@
+{
+  "source_rel_path": "introduction/lean-to-plans.jpg",
+  "published_image_url": "https://gmcburlington.org/path/to/approved-placeholder.jpg",
+  "alt_text": "Shelter image unavailable",
+  "notes": "Repository-owned source for the site-wide shelter placeholder. The gallery service reads this manifest when fallback_mode resolves to site-placeholder. Publish this asset to the site media library and replace published_image_url with the final approved URL before implementation begins."
+}
+
