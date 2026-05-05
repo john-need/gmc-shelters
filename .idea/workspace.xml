@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/scripts/generate_claude_narratives.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" />
-    </list>
+    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,9 +25,16 @@
     <option name="cachedIndexableFilesCount" value="4201" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="merge" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -59,7 +60,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "merge",
+    "git-widget-placeholder": "main",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Projects/gmc-shelters/shelters/bourn-pond-shelter-south",
@@ -90,11 +91,11 @@
       <recent name="$PROJECT_DIR$/gmc-website-content" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/shelters/pico-camp-2" />
       <recent name="$PROJECT_DIR$/shelters/glastenbury-mountain-forestry-cabin" />
       <recent name="$PROJECT_DIR$/shelters/journeys-end-1" />
       <recent name="$PROJECT_DIR$/shelters/killington-camp" />
       <recent name="$PROJECT_DIR$/shelters/mad-tom-notch-shelter" />
-      <recent name="$PROJECT_DIR$/shelters/melville-nauheim" />
     </key>
   </component>
   <component name="RunManager" selected="npm.lint">
