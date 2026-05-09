@@ -17,10 +17,10 @@
 
 **Purpose**: Create the Python test harness and shared fixtures needed for schema, gallery, consumer-validation, and import work.
 
-- [ ] T001 Create pytest bootstrap and shared test fixtures in `/Users/johnneed/Projects/gmc-shelters/tests/conftest.py`
-- [ ] T002 [P] Add pytest and supporting dev dependencies in `/Users/johnneed/Projects/gmc-shelters/requirements-dev.txt`
-- [ ] T003 [P] Create reusable SQLite and source-image fixture data in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/photo_import_fixture.sql`
-- [ ] T004 [P] Create reference shelter carousel consumer cases for contract validation in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/shelter_gallery_consumer_cases.json`
+- [X] T001 Create pytest bootstrap and shared test fixtures in `/Users/johnneed/Projects/gmc-shelters/tests/conftest.py`
+- [X] T002 [P] Add pytest and supporting dev dependencies in `/Users/johnneed/Projects/gmc-shelters/requirements-dev.txt`
+- [X] T003 [P] Create reusable SQLite and source-image fixture data in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/photo_import_fixture.sql`
+- [X] T004 [P] Create reference shelter carousel consumer cases for contract validation in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/shelter_gallery_consumer_cases.json`
 
 ---
 
@@ -30,12 +30,12 @@
 
 **⚠️ CRITICAL**: No user story work should begin until this phase is complete.
 
-- [ ] T005 Write failing migration coverage for managed assets, photo links, and upload audit tables in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_photo_import_schema.py`
-- [ ] T006 [P] Write failing repository tests for shelter-scoped photo selection, displayable-asset filtering, and default-photo fallback lookup in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_photo_repository.py`
-- [ ] T007 Create the managed asset, photo link, and upload audit migration in `/Users/johnneed/Projects/gmc-shelters/database/migrations/001_photo_managed_assets.sql`
-- [ ] T008 Implement shared SQLite connection and migration helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_db.py`
-- [ ] T009 [P] Define shared dataclasses for gallery slides, managed assets, photo links, and upload runs in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_models.py`
-- [ ] T010 Implement shelter/photo repository queries and fallback lookup helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_repository.py`
+- [X] T005 Write failing migration coverage for managed assets, photo links, and upload audit tables in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_photo_import_schema.py`
+- [X] T006 [P] Write failing repository tests for shelter-scoped photo selection, displayable-asset filtering, and default-photo fallback lookup in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_photo_repository.py`
+- [X] T007 Create the managed asset, photo link, and upload audit migration in `/Users/johnneed/Projects/gmc-shelters/database/migrations/001_photo_managed_assets.sql`
+- [X] T008 Implement shared SQLite connection and migration helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_db.py`
+- [X] T009 [P] Define shared dataclasses for gallery slides, managed assets, photo links, and upload runs in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_models.py`
+- [X] T010 Implement shelter/photo repository queries and fallback lookup helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_repository.py`
 
 **Checkpoint**: Foundation ready for gallery rendering, external consumer validation, and bulk import work.
 
@@ -49,18 +49,18 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T011 [P] [US1] Write contract tests that validate gallery output, caption/credit propagation, and navigation rules against the reference shelter post carousel consumer in `/Users/johnneed/Projects/gmc-shelters/tests/contract/test_shelter_post_template_consumer.py`
-- [ ] T012 [P] [US1] Write integration tests for shelter-only multi-slide, single-slide, and mixed valid/unavailable gallery derivation in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_shelter_gallery_builder.py`
-- [ ] T013 [P] [US1] Write fallback precedence regression tests for usable shelter default images before the runtime-loaded repository-declared site-wide placeholder in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_shelter_gallery_fallbacks.py`
+- [X] T011 [P] [US1] Write contract tests that validate gallery output, caption/credit propagation, and navigation rules against the reference shelter post carousel consumer in `/Users/johnneed/Projects/gmc-shelters/tests/contract/test_shelter_post_template_consumer.py`
+- [X] T012 [P] [US1] Write integration tests for shelter-only multi-slide, single-slide, and mixed valid/unavailable gallery derivation in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_shelter_gallery_builder.py`
+- [X] T013 [P] [US1] Write fallback precedence regression tests for usable shelter default images before the runtime-loaded repository-declared site-wide placeholder in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_shelter_gallery_fallbacks.py`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Implement gallery slide derivation, runtime placeholder-manifest loading, caption/credit propagation, and FR-013 unavailable-photo omission rules in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery.py`
-- [ ] T015 [P] [US1] Implement shelter post carousel consumer validation helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery_consumer_validator.py`
-- [ ] T016 [US1] Implement the shelter gallery service for consumer-ready carousel payloads in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery_service.py`
-- [ ] T017 [US1] Add gallery export and consumer-validation commands for shelter slugs in `/Users/johnneed/Projects/gmc-shelters/scripts/export_shelter_gallery_view.py`
-- [ ] T018 [US1] Update the gallery contract with caption/credit examples, mixed availability, fallback precedence, and consumer validation rules in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/shelter-gallery-view-model.md`
-- [ ] T019 [US1] Update operator validation steps for actual shelter carousel consumers, including placeholder-manifest checks, in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
+- [X] T014 [P] [US1] Implement gallery slide derivation, runtime placeholder-manifest loading, caption/credit propagation, and FR-013 unavailable-photo omission rules in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery.py`
+- [X] T015 [P] [US1] Implement shelter post carousel consumer validation helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery_consumer_validator.py`
+- [X] T016 [US1] Implement the shelter gallery service for consumer-ready carousel payloads in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/shelter_gallery_service.py`
+- [X] T017 [US1] Add gallery export and consumer-validation commands for shelter slugs in `/Users/johnneed/Projects/gmc-shelters/scripts/export_shelter_gallery_view.py`
+- [X] T018 [US1] Update the gallery contract with caption/credit examples, mixed availability, fallback precedence, and consumer validation rules in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/shelter-gallery-view-model.md`
+- [X] T019 [US1] Update operator validation steps for actual shelter carousel consumers, including placeholder-manifest checks, in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
 
 **Checkpoint**: User Story 1 delivers a consumer-validated gallery contract and fallback behavior independently of bulk upload execution.
 
@@ -74,16 +74,16 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T020 [P] [US2] Write contract tests for CLI flags, JSON summaries, exit codes, and per-item outcomes in `/Users/johnneed/Projects/gmc-shelters/tests/contract/test_bulk_photo_upload_cli.py`
-- [ ] T021 [P] [US2] Write integration tests for apply-mode uploads, unreadable-file failures, and run-audit persistence in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_import_shelter_photos_apply.py`
+- [X] T020 [P] [US2] Write contract tests for CLI flags, JSON summaries, exit codes, and per-item outcomes in `/Users/johnneed/Projects/gmc-shelters/tests/contract/test_bulk_photo_upload_cli.py`
+- [X] T021 [P] [US2] Write integration tests for apply-mode uploads, unreadable-file failures, and run-audit persistence in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_import_shelter_photos_apply.py`
 
 ### Implementation for User Story 2
 
-- [ ] T022 [P] [US2] Implement the WordPress media client for upload and metadata updates in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/wordpress_media.py`
-- [ ] T023 [P] [US2] Implement import item and summary serializers for human and JSON output in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_import_results.py`
-- [ ] T024 [US2] Implement bulk upload orchestration, dry-run branching, and audit-row writes in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_importer.py`
-- [ ] T025 [US2] Implement CLI argument parsing, authentication checks, and command execution in `/Users/johnneed/Projects/gmc-shelters/scripts/import_shelter_photos.py`
-- [ ] T026 [US2] Update the bulk upload CLI contract with apply and dry-run validation guidance in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md`
+- [X] T022 [P] [US2] Implement the WordPress media client for upload and metadata updates in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/wordpress_media.py`
+- [X] T023 [P] [US2] Implement import item and summary serializers for human and JSON output in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_import_results.py`
+- [X] T024 [US2] Implement bulk upload orchestration, dry-run branching, and audit-row writes in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_importer.py`
+- [X] T025 [US2] Implement CLI argument parsing, authentication checks, and command execution in `/Users/johnneed/Projects/gmc-shelters/scripts/import_shelter_photos.py`
+- [X] T026 [US2] Update the bulk upload CLI contract with apply and dry-run validation guidance in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md`
 
 **Checkpoint**: User Story 2 delivers a working bulk upload CLI with durable run reporting.
 
@@ -97,16 +97,16 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T027 [P] [US3] Write integration tests for same-run duplicate identities, rerun skips, and duplicate-safe photo-link upserts in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_import_shelter_photos_reruns.py`
-- [ ] T028 [P] [US3] Write unit tests for source-image identity normalization, `source_sha256` reuse, and canonical source-path traceability in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_managed_asset_registry.py`
+- [X] T027 [P] [US3] Write integration tests for same-run duplicate identities, rerun skips, and duplicate-safe photo-link upserts in `/Users/johnneed/Projects/gmc-shelters/tests/integration/test_import_shelter_photos_reruns.py`
+- [X] T028 [P] [US3] Write unit tests for source-image identity normalization, `source_sha256` reuse, and canonical source-path traceability in `/Users/johnneed/Projects/gmc-shelters/tests/unit/test_managed_asset_registry.py`
 
 ### Implementation for User Story 3
 
-- [ ] T029 [P] [US3] Implement source-image identity normalization and managed asset lookup helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/managed_asset_registry.py`
-- [ ] T030 [P] [US3] Extend SQLite persistence for photo-link upserts, verification timestamps, and duplicate-skip reasons in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_db.py`
-- [ ] T031 [US3] Update bulk import orchestration to reuse managed assets by `source_sha256` while preserving canonical source-path traceability in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_importer.py`
-- [ ] T032 [US3] Refresh rerun and idempotency contract rules for source-image identity and association reuse in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md`
-- [ ] T033 [US3] Refresh rerun validation steps for same-run duplicates and safe second runs in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
+- [X] T029 [P] [US3] Implement source-image identity normalization and managed asset lookup helpers in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/managed_asset_registry.py`
+- [X] T030 [P] [US3] Extend SQLite persistence for photo-link upserts, verification timestamps, and duplicate-skip reasons in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_db.py`
+- [X] T031 [US3] Update bulk import orchestration to reuse managed assets by `source_sha256` while preserving canonical source-path traceability in `/Users/johnneed/Projects/gmc-shelters/scripts/lib/photo_importer.py`
+- [X] T032 [US3] Refresh rerun and idempotency contract rules for source-image identity and association reuse in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md`
+- [X] T033 [US3] Refresh rerun validation steps for same-run duplicates and safe second runs in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
 
 **Checkpoint**: User Story 3 makes the import process safe to re-run without duplicate media creation or duplicate shelter-photo associations.
 
@@ -116,9 +116,9 @@
 
 **Purpose**: Finalize shared documentation and fixture guidance across gallery and import stories.
 
-- [ ] T034 [P] Add fixture maintenance guidance for gallery consumer and duplicate-identity scenarios in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/README.md`
-- [ ] T035 [P] Update implementation notes and handoff guidance for external shelter carousel consumers in `/Users/johnneed/Projects/gmc-shelters/scripts/README.md`
-- [ ] T036 Refresh the consolidated end-to-end validation checklist for gallery, upload, mixed-availability, fallback, and rerun workflows in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
+- [X] T034 [P] Add fixture maintenance guidance for gallery consumer and duplicate-identity scenarios in `/Users/johnneed/Projects/gmc-shelters/tests/fixtures/README.md`
+- [X] T035 [P] Update implementation notes and handoff guidance for external shelter carousel consumers in `/Users/johnneed/Projects/gmc-shelters/scripts/README.md`
+- [X] T036 Refresh the consolidated end-to-end validation checklist for gallery, upload, mixed-availability, fallback, and rerun workflows in `/Users/johnneed/Projects/gmc-shelters/specs/001-shelter-photo-carousel/quickstart.md`
 
 ---
 

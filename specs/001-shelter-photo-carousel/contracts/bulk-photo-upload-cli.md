@@ -39,20 +39,22 @@ Read shelter photo rows from `database/gmc_shelters.sqlite`, upload missing sour
 ## Behavior contract
 For each selected photo row:
 1. If the local file is unreadable or missing, emit `failed` and do not create a managed asset or photo link.
-2. If the current run or prior registry already contains a displayable managed asset for the same `source_sha256`, emit `skipped`, reuse that managed asset, and upsert the canonical `photo_id -> asset_id` link without creating a duplicate WordPress attachment.
-3. Otherwise upload the file to `POST /wp-json/wp/v2/media`.
-4. After upload, patch attachment metadata as available.
-5. Persist exactly one managed asset per uploaded `source_sha256`.
-6. Persist or update exactly one current photo link per `photo_id` so reruns do not create duplicate shelter-photo associations.
-7. Record one run-item outcome per processed photo row: `uploaded`, `skipped`, or `failed`.
-8. In apply mode, append audit rows to `photo_upload_runs` and `photo_upload_run_items`.
+2. If the current run already uploaded or predicted an asset for the same `source_sha256`, emit `skipped` with `reason = "duplicate-source-identity"`.
+3. If a prior run already persisted a displayable managed asset for the same `source_sha256`, emit `skipped` with `reason = "already-managed-asset"`.
+4. Otherwise upload the file to `POST /wp-json/wp/v2/media`.
+5. After upload, patch attachment metadata as available.
+6. Persist exactly one managed asset per uploaded `source_sha256`.
+7. Persist or update exactly one current photo link per `photo_id` so reruns do not create duplicate shelter-photo associations.
+8. Record one run-item outcome per processed photo row: `uploaded`, `skipped`, or `failed`.
+9. In apply mode, append audit rows to `photo_upload_runs` and `photo_upload_run_items`.
 
 ## Duplicate-detection and idempotency rules
 - The first successful encounter with a new `source_sha256` may create one WordPress attachment.
 - Subsequent rows in the same run that resolve to the same `source_sha256` are `skipped`, not re-uploaded.
-- Later runs that encounter the same `source_sha256` are also `skipped` unless the prior asset is explicitly missing or failed and is being repaired.
+- Later runs that encounter the same `source_sha256` are also `skipped` unless the prior asset is explicitly being repaired.
 - Reprocessing the same `photo_id` updates the existing photo-link verification metadata instead of inserting a second association row.
 - A successful rerun must produce zero duplicate WordPress media entries and zero duplicate photo-link rows for already managed images.
+- The first successful source path remains the canonical `canonical_source_rel_path` for traceability even if later duplicate rows use a different repository-relative path.
 
 ## Output contract
 ### Human output
@@ -82,7 +84,7 @@ For each selected photo row:
       "source_sha256": "abc123...",
       "outcome": "skipped",
       "wp_attachment_id": 12345,
-      "reason": "duplicate-source-identity"
+      "reason": "already-managed-asset"
     }
   ]
 }
@@ -105,3 +107,4 @@ For each selected photo row:
 3. Re-run the same input and confirm previously managed items are `skipped` with no new attachments created.
 4. Include at least one duplicate-source case and confirm later rows are `skipped` while still linked to the existing managed asset.
 5. Include at least one unreadable file and confirm it is `failed` without stopping remaining rows.
+6. Confirm same-run duplicate rows report `duplicate-source-identity` and later reruns report `already-managed-asset`.

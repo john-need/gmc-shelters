@@ -9,11 +9,21 @@ Define the repository-owned data contract and validation rules that the shelter 
 - External consumers must validate their implementation against this contract rather than assuming additional repo-local theme code exists.
 - The approved site-wide placeholder source and published fallback URL are declared in `specs/001-shelter-photo-carousel/site-placeholder.json`, which the gallery service reads when `fallback_mode = "site-placeholder"`.
 
+## Repository validation command
+```zsh
+cd /Users/johnneed/Projects/gmc-shelters
+python3 scripts/export_shelter_gallery_view.py \
+  --db /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite \
+  --shelter aeolus-view-camp \
+  --validate
+```
+
 ## Input lookup
 - Match the current shelter post to a `shelters.slug` value.
 - Load `PhotoRecord` rows for that shelter only.
 - Join only to displayable `ManagedImageAsset` rows through the canonical `PhotoAssetLink` mapping.
 - Preserve existing photo row order unless a future explicit sort field is introduced.
+- Reserve `default_photo_id` for zero-slide fallback resolution rather than mixing it into the normal gallery set.
 
 ## Response shape
 ```json
@@ -112,6 +122,8 @@ Define the repository-owned data contract and validation rules that the shelter 
 4. Confirm a mixed valid/unavailable shelter returns only the valid uploaded slides and no broken placeholders.
 5. Confirm a zero-slide shelter uses a usable shelter default image before the site-wide placeholder.
 6. Confirm the external template consumes this payload shape without requiring repo-local theme code.
+7. Confirm `scripts/export_shelter_gallery_view.py --validate` succeeds for the shelter slug being handed off.
+8. Confirm `site-placeholder.json` points to the approved repository-owned source image and final published fallback URL.
 
 ## Compatibility notes
 - Current repository data has zero shelters with a usable positive `default_photo_id`, so `site-placeholder` is expected to be the common zero-slide fallback until valid shelter defaults are introduced.

@@ -7,8 +7,8 @@ Todo's for shelter project
 - [x] update photos table
 
 ### Admin
-- [ ] Fix importer to remove markdown
-- [ ] Figure out how to bulk import images
+- [x] Fix importer to remove markdown
+- [x] Figure out how to bulk import images
 - [ ] Figure out how to associate images with shelters
 - [ ] Import & create map markers from shelters and timelines tables.
 

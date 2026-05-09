@@ -1,0 +1,143 @@
+#!/bin/bash
+set -euo pipefail
+
+DB="./database/gmc_shelters.sqlite"
+SRC="./shelters.json"
+PHOTOS="./photos.json"
+TIMELINES="./timelines.json"
+DEST="./shelter-manifest.json"
+TMPFILE=$(mktemp)
+trap 'rm -f "$TMPFILE"' EXIT
+
+if [ ! -f "$DB" ]; then
+  echo "Error: $DB not found" >&2
+  exit 1
+fi
+
+echo "Exporting shelters from database..."
+sqlite3 -json "$DB" 'SELECT * FROM shelters ORDER BY id' > "$SRC"
+
+echo "Exporting timelines from database..."
+sqlite3 -json "$DB" 'SELECT * FROM timelines ORDER BY id' > "$TIMELINES"
+
+echo "Exporting photos from database..."
+sqlite3 -json "$DB" 'SELECT * FROM photos ORDER BY id' > "$PHOTOS"
+
+JQ_FILTER='
+  .[$idx] as $raw |
+  ($raw | if (.is_extant == 1) and (.end_year == 0) then .end_year = null else . end) as $s |
+  ([$timelines[0][] | select(.shelter_id == $s.id)] | sort_by(.year)) as $sorted |
+  (
+    if ($sorted | length) == 0 then
+      [{id: null, name: $s.name, latitude: $s.latitude, longitude: $s.longitude,
+        notes: null, shelter_id: $s.id, startYear: $s.start_year, endYear: $s.end_year,
+        slug: $s.slug, default_photo_id: $s.default_photo_id, is_extant: ($s.is_extant == 1)}]
+    else
+      ($sorted | length) as $n |
+      [range($n) | . as $i |
+        $sorted[$i] +
+        {startYear: $sorted[$i].year,
+         endYear: (if $i < ($n - 1) then $sorted[$i+1].year - 1 else $s.end_year end),
+         slug: $s.slug, default_photo_id: $s.default_photo_id, is_extant: ($s.is_extant == 1)}
+      ] |
+      if $s.start_year < $sorted[0].year then
+        [{id: null, name: $s.name, latitude: $s.latitude, longitude: $s.longitude,
+          notes: null, shelter_id: $s.id, startYear: $s.start_year, endYear: ($sorted[0].year - 1),
+          slug: $s.slug, default_photo_id: $s.default_photo_id, is_extant: ($s.is_extant == 1)}] + .
+      else . end
+    end
+  ) as $markers |
+  $s + {
+    is_extant: ($s.is_extant == 1),
+    show_on_web: ($s.show_on_web == 1),
+    is_gmc: ($s.is_gmc == 1),
+    mapMarkers: [$markers[] | del(.year)],
+    photos: [$photos[0][] | select(.shelter_id == $s.id and .include_in_post == 1) | . + {include_in_post: true}]
+  }
+'
+
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+idx=0
+
+while IFS= read -r slug; do
+  echo "Finding photos for $slug..."
+  echo "Populating map markers for $slug..."
+  jq --slurpfile photos "$PHOTOS" --slurpfile timelines "$TIMELINES" --argjson idx "$idx" \
+    "$JQ_FILTER" "$SRC" >> "$TMPFILE"
+  idx=$((idx + 1))
+done < <(jq -r '.[].slug' "$SRC")
+
+jq -n --arg ts "$TS" --slurpfile shelters "$TMPFILE" \
+  '{created: $ts, shelters: $shelters}' > "$DEST"
+
+echo "Converting snake_case keys to camelCase..."
+CAMEL_TMP=$(mktemp)
+trap 'rm -f "$TMPFILE" "$CAMEL_TMP"' EXIT
+jq '
+  def to_camel: gsub("_(?<x>[a-z])"; .x | ascii_upcase);
+  def convert:
+    if type == "object" then
+      with_entries({key: (.key | to_camel), value: (.value | convert)})
+    elif type == "array" then map(convert)
+    else . end;
+  convert
+' "$DEST" > "$CAMEL_TMP" && mv "$CAMEL_TMP" "$DEST"
+
+echo "Done! Built manifest with $idx shelters -> $DEST"
+
+echo ""
+echo "Validating mapMarkers..."
+
+VALIDATION_FILTER='
+[.shelters[] | . as $s | (.mapMarkers) as $m |
+  [
+    if ($m | length) == 0 then
+      "no mapMarkers"
+    else empty end,
+
+    ($m | to_entries[] | .key as $i | .value |
+      select(
+        (.startYear == null) or
+        (.endYear == null and (($s.isExtant and $i == (($m | length) - 1)) | not))
+      ) |
+      "marker \(.id // "null") missing startYear or endYear"),
+
+    ($m[] | select(.startYear != null and .endYear != null and .startYear > .endYear) |
+      "marker \(.id // "null") startYear \(.startYear) > endYear \(.endYear)"),
+
+    if ($m | length) > 0 and $m[0].startYear != null and $m[0].startYear != $s.startYear then
+      "first marker startYear \($m[0].startYear) != shelter startYear \($s.startYear)"
+    else empty end,
+
+    if $s.isExtant and ($m | length) > 0 and $m[-1].endYear != null then
+      "last marker endYear should be null for extant shelter but got \($m[-1].endYear)"
+    else empty end,
+
+    if ($s.isExtant | not) and ($m | length) > 0 and $m[-1].endYear != $s.endYear then
+      "last marker endYear \($m[-1].endYear // "null") != shelter endYear \($s.endYear)"
+    else empty end,
+
+    if ($m | length) > 1 then
+      range(($m | length) - 1) | . as $i |
+      if ($m[$i].endYear != null) and ($m[$i+1].startYear != null) then
+        if $m[$i].endYear >= $m[$i+1].startYear then
+          "overlap: marker \($i) endYear \($m[$i].endYear) >= marker \($i+1) startYear \($m[$i+1].startYear)"
+        elif $m[$i].endYear + 1 < $m[$i+1].startYear then
+          "gap: marker \($i) endYear \($m[$i].endYear) -> marker \($i+1) startYear \($m[$i+1].startYear)"
+        else empty end
+      else empty end
+    else empty end
+  ] |
+  if length > 0 then {slug: $s.slug, errors: .} else empty end
+]'
+
+ERRORS=$(jq "$VALIDATION_FILTER" "$DEST")
+ERROR_COUNT=$(echo "$ERRORS" | jq 'length')
+
+if [ "$ERROR_COUNT" -eq 0 ]; then
+  echo "Validation passed."
+else
+  echo "Validation found $ERROR_COUNT shelter(s) with issues:" >&2
+  echo "$ERRORS" | jq -r '.[] | "  \(.slug): \(.errors | join("; "))"' >&2
+  exit 1
+fi
