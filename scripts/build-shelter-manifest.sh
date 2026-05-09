@@ -19,6 +19,8 @@ if ! command -v pandoc &>/dev/null; then
   exit 1
 fi
 
+warn() { printf '\033[31mWarning: %s\033[0m\n' "$*" >&2; }
+
 echo "Exporting shelters from database..."
 sqlite3 -json "$DB" 'SELECT * FROM shelters ORDER BY id' > "$SRC"
 
@@ -54,19 +56,23 @@ JQ_FILTER='
   ) as $markers |
   $s + {
     is_extant: ($s.is_extant == 1),
-    show_on_web: ($s.show_on_web == 1),
     is_gmc: ($s.is_gmc == 1),
     mapMarkers: [$markers[] | del(.year)],
-    photos: [$photos[0][] | select(.shelter_id == $s.id and .include_in_post == 1) | . + {include_in_post: true}],
+    photos: [$photos[0][] | select(.shelter_id == $s.id and .include_in_post == 1 and (.file_name | IN($valid_photos[]))) | del(.include_in_post)],
     description: $description,
     content: $content
-  } | del(.post_file)
+  } | del(.post_file, .show_on_web)
 '
 
 TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-idx=0
+count=0
 
-while IFS= read -r slug; do
+while IFS=$'\t' read -r idx slug; do
+  if [ ! -d "./shelters/$slug" ]; then
+    warn "No folder found for shelter '$slug' -- skipping"
+    continue
+  fi
+
   echo "Finding photos for $slug..."
   echo "Populating map markers for $slug..."
 
@@ -78,7 +84,7 @@ while IFS= read -r slug; do
       echo "Reading content from $CONTENT_FILE..."
       CONTENT=$(pandoc -f markdown -t plain --wrap=none "$CONTENT_FILE")
     else
-      echo "Warning: post_file not found: $CONTENT_FILE" >&2
+      warn "post_file not found: $CONTENT_FILE"
     fi
   fi
 
@@ -88,12 +94,30 @@ while IFS= read -r slug; do
     DESCRIPTION=$(printf '%s' "$RAW_DESCRIPTION" | pandoc -f markdown -t plain --wrap=none)
   fi
 
+  shelter_id=$(jq -r ".[$idx].id" "$SRC")
+  valid_files=()
+  while IFS= read -r file; do
+    if [ -f "$file" ]; then
+      valid_files+=("$file")
+    else
+      warn "Photo not found: $file -- skipping"
+    fi
+  done < <(jq -r --argjson sid "$shelter_id" \
+    '.[] | select(.shelter_id == $sid and .include_in_post == 1) | .file_name' "$PHOTOS")
+
+  if [ ${#valid_files[@]} -eq 0 ]; then
+    VALID_PHOTOS='[]'
+  else
+    VALID_PHOTOS=$(printf '%s\n' "${valid_files[@]}" | jq -R . | jq -s .)
+  fi
+
   jq --slurpfile photos "$PHOTOS" --slurpfile timelines "$TIMELINES" --argjson idx "$idx" \
     --arg content "$CONTENT" \
     --arg description "$DESCRIPTION" \
+    --argjson valid_photos "$VALID_PHOTOS" \
     "$JQ_FILTER" "$SRC" >> "$TMPFILE"
-  idx=$((idx + 1))
-done < <(jq -r '.[].slug' "$SRC")
+  count=$((count + 1))
+done < <(jq -r 'to_entries[] | select(.value.show_on_web == 1) | [.key, .value.slug] | @tsv' "$SRC")
 
 jq -n --arg ts "$TS" --slurpfile shelters "$TMPFILE" \
   '{created: $ts, shelters: $shelters}' > "$DEST"
@@ -111,7 +135,7 @@ jq '
   convert
 ' "$DEST" > "$CAMEL_TMP" && mv "$CAMEL_TMP" "$DEST"
 
-echo "Done! Built manifest with $idx shelters -> $DEST"
+echo "Done! Built manifest with $count shelters -> $DEST"
 
 echo ""
 echo "Validating mapMarkers..."
