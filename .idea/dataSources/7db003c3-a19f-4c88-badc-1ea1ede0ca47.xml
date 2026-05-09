@@ -568,7 +568,7 @@
     <routine id="213" parent="1" name="fts5_insttoken"/>
     <schema id="214" parent="1" name="main">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2026-05-05.14:48:11</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2026-05-09.20:40:29</LastIntrospectionLocalTimestamp>
     </schema>
     <argument id="215" parent="14">
       <ArgumentDirection>R</ArgumentDirection>
@@ -1903,162 +1903,175 @@
       <Position>9</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <foreign-key id="654" parent="629" name="photos_shelters_id_fk">
+    <column id="654" parent="629" name="alt_text">
+      <Position>10</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <column id="655" parent="629" name="title">
+      <Position>11</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <column id="656" parent="629" name="description">
+      <Position>12</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <column id="657" parent="629" name="include_in_post">
+      <DefaultExpression>1</DefaultExpression>
+      <Position>13</Position>
+      <StoredType>integer|0s</StoredType>
+    </column>
+    <foreign-key id="658" parent="629" name="photos_shelters_id_fk">
       <ColNames>shelter_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>shelters</RefTableName>
     </foreign-key>
-    <key id="655" parent="629" name="photos_pk">
+    <key id="659" parent="629" name="photos_pk">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="656" parent="630" name="id">
+    <column id="660" parent="630" name="id">
       <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="657" parent="630" name="name">
+    <column id="661" parent="630" name="name">
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="658" parent="630" name="start_year">
+    <column id="662" parent="630" name="start_year">
       <Position>3</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="659" parent="630" name="end_year">
+    <column id="663" parent="630" name="end_year">
       <Position>4</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="660" parent="630" name="description">
+    <column id="664" parent="630" name="description">
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="661" parent="630" name="slug">
+    <column id="665" parent="630" name="slug">
       <Position>6</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="662" parent="630" name="longitude">
+    <column id="666" parent="630" name="longitude">
       <Position>7</Position>
       <StoredType>REAL|0s</StoredType>
     </column>
-    <column id="663" parent="630" name="latitude">
+    <column id="667" parent="630" name="latitude">
       <Position>8</Position>
       <StoredType>real|0s</StoredType>
     </column>
-    <column id="664" parent="630" name="altitude">
+    <column id="668" parent="630" name="default_photo_id">
       <Position>9</Position>
-      <StoredType>real|0s</StoredType>
-    </column>
-    <column id="665" parent="630" name="default_photo_id">
-      <Position>10</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="666" parent="630" name="is_gmc">
-      <Position>11</Position>
+    <column id="669" parent="630" name="is_gmc">
+      <Position>10</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="667" parent="630" name="architecture">
+    <column id="670" parent="630" name="architecture">
+      <Position>11</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <column id="671" parent="630" name="built_by">
       <Position>12</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="668" parent="630" name="built_by">
+    <column id="672" parent="630" name="notes">
       <Position>13</Position>
-      <StoredType>TEXT|0s</StoredType>
-    </column>
-    <column id="669" parent="630" name="notes">
-      <Position>14</Position>
       <StoredType>text|0s</StoredType>
     </column>
-    <column id="670" parent="630" name="created">
+    <column id="673" parent="630" name="created">
+      <Position>14</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <column id="674" parent="630" name="updated">
       <Position>15</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="671" parent="630" name="updated">
+    <column id="675" parent="630" name="is_extant">
       <Position>16</Position>
-      <StoredType>TEXT|0s</StoredType>
+      <StoredType>integer|0s</StoredType>
     </column>
-    <column id="672" parent="630" name="is_extant">
+    <column id="676" parent="630" name="category">
       <Position>17</Position>
-      <StoredType>integer|0s</StoredType>
-    </column>
-    <column id="673" parent="630" name="category">
-      <Position>18</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="674" parent="630" name="show_on_web">
+    <column id="677" parent="630" name="show_on_web">
       <DefaultExpression>1</DefaultExpression>
-      <Position>19</Position>
+      <Position>18</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <index id="675" parent="630" name="shelters_name_index">
+    <index id="678" parent="630" name="shelters_name_index">
       <ColNames>name</ColNames>
     </index>
-    <key id="676" parent="630" name="shelters_pk">
+    <key id="679" parent="630" name="shelters_pk">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="677" parent="631" name="type">
+    <column id="680" parent="631" name="type">
       <Position>1</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="678" parent="631" name="name">
+    <column id="681" parent="631" name="name">
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="679" parent="631" name="tbl_name">
+    <column id="682" parent="631" name="tbl_name">
       <Position>3</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="680" parent="631" name="rootpage">
+    <column id="683" parent="631" name="rootpage">
       <Position>4</Position>
       <StoredType>INT|0s</StoredType>
     </column>
-    <column id="681" parent="631" name="sql">
+    <column id="684" parent="631" name="sql">
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="682" parent="632" name="name">
+    <column id="685" parent="632" name="name">
       <Position>1</Position>
     </column>
-    <column id="683" parent="632" name="seq">
+    <column id="686" parent="632" name="seq">
       <Position>2</Position>
     </column>
-    <column id="684" parent="633" name="id">
+    <column id="687" parent="633" name="id">
       <AutoIncrement>1</AutoIncrement>
       <Position>1</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="685" parent="633" name="name">
+    <column id="688" parent="633" name="name">
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="686" parent="633" name="latitude">
+    <column id="689" parent="633" name="latitude">
       <Position>3</Position>
       <StoredType>REAL|0s</StoredType>
     </column>
-    <column id="687" parent="633" name="longitude">
+    <column id="690" parent="633" name="longitude">
       <Position>4</Position>
       <StoredType>REAL|0s</StoredType>
     </column>
-    <column id="688" parent="633" name="notes">
+    <column id="691" parent="633" name="notes">
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="689" parent="633" name="shelter_id">
+    <column id="692" parent="633" name="shelter_id">
       <Position>6</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="690" parent="633" name="year">
+    <column id="693" parent="633" name="year">
       <Position>7</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <foreign-key id="691" parent="633" name="table_name_shelters_id_fk">
+    <foreign-key id="694" parent="633" name="table_name_shelters_id_fk">
       <ColNames>shelter_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>shelters</RefTableName>
     </foreign-key>
-    <key id="692" parent="633" name="table_name_pk">
+    <key id="695" parent="633" name="table_name_pk">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>

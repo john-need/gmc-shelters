@@ -14,6 +14,11 @@ if [ ! -f "$DB" ]; then
   exit 1
 fi
 
+if ! command -v pandoc &>/dev/null; then
+  echo "Error: pandoc is required for markdown conversion. Install with: brew install pandoc" >&2
+  exit 1
+fi
+
 echo "Exporting shelters from database..."
 sqlite3 -json "$DB" 'SELECT * FROM shelters ORDER BY id' > "$SRC"
 
@@ -52,8 +57,10 @@ JQ_FILTER='
     show_on_web: ($s.show_on_web == 1),
     is_gmc: ($s.is_gmc == 1),
     mapMarkers: [$markers[] | del(.year)],
-    photos: [$photos[0][] | select(.shelter_id == $s.id and .include_in_post == 1) | . + {include_in_post: true}]
-  }
+    photos: [$photos[0][] | select(.shelter_id == $s.id and .include_in_post == 1) | . + {include_in_post: true}],
+    description: $description,
+    content: $content
+  } | del(.post_file)
 '
 
 TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -62,7 +69,28 @@ idx=0
 while IFS= read -r slug; do
   echo "Finding photos for $slug..."
   echo "Populating map markers for $slug..."
+
+  POST_FILE=$(jq -r ".[$idx].post_file // empty" "$SRC")
+  CONTENT=""
+  if [ -n "$POST_FILE" ]; then
+    CONTENT_FILE="./shelters/$slug/$POST_FILE"
+    if [ -f "$CONTENT_FILE" ]; then
+      echo "Reading content from $CONTENT_FILE..."
+      CONTENT=$(pandoc -f markdown -t plain --wrap=none "$CONTENT_FILE")
+    else
+      echo "Warning: post_file not found: $CONTENT_FILE" >&2
+    fi
+  fi
+
+  RAW_DESCRIPTION=$(jq -r ".[$idx].description // empty" "$SRC")
+  DESCRIPTION=""
+  if [ -n "$RAW_DESCRIPTION" ]; then
+    DESCRIPTION=$(printf '%s' "$RAW_DESCRIPTION" | pandoc -f markdown -t plain --wrap=none)
+  fi
+
   jq --slurpfile photos "$PHOTOS" --slurpfile timelines "$TIMELINES" --argjson idx "$idx" \
+    --arg content "$CONTENT" \
+    --arg description "$DESCRIPTION" \
     "$JQ_FILTER" "$SRC" >> "$TMPFILE"
   idx=$((idx + 1))
 done < <(jq -r '.[].slug' "$SRC")

@@ -5,102 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/requirements-dev.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/build-shelter-manifest.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/check_shelter_file_sizes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/export_shelter_gallery_view.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/import_shelter_photos.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/managed_asset_registry.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/photo_db.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/photo_import_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/photo_importer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/photo_models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/photo_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/shelter_file_size_audit.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/shelter_gallery.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/shelter_gallery_consumer_validator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/shelter_gallery_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/lib/wordpress_media.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/shelters.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/shelters/deusos-farm/deusos-farm.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/shelters/twin-shelters/twin-shelters.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/contract/test_bulk_photo_upload_cli.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/contract/test_check_shelter_file_sizes_cli.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/contract/test_shelter_post_template_consumer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/fixtures/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/fixtures/photo_import_fixture.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/fixtures/shelter_gallery_consumer_cases.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/integration/test_import_shelter_photos_apply.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/integration/test_import_shelter_photos_reruns.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/integration/test_photo_import_schema.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/integration/test_shelter_gallery_builder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/unit/test_managed_asset_registry.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/unit/test_photo_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/unit/test_shelter_file_size_audit.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/unit/test_shelter_gallery_fallbacks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/histories/gmc-long-system-trail-shelter-history-woodward-1999.doc" beforeDir="false" afterPath="$PROJECT_DIR$/sources/gmc-long-system-trail-shelter-history-woodward-1999.doc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/histories/gmc-shelter-histories.md" beforeDir="false" afterPath="$PROJECT_DIR$/sources/gmc-shelter-histories.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/histories/long-trail-system-shelter-history.docx" beforeDir="false" afterPath="$PROJECT_DIR$/sources/long-trail-system-shelter-history.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/histories/monroe-lodge/Professor Monroe at a guide post at Montclair Glen-1919.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/histories/monroe-lodge/monroe-lodge.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/683933dd2f54ae0913962dc1c6260070.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/Screenshot 2023-05-07 at 7.12.48 AM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/Screenshot 2023-05-14 at 4.23.15 PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/Screenshot 2023-05-14 at 5.06.32 PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/Screenshot 2023-05-14 at 5.07.40 PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/f2f1db77ff62b9f4b0bc2e29f22ed61e.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/intro-gmc-shelter-system.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/intro.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/introduction.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/introduction/lean-to-plans.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelter-todo-list.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelter-todo-list.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/belvidere-mountain-foresters-cabin/belvidere-mountain-foresters-cabin.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/belvidere-mountain-foresters-cabin/belvidere-mountain-foresters-cabin.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/clarendon-camp-1.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/deers-leap-lodge/deers-leap-lodge.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/deers-leap-lodge/deers-leap-lodge.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/gorham-lodge/gorham-lodge.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/gorham-lodge/gorham-lodge.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/goshen-lodge/goshen-lodge.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/goshen-lodge/goshen-lodge.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1691.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1692.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1693.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1694.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1695.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1696.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1697.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_img-1698.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_inn-at-long-trail-2023-jpg.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_inn-at-long-trail-2023.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_inn-at-long-trail.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/gmc-shelters_inn-at-long-trail_treetops-cabin.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/inn-at-long-trail.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/inn-at-long-trail/woodward-inn-at-long-trail.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/montclair-glen-lodge-2.md" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/montclair-glen-lodge-2.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_dsc-0189.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_dsc-0189.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_montclair-glen-lodge-1970-s.webp" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_montclair-glen-lodge-1970-s.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_montclair-glen-lodge-1971.png" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_montclair-glen-lodge-1971.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_montclair-glen-lodge.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_montclair-glen-lodge.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_p7031785.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_p7031785.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_p7031786.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_p7031786.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_pa081341.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_pa081341.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/gmc-shelters_montclair-glen-lodge-3_post-655-camels-hump-loop-3-scaled.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/montclair-glen-lodge-2/gmc-shelters_montclair-glen-lodge-2_post-655-camels-hump-loop-3-scaled.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/montclair-glen-lodge-3/montclair-glen-lodge-3.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/wyanokie-lodge/gmc-shelters_wyanokie-lodge_break-during-the-construction-of-wyanoki-hut-1025.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/shelters/wyanokie-lodge/gmc-shelters_wyanokie-lodge_break-during-the-construction-of-wyanoki-hut-1925.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/wyanokie-lodge/gmc-shelters_wyanokie-lodge_four-men-in-front-of-the-twin-shelters-1920s.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/wyanokie-lodge/gmc-shelters_wyanokie-lodge_twin-shelter-built-by-monroe-to-house-those-building-the-monroe-skyline-1920.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters/wyanokie-lodge/gmc-shelters_wyanokie-lodge_twin-shelters-1920s.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/contracts/bulk-photo-upload-cli.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/contracts/shelter-gallery-view-model.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/contracts/shelter-gallery-view-model.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/quickstart.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/quickstart.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/tasks.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/001-shelter-photo-carousel/tasks.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/build-shelter-manifest.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build-shelter-manifest.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shelter-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/shelter-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shelters.json" beforeDir="false" afterPath="$PROJECT_DIR$/shelters.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -284,7 +193,7 @@
       <workItem from="1777986154432" duration="22015000" />
       <workItem from="1778167089038" duration="1763000" />
       <workItem from="1778329818887" duration="12508000" />
-      <workItem from="1778348939674" duration="7221000" />
+      <workItem from="1778348939674" duration="9350000" />
     </task>
     <servers />
   </component>
