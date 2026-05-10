@@ -28,3 +28,9 @@ done < <(jq -r '
 
 SHELTER_COUNT=$(jq '.shelters | length' "$MANIFEST")
 echo "Done! Built dist package at $DIST ($SHELTER_COUNT shelters)"
+
+echo "Zipping dist..."
+mkdir -p ./data
+rm -f ./data/shelters-data.zip
+(cd "$DIST" && zip -r ../data/shelters-data.zip .)
+echo "Created data/shelters-data.zip"

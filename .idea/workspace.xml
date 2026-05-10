@@ -5,15 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/photos.json" beforeDir="false" afterPath="$PROJECT_DIR$/photos.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/build-shelter-manifest.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build-shelter-manifest.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/build-dist-package.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build-dist-package.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shelter-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/shelter-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shelters.json" beforeDir="false" afterPath="$PROJECT_DIR$/shelters.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +123,7 @@
       <recent name="$PROJECT_DIR$/shelters/puffer-shelter" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.Build Dist Package">
+  <component name="RunManager" selected="Shell Script.Build Shelter Manifest">
     <configuration name="Build Dist Package" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
@@ -214,7 +208,7 @@
       <workItem from="1777986154432" duration="22015000" />
       <workItem from="1778167089038" duration="1763000" />
       <workItem from="1778329818887" duration="12508000" />
-      <workItem from="1778348939674" duration="12219000" />
+      <workItem from="1778348939674" duration="19045000" />
     </task>
     <servers />
   </component>
