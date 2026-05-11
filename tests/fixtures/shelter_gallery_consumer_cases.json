@@ -1,0 +1,33 @@
+[
+  {
+    "name": "alpha-mixed-gallery",
+    "shelter_slug": "alpha-camp",
+    "expected": {
+      "fallback_mode": "gallery",
+      "navigation_enabled": true,
+      "slide_photo_ids": [1001, 1002],
+      "captions": ["Front view", "Interior"],
+      "credits": [null, "Archive"]
+    }
+  },
+  {
+    "name": "beta-single-gallery",
+    "shelter_slug": "beta-camp",
+    "expected": {
+      "fallback_mode": "gallery",
+      "navigation_enabled": false,
+      "slide_photo_ids": [2001]
+    }
+  },
+  {
+    "name": "delta-site-placeholder",
+    "shelter_slug": "delta-camp",
+    "expected": {
+      "fallback_mode": "site-placeholder",
+      "navigation_enabled": false,
+      "slide_count": 1,
+      "is_fallback": true
+    }
+  }
+]
+

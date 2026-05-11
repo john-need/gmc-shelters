@@ -1,4 +1,3 @@
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+Read `.specify/memory/constitution.md` first, then `specs/001-shelter-photo-carousel/plan.md` and the sibling artifacts under `specs/001-shelter-photo-carousel/` for the current implementation plan, contracts, data model, research, and quickstart guidance.
 <!-- SPECKIT END -->

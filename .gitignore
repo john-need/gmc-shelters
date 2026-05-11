@@ -1,5 +1,4 @@
-
-# JetBrains
+dist
 .idea/
 *.iml
 *.ipr
@@ -60,3 +59,9 @@ $RECYCLE.BIN/
 tmp/
 temp/
 
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
