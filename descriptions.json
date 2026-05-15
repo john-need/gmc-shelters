@@ -1,0 +1,1322 @@
+[
+  {
+    "id": 1,
+    "slug": "aeolus-view-camp",
+    "description": "Aeolus View Camp stood on Bondville Road east of Manchester and was one of the earliest shelters lost when the trail was relocated."
+  },
+  {
+    "id": 2,
+    "slug": "aldrich-job-camp",
+    "description": "Aldrich Job Camp was an early trail shelter in the ghost town near the Long Trail crossing of Homer Stone Brook."
+  },
+  {
+    "id": 3,
+    "slug": "atlas-valley-shelter",
+    "description": "Atlas Valley Shelter, near Jay Peak, is the smallest shelter on the Long Trail and was designed as a day shelter."
+  },
+  {
+    "id": 4,
+    "slug": "badger-camp",
+    "description": "Badger Camp was a small abandoned house and barn south of Butternut Mountain where hikers could shelter in the hayloft, though the 1929 guide called it dirty and forlorn."
+  },
+  {
+    "id": 5,
+    "slug": "bamforth-ridge",
+    "description": "Bamforth Ridge Shelter is a milled-log lean-to built in 2002 to replace Gorham Lodge, with materials flown by helicopter to the remote site."
+  },
+  {
+    "id": 6,
+    "slug": "barnes-camp",
+    "description": "Barnes Camp was a lumber camp in Smugglers' Notch that offered food and lodging to early Long Trail hikers."
+  },
+  {
+    "id": 7,
+    "slug": "barrows-camp",
+    "description": "Barrows Camp was a frame shelter on Barrows Farm, built in 1931 with bunks for 12 and views of the Sterling Range."
+  },
+  {
+    "id": 8,
+    "slug": "battell-lodge-1",
+    "description": "Battell Lodge 1st was a log lodge built in 1899 by Joseph Battell for the use of his family and guests."
+  },
+  {
+    "id": 9,
+    "slug": "battell-lodge-2",
+    "description": "Battell Lodge was an open-faced log shelter built in 1926 near the old Lincoln Valley wagon road, valued as a first-night stop despite distant water, and it burned in 1937."
+  },
+  {
+    "id": 10,
+    "slug": "battell-shelter-1",
+    "description": "The first Battell Shelter was built in 1938 by the Long Trail Patrol, after the second Battell Lodge mysteriously burned in 1937."
+  },
+  {
+    "id": 11,
+    "slug": "battell-shelter-2",
+    "description": "Battell Shelter 2nd was built in 1967 on the site of the earlier shelter, with supplies airlifted in for a Tamarack Farm and Wilderness Camp work project."
+  },
+  {
+    "id": 12,
+    "slug": "beane-farm",
+    "description": "Beane Farm was a popular early Long Trail stop below Birch Glen, known for its proximity to the trail and the hospitality of Mrs. Frank Beane."
+  },
+  {
+    "id": 13,
+    "slug": "bear-hollow-shelter",
+    "description": "Bear Hollow Shelter was an open shelter on a rocky knoll built in 1991 by the Sterling Section, and volunteers made more than 200 trips to pack in materials."
+  },
+  {
+    "id": 14,
+    "slug": "beaver-meadow-cabin",
+    "description": "Beaver Meadow Cabin was a roofless cabin shown on Herbert Congdon's 1918 map between Molly Stark and Baby Stark Mountains, likely used as a rest stop near a spring."
+  },
+  {
+    "id": 15,
+    "slug": "beaver-meadow-lodge",
+    "description": "Beaver Meadow Lodge lies at the end of the Chilcoot Pass Trail, more than a half-mile from the Long Trail, so few ender-to-enders choose to stay there."
+  },
+  {
+    "id": 16,
+    "slug": "belvidere-mountain-foresters-cabin",
+    "description": "Belvidere Mountain Foresters Cabin stood beside the summit fire tower until restoration efforts saved the tower but not the cabin."
+  },
+  {
+    "id": 17,
+    "slug": "big-branch-shelter",
+    "description": "Big Branch Shelter was a USFS frame lean-to built in 1963 near the suspension bridge on Big Branch."
+  },
+  {
+    "id": 18,
+    "slug": "bigelow-shelter",
+    "description": "Bigelow Shelter was a six-person log lean-to on the Lye Brook Trail near Stratton Pond, built in 1961 to replace the flooded Willis Ross Annex and dismantled in 1997."
+  },
+  {
+    "id": 19,
+    "slug": "birch-glen-camp",
+    "description": "Birch Glen Camp is a 1930 log shelter on the Beane Trail with an open-front living area, semi-enclosed bunks, and nearby water."
+  },
+  {
+    "id": 20,
+    "slug": "birch-glen-lodge",
+    "description": "Birch Glen Lodge was an early Long Trail lodge reached from the Beane Farm, with double bunks, a wood stove, and reliable brook water nearby."
+  },
+  {
+    "id": 21,
+    "slug": "blowdown-camp",
+    "description": "Blowdown Camp was a renovated chopper's camp near Bread Loaf Inn that served small overnight parties and picnic groups."
+  },
+  {
+    "id": 22,
+    "slug": "blue-triangle-camp",
+    "description": "Blue Triangle Camp was a roomy cabin near Governor Clement Camp, funded by girls' clubs and badly damaged in the 1938 storm before its later removal."
+  },
+  {
+    "id": 24,
+    "slug": "bolton-lodge",
+    "description": "Bolton Lodge was fine and comfortable cabin, built of stone and stucco to discourage porcupines, was erected by the Burlington Section of the GMC."
+  },
+  {
+    "id": 25,
+    "slug": "bourn-pond-camp",
+    "description": "Bourn Pond Camp was a private camp at the south end of Bourn Pond that appeared in early guidebooks but was not a Green Mountain Club shelter."
+  },
+  {
+    "id": 26,
+    "slug": "bourn-pond-shelter-north",
+    "description": "North Bourn Pond Shelter was a shelter that was replaced by the North Bourn Pond Tenting Area."
+  },
+  {
+    "id": 27,
+    "slug": "bourn-pond-shelter-south",
+    "description": "South Bourn Pond Shelter was a shelter that was intentionally burned by the USFS in 2005."
+  },
+  {
+    "id": 28,
+    "slug": "bourn-pond-tenting-areas",
+    "description": "Bourn Pond Tenting Areas replaced North Bourn Pond Shelter in 1983 with three primitive sites on the pond's north, south, and west shores."
+  },
+  {
+    "id": 29,
+    "slug": "boyce-shelter-1",
+    "description": "Boyce Shelter 1st was a Long Trail shelter active from about 1926 to 1941."
+  },
+  {
+    "id": 30,
+    "slug": "boyce-shelter-2",
+    "description": "Boyce Shelter 2nd was log structure was built in 1941 by the Long Trail Patrol for the Lake Pleiad Section."
+  },
+  {
+    "id": 31,
+    "slug": "boyce-shelter-3",
+    "description": "Boyce Shelter 3rd was a shelter without graffiti!."
+  },
+  {
+    "id": 32,
+    "slug": "bread-loaf-inn",
+    "description": "Bread Loaf Inn is used now as the Bread Loaf Campus of Middlebury College."
+  },
+  {
+    "id": 33,
+    "slug": "bread-loaf-shelter",
+    "description": "Bread Loaf Shelter was a log shelter built in 1931 by the Lake Pleiad Section and remained in use until Emily Proctor Shelter replaced it in 1960."
+  },
+  {
+    "id": 34,
+    "slug": "bromley-camp",
+    "description": "Bromley Camp was a Long Trail shelter active from about 1955 to 1984."
+  },
+  {
+    "id": 36,
+    "slug": "bromley-shelter",
+    "description": "Bromley Shelter was planned in 2003 as a replacement for Mad Tom Notch Shelter, with a post-and-beam design, three tent platforms, and an accessible composting privy."
+  },
+  {
+    "id": 37,
+    "slug": "bromley-tenting-area",
+    "description": "Bromley Tenting Area was a Bromley-area overnight site that the Green Mountain Club was seeking to relocate in 1997."
+  },
+  {
+    "id": 38,
+    "slug": "brushs-farm",
+    "description": "Brush's Farm was an early Long Trail stop where Mrs. C. S. Brush ferried hikers across the Winooski River."
+  },
+  {
+    "id": 39,
+    "slug": "bryant-camp",
+    "description": "Bryant Camp was Edward Bryant's upper ski cabin near the Long Trail in Bolton, originally available only by special arrangement rather than open to hikers."
+  },
+  {
+    "id": 40,
+    "slug": "buchanan-lodge",
+    "description": "Buchanan Lodge was frame cabin with bunks for about 12, was built by the Long Trail Patrol in 1949."
+  },
+  {
+    "id": 41,
+    "slug": "buchanan-shelter",
+    "description": "Buchanan, founder of the Long Trail Patrol and for 36 years its leader."
+  },
+  {
+    "id": 42,
+    "slug": "buffum-camp",
+    "description": "Buffum shelter has been inspected this fall and found to be in neat condition."
+  },
+  {
+    "id": 43,
+    "slug": "buffum-lodge",
+    "description": "Buffum Lodge was fine cabin was destroyed by fire in 1966."
+  },
+  {
+    "id": 44,
+    "slug": "burling-camp",
+    "description": "Burling Camp is a 1970s family-built shelter in the Beaver Meadow basin that is not an official GMC shelter and sits midway along a two-tiered waterfall."
+  },
+  {
+    "id": 45,
+    "slug": "butler-lodge",
+    "description": "Butler Lodge is a log lodge built in 1933 that remains in use and is staffed by a GMC caretaker during hiking season."
+  },
+  {
+    "id": 46,
+    "slug": "camels-hump-clearing-huts",
+    "description": "Camel's Hump Clearing Huts was was the site, over a century ago, of a rustic frame hotel (summit house), built about 1860, which failed financially and finally burned down in 1875."
+  },
+  {
+    "id": 47,
+    "slug": "camp-4",
+    "description": "4 offers shelter, and two miles below this are found the mill and buildings of a lumber company now closed."
+  },
+  {
+    "id": 48,
+    "slug": "camp-clarke",
+    "description": "Camp Clarke was the Worcester Section's new local camp in Holden, Massachusetts, occupied in 1948 after years of planning and fundraising."
+  },
+  {
+    "id": 49,
+    "slug": "camp-cobb",
+    "description": "Camp Cobb, as it is now called, was originally built as a hunting hut for a group of businessmen."
+  },
+  {
+    "id": 50,
+    "slug": "camp-eleven",
+    "description": "Camp Eleven was a small cabin southeast of Glastenbury Mountain with a stove and bunks for three or four, later described as barely habitable."
+  },
+  {
+    "id": 51,
+    "slug": "camp-lizzie",
+    "description": "Camp Lizzie was a ruined lumber camp east of Buck Job where one repaired cabin remained open to hikers, though it was not a Green Mountain Club shelter."
+  },
+  {
+    "id": 52,
+    "slug": "camp-webster-1",
+    "description": "Camp Webster 1st was a leased hikers' camp north of Grout Job, named for its proximity to the Daniel Webster Monument on the Arlington-Wardsboro Road."
+  },
+  {
+    "id": 53,
+    "slug": "camp-webster-2",
+    "description": "Camp Webster was a wood-frame shelter built in 1926 with bunks for six, later bypassed by Long Trail relocation and abandoned in 1988."
+  },
+  {
+    "id": 54,
+    "slug": "carmel-camp-1",
+    "description": "Carmel Camp 1st was a Long Trail shelter active from about 2002."
+  },
+  {
+    "id": 55,
+    "slug": "carmel-camp-2",
+    "description": "Carmel Camp 2nd was a metal-walled camp built in 1921 on the earlier site's ruins, and by 1947 it had collapsed into unusable condition."
+  },
+  {
+    "id": 56,
+    "slug": "carmel-camp-3",
+    "description": "Carmel Camp 3rd was a shelter that was replaced by the David Logan Shelter."
+  },
+  {
+    "id": 57,
+    "slug": "caughnawaga-shelter",
+    "description": "Caughnawaga Shelter was an older shelter that received major repairs in 1977 to keep it serviceable."
+  },
+  {
+    "id": 58,
+    "slug": "cedar-meadow-camp",
+    "description": "Cedar Meadow Camp appears in the source as a reference associated with Whitman Lodge."
+  },
+  {
+    "id": 59,
+    "slug": "chatfields-boarding-house",
+    "description": "Chatfields Boarding House was a Long Trail shelter active from about 1924."
+  },
+  {
+    "id": 60,
+    "slug": "churchill-scott-shelter",
+    "description": "Churchill Scott Shelter is a utilitarian shelter on the west side of Pico Peak, built after the 1999 trail relocation and designed to meet watershed and accessibility constraints."
+  },
+  {
+    "id": 61,
+    "slug": "clarendon-camp",
+    "description": "Clarendon Camp was a 1921 shelter in a pine grove near a brook that remained a favorite in the Killington Section despite becoming old and leaky."
+  },
+  {
+    "id": 62,
+    "slug": "clarendon-lodge",
+    "description": "Clarendon Lodge was a framed, winter-proof shelter built in 1952 and later converted to an open-front shelter in 1971 after misuse."
+  },
+  {
+    "id": 63,
+    "slug": "clarendon-shelter",
+    "description": "Clarendon Shelter was created in 1971 by converting Clarendon Lodge into an open shelter in hopes of reducing misuse at the site."
+  },
+  {
+    "id": 64,
+    "slug": "cloudland-shelter",
+    "description": "Cloudland Shelter was a Long Trail shelter active from about 1995."
+  },
+  {
+    "id": 65,
+    "slug": "congdon-shelter",
+    "description": "Congdon Shelter was open-front frame cabin, with bunks for 8, was built by the Long Trail Patrol in 1967."
+  },
+  {
+    "id": 66,
+    "slug": "cooley-glen-shelter-1",
+    "description": "Cooley Glen Shelter 1st was a new shelter will be built on or near this location as soon as labor and materials can be obtained."
+  },
+  {
+    "id": 67,
+    "slug": "cooley-glen-shelter-2",
+    "description": "Cooley Glen Shelter 2nd was a Long Trail shelter active from about 1949 to 1964."
+  },
+  {
+    "id": 68,
+    "slug": "cooley-glen-shelter-3",
+    "description": "Cooley Glen Shelter 3rd is a framed lean-to built by the USFS in 1965 with room for eight and a spring on the Cooley Glen Trail."
+  },
+  {
+    "id": 69,
+    "slug": "cooper-lodge",
+    "description": "Cooper Lodge is the Long Trail's highest shelter, a stone-and-wood lodge near the Killington spur junction built in 1939 and still in use."
+  },
+  {
+    "id": 70,
+    "slug": "corliss-camp",
+    "description": "Corliss Camp was framed cabin was built in 1989 by the Laraway Section and named for Robert Corliss of St."
+  },
+  {
+    "id": 71,
+    "slug": "cowles-cove-1",
+    "description": "Cowles Cove 1st was a Swiss-style shelter near the present site, with bunks for five or six and a small porch."
+  },
+  {
+    "id": 72,
+    "slug": "cowles-cove-2",
+    "description": "Talbot, NY Section, announced that ground will be broken for a new open shelter at Cowles Cove in early June 1955."
+  },
+  {
+    "id": 73,
+    "slug": "david-logan-shelter",
+    "description": "David Logan Shelter is a framed lean-to 0.2 miles down the New Boston Trail, built in 1976 with help from 60 campers to replace Carmel Camp."
+  },
+  {
+    "id": 74,
+    "slug": "deer-view-cabin",
+    "description": "Deer View Cabin was a shelter that was replaced by Thendara Lodge in 1929."
+  },
+  {
+    "id": 75,
+    "slug": "deer-view-shelter",
+    "description": "Deer View Shelter was was built to replace Thendara Shelter."
+  },
+  {
+    "id": 76,
+    "slug": "deers-leap-camp",
+    "description": "Deer's Leap Camp was an early Sherburne Pass shelter that evolved into an open camp for overnight hikers."
+  },
+  {
+    "id": 77,
+    "slug": "deers-leap-lodge",
+    "description": "Deer's Leap Lodge was new lodge was built in 1939 by the GMC as an annex to the Long Trail Lodge for winter use in connection with the excellent ski slopes and trail on Pico Peak."
+  },
+  {
+    "id": 78,
+    "slug": "duck-brook-shelter",
+    "description": "Duck Brook Shelter, also called Cascade Shelter, was built by the LT Patrol and dedicated in 1967."
+  },
+  {
+    "id": 79,
+    "slug": "dufresne-job",
+    "description": "Dufresne Job was time he started on July 2nd from the southern end and proceeded north to the Canadian line."
+  },
+  {
+    "id": 80,
+    "slug": "duncan-camp",
+    "description": "Duncan Camp was the Duncan Grant Camp near Peru, a boys' model-airplane summer camp that invited Long Trail hikers to visit."
+  },
+  {
+    "id": 81,
+    "slug": "dunsmoor-lodge",
+    "description": "Dunsmoor Lodge was lodge was built in 1918 (?) by the newly organized Lake Pleiad Section."
+  },
+  {
+    "id": 83,
+    "slug": "ellen-cabin",
+    "description": "Ellen Cabin was a Long Trail shelter active from about 1903 to 1926."
+  },
+  {
+    "id": 84,
+    "slug": "emily-proctor-lodge-1",
+    "description": "Emily Proctor Lodge (1st) was was one of three log lean-to shelters built with funds provided by Miss Emily Proctor, in 1913."
+  },
+  {
+    "id": 85,
+    "slug": "emily-proctor-lodge-2",
+    "description": "Emily Proctor Lodge (2nd) was shelter, long in disuse and abandoned, is to be burned."
+  },
+  {
+    "id": 86,
+    "slug": "emily-proctor-shelter",
+    "description": "Emily Proctor Shelter was is a log shelter built by the Long Trail Patrol in 1960 and rebuilt in 1983 and has space for 5."
+  },
+  {
+    "id": 87,
+    "slug": "fay-fuller-camp",
+    "description": "Fay Fuller Camp was a stone shelter built by the Bennington Section in 1930, named for mountaineer Fay Fuller, and furnished with bunks for 10."
+  },
+  {
+    "id": 88,
+    "slug": "fred-h-tucker-camp",
+    "description": "Fred H Tucker Camp was was the girst Camp in Hazen's Notch."
+  },
+  {
+    "id": 89,
+    "slug": "french-camp",
+    "description": "French Camp was frame camp was built in 1931."
+  },
+  {
+    "id": 90,
+    "slug": "gates-camp",
+    "description": "Gates Camp was an abandoned shelter on the Johnson-Whiteface Trail south of the Lamoille River bridge, near the ruins of Patch Camp."
+  },
+  {
+    "id": 91,
+    "slug": "gifford-woods-state-park-shelters",
+    "description": "Gifford Woods State Park Shelters are reservable overnight shelters and tent sites within the state park near Killington."
+  },
+  {
+    "id": 92,
+    "slug": "glastenbury-mountain-camp",
+    "description": "Glastenbury Mountain Camp was a steel cabin built in 1929 with bunks, a stove, nearby water, and broad views from Glastenbury Mountain."
+  },
+  {
+    "id": 93,
+    "slug": "glastenbury-mountain-forestry-cabin",
+    "description": "Glastenbury Mountain Forestry Cabin was a well-marked trail of seven and one-half miles leads up an easy grade to the top, where there are a tower and a forester's cabin."
+  },
+  {
+    "id": 94,
+    "slug": "glastenbury-mountain-shelter",
+    "description": "Glastenbury Mountain Shelter was a Long Trail shelter active from about 1965 to 1985."
+  },
+  {
+    "id": 95,
+    "slug": "glen-ellen-lodge",
+    "description": "Glen Ellen Lodge is a log lodge 0.3 miles down the Barton Trail, built in 1933 and known for its eastward views despite unreliable water."
+  },
+  {
+    "id": 96,
+    "slug": "glen-ellen-shelter",
+    "description": "Glen Ellen Shelter was a shelter that was built in 1919 and is provided with comfortable bunks, a stove, and a table."
+  },
+  {
+    "id": 97,
+    "slug": "goddard-shelter-1",
+    "description": "Goddard Shelter was a 1985 log lean-to with space for 12, built by the Bennington Section and U.S. Forest Service, with some materials airlifted by the Air National Guard."
+  },
+  {
+    "id": 98,
+    "slug": "goddard-shelter-2",
+    "description": "Goddard Shelter 2nd was built on Glastenbury Mountain in 1985 and named for former Green Mountain Club president Ted Goddard."
+  },
+  {
+    "id": 99,
+    "slug": "gore-mountain-summit-cabin",
+    "description": "Gore Mountain Summit Cabin was a Long Trail shelter active from about 1920 to 1924."
+  },
+  {
+    "id": 100,
+    "slug": "gorham-lodge",
+    "description": "Gorham Lodge was a log cabin on Camel's Hump's north slope, built in 1950 in memory of H. W. Gorham and later destroyed after heavy snow damage in 2001."
+  },
+  {
+    "id": 101,
+    "slug": "goshen-lodge",
+    "description": "In 1925 a large, enclosed, steel hut was added at the location of Goshen Lodge."
+  },
+  {
+    "id": 102,
+    "slug": "governor-clement-shelter",
+    "description": "Governor Clement Shelter is a 1929 stone shelter in an overgrown field near a dirt road, though the GMC discourages its use."
+  },
+  {
+    "id": 103,
+    "slug": "greenwall-shelter-1",
+    "description": "Greenwall Shelter 1st was log structure, built in 1937, has bunks for 6 to 8 persons."
+  },
+  {
+    "id": 104,
+    "slug": "greenwall-shelter-2",
+    "description": "Greenwall Shelter 2nd is a framed lean-to built by the USFS in 1962 just north of the White Rocks National Recreation Area boundary."
+  },
+  {
+    "id": 105,
+    "slug": "gren-anderson-shelter",
+    "description": "Gren Anderson Shelter was a memorial shelter near Culvers Lake in Stokes State Forest that was dedicated in 1959 to fill a gap in the Appalachian Trail shelter system."
+  },
+  {
+    "id": 106,
+    "slug": "griffith-camp-1",
+    "description": "Griffith Camp was a shelter in the abandoned mill village of Griffith in Peru where early Long Trail hikers used old buildings and nearby charcoal kilns for refuge."
+  },
+  {
+    "id": 107,
+    "slug": "griffith-camp-2",
+    "description": "Griffith Camp 2nd was an open camp built in 1924 at the abandoned village of Griffith near Roaring Branch, and it was later replaced by Old Job Shelter."
+  },
+  {
+    "id": 108,
+    "slug": "griffith-lake-house",
+    "description": "Griffith Lake House was a Long Trail shelter active from about 1890 to 1932."
+  },
+  {
+    "id": 109,
+    "slug": "griffith-lake-shelter",
+    "description": "Griffith Lake Shelter was a USFS frame lean-to built on the east shore of Griffith Lake in 1966, and it burned in 1975."
+  },
+  {
+    "id": 110,
+    "slug": "griffith-lake-tenting-area",
+    "description": "Griffith Lake Tenting Area was a fee is charged for overnight use at these sites."
+  },
+  {
+    "id": 111,
+    "slug": "griffith-shelter",
+    "description": "Griffith Shelter appears in the source as a reference associated with Peru Peak Shelter."
+  },
+  {
+    "id": 112,
+    "slug": "grout-job",
+    "description": "Grout Job was a Long Trail shelter active from about 1917 to 1930."
+  },
+  {
+    "id": 115,
+    "slug": "hapgood-pond-forest-camp",
+    "description": "Hapgood Pond Forest Camp refers to the CCC-developed recreation area at Hapgood Pond, where a dam, beach, bath house, and pavilion were built in the 1930s."
+  },
+  {
+    "id": 116,
+    "slug": "happy-hill-shelter",
+    "description": "Happy Hill Cabin, (locked), the southernmost cabin of the DOC cabin chain, is reached at 15.2 m."
+  },
+  {
+    "id": 117,
+    "slug": "happy-hill-cabin",
+    "description": "Happy Hill Cabin, (locked), the southernmost cabin of the DOC cabin chain, is reached at 15.2 m."
+  },
+  {
+    "id": 118,
+    "slug": "hawks-camp",
+    "description": "Hawks Camp was an abandoned but fully equipped lumber camp near Stratton Mountain, and hikers could get the key in Bennington."
+  },
+  {
+    "id": 119,
+    "slug": "hazens-notch-camp",
+    "description": "Hazen's Notch Camp 2nd was a classic Roy Buchanan camp built in 1948 on Wade Brook, then moved north in 1997 to preserve it and improve the site."
+  },
+  {
+    "id": 121,
+    "slug": "headwaters-camp",
+    "description": "Headwaters Camp is a rustic hunting camp on Unknown Pond in Avery's Gore that GMC purchased in 2015 and planned to manage for reservation-based public use."
+  },
+  {
+    "id": 122,
+    "slug": "hell-hollow-camp",
+    "description": "Hell Hollow Camp was an equipped closed cabin in the Hell Hollow valley near present-day Route 9, with the key available from Griswold's store in Bennington."
+  },
+  {
+    "id": 123,
+    "slug": "henry-davis-farm",
+    "description": "Henry Davis Farm in Lincoln offered Long Trail hikers meals and lodging for many years and was well known for the Davis family's hospitality."
+  },
+  {
+    "id": 124,
+    "slug": "hobbit-hut",
+    "description": "Hobbit Hut was an unofficial two-person shelter east of Route 12 that a landowner built for his children at child-sized scale and later allowed AT hikers to use."
+  },
+  {
+    "id": 125,
+    "slug": "honey-hollow-tenting-area",
+    "description": "Honey Hollow Tenting Area was a Long Trail tent site in the Camel's Hump area that was eliminated when the route moved back to Bamforth Ridge."
+  },
+  {
+    "id": 126,
+    "slug": "honted-house-camp",
+    "description": "Honted House Camp was a Long Trail shelter active from about 1924 to 1931."
+  },
+  {
+    "id": 127,
+    "slug": "hump-brook-tenting-area",
+    "description": "Hump Brook Tenting Area was area has tent platforms and camp sites."
+  },
+  {
+    "id": 129,
+    "slug": "jay-camp-1",
+    "description": "Jay Camp 1st was a Long Trail shelter active from about 1936 to 1957."
+  },
+  {
+    "id": 130,
+    "slug": "jay-camp-2",
+    "description": "Jay Camp 2nd was built after highway construction displaced the earlier site, and it slept 8 to 12 people."
+  },
+  {
+    "id": 131,
+    "slug": "journeys-end-1",
+    "description": "Journeys End 1st was framed cabin was built in 1933 by the Long Trail Patrol and has space for 8."
+  },
+  {
+    "id": 132,
+    "slug": "journeys-end-2",
+    "description": "Journeys End 2nd is a beautiful cedar camp built in the tradition of the Roy Buchanan and Long Trail Patrol Camps of the Thirties and Forties."
+  },
+  {
+    "id": 133,
+    "slug": "kelly-stand",
+    "description": "Kelly Stand was a boarding stop on Arlington-Wardsboro Road where hikers could find meals and shelter."
+  },
+  {
+    "id": 134,
+    "slug": "kid-gore-shelter",
+    "description": "Kid Gore Shelter is a log lean-to built in 1971 near the site of Caughnawaga Shelter and named for Camp Najerog founder Harold M. Gore."
+  },
+  {
+    "id": 135,
+    "slug": "killington-camp",
+    "description": "Killington Camp was an early Killington Peak sheltering area that later had caretakers in two huts serving hikers with blankets and food."
+  },
+  {
+    "id": 136,
+    "slug": "kiln-camp",
+    "description": "Kiln camp was a row of several abandoned charcoal kilns near Danby."
+  },
+  {
+    "id": 137,
+    "slug": "lake-mansfield-trout-club",
+    "description": "The club is situated at the southeasterly end of Nebraska Notch."
+  },
+  {
+    "id": 138,
+    "slug": "lake-pleiad-shelter-1",
+    "description": "Lake Pleiad Shelter 1st was lodge, probably located a short distance north of the lake, was built in 1919 with bunks for 12."
+  },
+  {
+    "id": 139,
+    "slug": "lake-pleiad-shelter-2",
+    "description": "Lake Pleiad Shelter 2nd was frame shelter maintained by the Bread Loaf Section had bunks for 12."
+  },
+  {
+    "id": 140,
+    "slug": "lances-lodge",
+    "description": "Lance's Lodge was a private resort near Bingham Falls in Stowe that became a favorite Long Trail stop for hikers seeking meals, baths, and beds."
+  },
+  {
+    "id": 141,
+    "slug": "laraway-camp",
+    "description": "Laraway Camp was a shack on an old road near Laraway Mountain that was mentioned in early guidebooks but already described as being in ruins."
+  },
+  {
+    "id": 142,
+    "slug": "laura-woodward-shelter-1",
+    "description": "Laura Woodward Shelter 1st was built in 1930 by a University of Vermont trail crew and later burned to the ground."
+  },
+  {
+    "id": 143,
+    "slug": "laura-woodward-shelter-2",
+    "description": "Laura Woodward Shelter 2nd was built on the site of the burned first shelter, with lumber-road access helping reduce construction costs."
+  },
+  {
+    "id": 144,
+    "slug": "laura-woodward-shelter-3",
+    "description": "Laura Woodward Shelter 3rd was built in 2001 by local farmer and prolific shelter builder Tom Abbott."
+  },
+  {
+    "id": 145,
+    "slug": "little-rock-pond-camp",
+    "description": "Little Rock Pond Camp appears to have been an early private lumber camp on the west shore of Little Rock Pond that offered shelter to hikers."
+  },
+  {
+    "id": 146,
+    "slug": "little-rock-pond-shelter-1",
+    "description": "Little Rock Pond Shelter 1st was shelter, with bunks for 6 to 8, was reached by footbridge from the mainland."
+  },
+  {
+    "id": 147,
+    "slug": "little-rock-pond-shelter-2",
+    "description": "Little Rock Pond Shelter was a three-sided wood-frame shelter built on an island in Little Rock Pond in 1962 and moved away from the shoreline in 1972 after overuse damaged the area."
+  },
+  {
+    "id": 148,
+    "slug": "little-rock-pond-shelter-2",
+    "description": "Little Rock Pond Shelter was a three-sided wood-frame shelter built on an island in Little Rock Pond in 1962 and moved away from the shoreline in 1972 after overuse damaged the area."
+  },
+  {
+    "id": 149,
+    "slug": "little-rock-pond-shelter-3",
+    "description": "Little Rock Pond Shelter 3rd was a caretaker was put on duty near the shelter to maintain the site and collect fees for its use."
+  },
+  {
+    "id": 150,
+    "slug": "little-rock-pond-group-tenting-area",
+    "description": "Little Rock Pond Group Tenting Area was a Long Trail shelter active from about 1977 to 1997."
+  },
+  {
+    "id": 151,
+    "slug": "long-trail-lodge",
+    "description": "Even the lighting fixtures were fashioned out of sections of birch limbs, by later action the clubhouse was christened LONG TRAIL LODGE."
+  },
+  {
+    "id": 152,
+    "slug": "lost-pond-shelter-1",
+    "description": "Lost Pond Shelter 1st was a frame lean-to donated by Louis J. Stare Jr. in 1965, prefabricated on Cape Cod, and hauled to the site in sections."
+  },
+  {
+    "id": 153,
+    "slug": "lost-pond-shelter-2",
+    "description": "Lost Pond Shelter was rebuilt this summer, once again without power tools, in keeping with its setting in the Big Branch Wilderness."
+  },
+  {
+    "id": 154,
+    "slug": "lost-pond-shelter-3",
+    "description": "Lost Pond Shelter 3rd is a three-sided log shelter built with local materials in a design inspired by historic Civilian Conservation Corps shelters."
+  },
+  {
+    "id": 155,
+    "slug": "luces-lookout",
+    "description": "Luce's Lookout is a private rustic cabin north of Woodstock that is open to hikers and known for its rooftop platform with White Mountain views."
+  },
+  {
+    "id": 156,
+    "slug": "lula-tye-shelter",
+    "description": "Lula Tye Shelter was an eight-person wood-frame lean-to at Little Rock Pond that was renamed in 1963 for a longtime GMC staff member and later moved away from the shoreline."
+  },
+  {
+    "id": 158,
+    "slug": "mad-tom-camp",
+    "description": "Mad Tom Camp was replaced in 1962 by the Mad Tom Shelter."
+  },
+  {
+    "id": 159,
+    "slug": "mad-tom-notch-shelter",
+    "description": "Mad Tom Notch Shelter was a Long Trail shelter active from about 1934 to 1962."
+  },
+  {
+    "id": 160,
+    "slug": "mad-tom-shelter",
+    "description": "Mad Tom Shelter was a shelter with valley views that was closed and removed in 1997 after falling off its moorings."
+  },
+  {
+    "id": 161,
+    "slug": "melville-nauheim",
+    "description": "Melville Nauheim was a frame shelter on a 250-foot spur trail that was built in 1977 with space for eight and funded as a memorial gift."
+  },
+  {
+    "id": 162,
+    "slug": "minerva-hinchey-shelter",
+    "description": "Minerva Hinchey Shelter was a framed eight-bunk shelter built in 1969 as Sunnyside Camp and later renamed for longtime GMC member Minerva Hinchey."
+  },
+  {
+    "id": 163,
+    "slug": "montclair-glen-lodge-1",
+    "description": "Montclair Glen Lodge 1st was built in 1918 by Professor Monroe and his work crew, near the line of the present Forest City Trail."
+  },
+  {
+    "id": 165,
+    "slug": "montclair-glen-lodge-2",
+    "description": "Montclair Glen Lodge 3rd is a log cabin built in 1948 with bunks for 10 and a caretaker during hiking season."
+  },
+  {
+    "id": 166,
+    "slug": "mount-mansfield-hotel",
+    "description": "They made one trip a day an ther charge for the service was $.25 per board In the same year in which the tent was set up, a trail was definitely cleared up the mountain."
+  },
+  {
+    "id": 167,
+    "slug": "mountain-meadows-lodge",
+    "description": "Mountain Meadows Lodge was a lodge created from a farmhouse near Kent Pond that became a popular Appalachian Trail stop with showers and work-for-food options."
+  },
+  {
+    "id": 168,
+    "slug": "noyes-camp",
+    "description": "Noyes Camp was camp located 300 ft back from Noyes Pond, is of frame construction with bunks for about 8."
+  },
+  {
+    "id": 169,
+    "slug": "noyes-pond-camp",
+    "description": "Noyes Pond Camp was a log cabin built near South Pond in 1925 to supplement the privately owned Noyes Pond Lodge."
+  },
+  {
+    "id": 170,
+    "slug": "noyes-pond-lodge",
+    "description": "Noyes Pond Lodge was a Long Trail shelter active from about 1920 to 1951."
+  },
+  {
+    "id": 171,
+    "slug": "noyes-pond-shelter",
+    "description": "Noyes Pond Shelter was an open front shelter, built in 1923, it included simple cooking utensils and bunks for 10."
+  },
+  {
+    "id": 172,
+    "slug": "octagon",
+    "description": "Octagon was a Long Trail shelter active from about 1940."
+  },
+  {
+    "id": 173,
+    "slug": "old-job-shelter",
+    "description": "Old Job Shelter is a framed US Forest Service lean-to built in 1963 off the Long Trail whose use declined after the route was moved west."
+  },
+  {
+    "id": 174,
+    "slug": "parker-camp-1",
+    "description": "Parker Camp 1st was the earlier shelter at this site and was later replaced by Parker Camp 2nd."
+  },
+  {
+    "id": 175,
+    "slug": "parker-camp-2",
+    "description": "Parker Camp on the Long Trail in Johnson."
+  },
+  {
+    "id": 176,
+    "slug": "patch-camp",
+    "description": "Patch Camp was a shelter on the north side of Whiteface Mountain near the old Johnson-Whiteface Trail that was already in ruins by 1929 and was replaced by French Camp."
+  },
+  {
+    "id": 177,
+    "slug": "peru-peak-shelter",
+    "description": "Peru Peak Shelter is a log shelter with space for 10 that was built by the CCC in 1935, rebuilt in 1979, and earlier known as Griffith Shelter."
+  },
+  {
+    "id": 178,
+    "slug": "pico-camp-1",
+    "description": "Pico Camp 1st was an open-front peeled-log camp with bunks for 24 and the Long Trail's only shower bath."
+  },
+  {
+    "id": 179,
+    "slug": "pico-camp-2",
+    "description": "Pico Camp 2nd was a framed cabin built by the Long Trail Patrol in 1959, with bunk space for 12."
+  },
+  {
+    "id": 180,
+    "slug": "porky-lodge",
+    "description": "Also known as Porky Lodge, it was constructed in 1926 by the Killington Section and had a fireplace and bunks."
+  },
+  {
+    "id": 181,
+    "slug": "puffer-camp",
+    "description": "Puffer Camp was was a log cabin which burned in 1974."
+  },
+  {
+    "id": 182,
+    "slug": "puffer-shelter",
+    "description": "Puffer Shelter was a Burlington Section shelter built in 1975 to replace Puffer Camp after a fire, and volunteers carried the precut materials three miles to the site."
+  },
+  {
+    "id": 183,
+    "slug": "rabbits-nest",
+    "description": "Rabbit's Nest was cramped, disheveled shack is a not-so-secret shelter for skiers and hikers on the Stowe side of Mount Mansfield."
+  },
+  {
+    "id": 184,
+    "slug": "randall-lumber-camp",
+    "description": "Randall Lumber Camp was an abandoned lumber camp below Camel's Hump that served as shelter on one of the first sections of the Long Trail put into use."
+  },
+  {
+    "id": 185,
+    "slug": "ritterbush-camp",
+    "description": "Ritterbush Camp was a frame cabin built in 1933 that slept eight and burned in 1999."
+  },
+  {
+    "id": 186,
+    "slug": "ritterbush-lodge",
+    "description": "Ritterbush Lodge was is probably the same location as the camp that was built in 1933."
+  },
+  {
+    "id": 187,
+    "slug": "rolstons-rest-1",
+    "description": "Rolston's Rest 1st was framed lean-to with space for 8 was built by the Long Trail Patrol in 1966."
+  },
+  {
+    "id": 188,
+    "slug": "rolstons-rest-2",
+    "description": "Rolston's Rest 2nd is a post-and-beam lean-to installed in 2005, with the structure donated and prebuilt by Tom Abbott before being airlifted to the site."
+  },
+  {
+    "id": 189,
+    "slug": "roundtop-shelter",
+    "description": "Roundtop Shelter is a log shelter built in 1994 by Tod and Wendy Jenner and other volunteers, with water reached by a hand pump on a short spur trail."
+  },
+  {
+    "id": 190,
+    "slug": "seth-warner-camp-1",
+    "description": "Seth Warner Camp was a camp near County Road in Bennington that was given by the Beardsley family and later replaced by a second Seth Warner Camp."
+  },
+  {
+    "id": 191,
+    "slug": "seth-warner-camp-2",
+    "description": "Seth Warner Camp 2nd was a frame shelter built by the Long Trail Patrol in 1938 in an overgrown clearing, with bunks for eight."
+  },
+  {
+    "id": 192,
+    "slug": "seth-warner-shelter-1",
+    "description": "Seth Warner Shelter 1st was a frame lean-to built in 1965 on a spur trail west of the Long Trail, with space for eight before its 1971 move."
+  },
+  {
+    "id": 193,
+    "slug": "seth-warner-shelter-2",
+    "description": "Seth Warner Shelter 2nd is the relocated 1965 frame lean-to, moved across the brook in 1971 to a site farther from the road."
+  },
+  {
+    "id": 194,
+    "slug": "seth-warner-shelter-3",
+    "description": "Seth Warner Shelter 3rd is a newer shelter north of the old site, opened for overnight use with a composting privy and a nearby water source."
+  },
+  {
+    "id": 195,
+    "slug": "shattuck-lodge",
+    "description": "Shattuck Lodge was Lodge was located about 200 yards east of the present-day Beaver Meadow Lodge."
+  },
+  {
+    "id": 196,
+    "slug": "shooting-star-shelter-1",
+    "description": "The lean-to, built in 1934 by the Long Trail Patrol, was situated on a rock outcrop and named for the shooting stars viewed from the shelter during its construction."
+  },
+  {
+    "id": 197,
+    "slug": "shooting-star-shelter-2",
+    "description": "Shooting Star Shelter 2nd was built in 2002 to replace the original Shooting Star Shelter."
+  },
+  {
+    "id": 198,
+    "slug": "skyline-lodge-1",
+    "description": "Skyline Lodge 1st was log constructed camp was completed in 1954 on a bluff overlooking Skylight Pond, a small lake only slightly lower than the adjacent summits."
+  },
+  {
+    "id": 199,
+    "slug": "skyline-lodge-2",
+    "description": "Skyline Lodge 2nd was is an enclosed shelter with bunk space for 14 and was built by the GMC and USFS in 1987."
+  },
+  {
+    "id": 200,
+    "slug": "spring-lake-camp",
+    "description": "Spring Lake Camp was a shelter above Spring Lake in Shrewsbury that was moved about a half mile south in 1954 after the landowner demanded its removal."
+  },
+  {
+    "id": 201,
+    "slug": "spruce-ledge-camp",
+    "description": "Spruce Ledge Camp was camp will be officially and joyously opened to the public by the Laraway and Burlington Sections at a ceremony on May 1, 1999."
+  },
+  {
+    "id": 202,
+    "slug": "spruce-peak-shelter",
+    "description": "Spruce Peak Shelter is an enclosed 16-bunk shelter built in 1983 by the Brattleboro Section in cooperation with the US Forest Service."
+  },
+  {
+    "id": 203,
+    "slug": "starks-nest",
+    "description": "Stark's Nest was a Mad River Glen camp that allowed overnight use in summer under caretaker supervision and offered excellent east and west views."
+  },
+  {
+    "id": 204,
+    "slug": "stem-cabin",
+    "description": "Stem Cabin was a Burlington Section cabin in Ranch Camp Valley, Stowe is open to all GMC members for a nominal fee."
+  },
+  {
+    "id": 205,
+    "slug": "sterling-pond-lodge-1",
+    "description": "Sterling Pond Lodge 1st was a log cabin completed in 1927 at Sterling Pond and was regarded as one of the best shelters on the trail."
+  },
+  {
+    "id": 206,
+    "slug": "sterling-pond-lodge-2",
+    "description": "Sterling Pond Lodge 2nd was a log lodge built in 1950 on a scenic cliff above Sterling Pond after the earlier lodge burned."
+  },
+  {
+    "id": 207,
+    "slug": "sterling-pond-shelter-1",
+    "description": "Sterling Pond Shelter was a framed eight-person shelter built in 1972 on the old lodge site, with a seasonal GMC caretaker in summer."
+  },
+  {
+    "id": 208,
+    "slug": "sterling-pond-shelter-2",
+    "description": "Sterling Pond Shelter 2nd was built in 2005 near Sterling Pond and is typically used by a Green Mountain Club caretaker."
+  },
+  {
+    "id": 209,
+    "slug": "stone-hut",
+    "description": "Stone Hut was a Long Trail shelter active from about 1933 to 2023."
+  },
+  {
+    "id": 210,
+    "slug": "stony-brook-shelter-1",
+    "description": "Stony Brook Shelter was a six-person log lean-to built in 1958, and it was removed in 1998 because it was too close to a road."
+  },
+  {
+    "id": 211,
+    "slug": "stony-brook-shelter-2",
+    "description": "Stony Brook Shelter was built in 1997 about 0.8 miles south of the old shelter, in a stand of old trees near a good water supply."
+  },
+  {
+    "id": 212,
+    "slug": "story-spring-shelter",
+    "description": "Story Spring Shelter is a US Forest Service frame lean-to built in 1963 and named for longtime trail worker George F. Story."
+  },
+  {
+    "id": 213,
+    "slug": "stratton-mountain-vermont-forestry-service-cabin-1",
+    "description": "Stratton Mountain Vermont Forestry Service Cabin was a small log cabin on Stratton Mountain's east slope that mainly served as emergency shelter and had a telephone to a farmhouse in the valley."
+  },
+  {
+    "id": 214,
+    "slug": "stratton-mountain-vermont-forestry-service-cabin-2",
+    "description": "Stratton Mountain Vermont Forestry Service Cabin 2nd was cabin was built approximately 100 feet from the tower."
+  },
+  {
+    "id": 215,
+    "slug": "stratton-mountain-vermont-forestry-service-cabin-3",
+    "description": "Stratton Mountain Vermont Forestry Service Cabin 3rd was cabin was a prefabricated log cabin produced by Green Mountain Cabins of Chester."
+  },
+  {
+    "id": 216,
+    "slug": "stratton-pond-shelter",
+    "description": "Laurel and Erik Tobiason, builders of Wintturi and Stony Brook Shelter is on the AT, will build the new shelter just off the Stratton Pond Trail."
+  },
+  {
+    "id": 217,
+    "slug": "stratton-view-campsite",
+    "description": "Stratton View Campsite is a tent-platform campsite on Stratton Pond near the site of the old Stratton View Shelter, which was dismantled in 1997."
+  },
+  {
+    "id": 218,
+    "slug": "stratton-view-shelter-1",
+    "description": "Stratton View Shelter 1st was a log shelter built in the late 1930s on the shore of Stratton Pond, known for its view of Stratton Mountain."
+  },
+  {
+    "id": 219,
+    "slug": "stratton-view-shelter-2",
+    "description": "Part of the 2021 trail and shelter redesign plan to preserve the shoreline and revegitatate overused areas around Stratton Pond, this shelter was completed in August 2023."
+  },
+  {
+    "id": 220,
+    "slug": "sucker-brook-lodge",
+    "description": "Sucker Brook crosses Long Trail 80 ft to the south supplies the water."
+  },
+  {
+    "id": 221,
+    "slug": "sucker-brook-shelter",
+    "description": "Sucker Brook Shelter is a framed eight-person shelter built by the USFS in 1963, with water available a short walk farther down the trail."
+  },
+  {
+    "id": 222,
+    "slug": "sunnyside-camp-1",
+    "description": "Spring Lake Camp has been dismantled, and its material is being used for Sunnyside Camp, now under construction 112 mile south."
+  },
+  {
+    "id": 223,
+    "slug": "sunnyside-camp-2",
+    "description": "Sunnyside Camp 2nd appears in the source as a reference associated with Minerva Hinchey Shelter."
+  },
+  {
+    "id": 224,
+    "slug": "sunrise-camp",
+    "description": "Sunrise Camp was a steel Green Mountain Club camp built near the old Goshen Lodge site in 1925 and remained usable into the 1960s."
+  },
+  {
+    "id": 226,
+    "slug": "sunrise-shelter-1",
+    "description": "Sunrise Shelter 1st was framed shelter was built by the Long Trail Patrol in 1964, a gift of Mortimer R."
+  },
+  {
+    "id": 227,
+    "slug": "sunrise-shelter-2",
+    "description": "Sunrise Shelter 2nd was under construction at the time of this record."
+  },
+  {
+    "id": 228,
+    "slug": "swansong-shelter",
+    "description": "Swansong Shelter was an unofficial shelter on private land, this small shelter is open to hikers a short distance from the Long Trail south of Killington."
+  },
+  {
+    "id": 229,
+    "slug": "swezey-camp-1",
+    "description": "Swezey Camp 1st was a renovated camp near Buck Job that the Green Mountain Club adopted as a club shelter in 1923."
+  },
+  {
+    "id": 230,
+    "slug": "swezey-camp-2",
+    "description": "Swezey Camp 2nd stood near the site of the earlier burned camp and slept eight beside the steep bank of Day Brook."
+  },
+  {
+    "id": 231,
+    "slug": "swezey-shelter",
+    "description": "Swezey Shelter was later renamed the William B. Douglass Shelter."
+  },
+  {
+    "id": 232,
+    "slug": "taft-lodge",
+    "description": "Taft Lodge is the oldest Long Trail shelter."
+  },
+  {
+    "id": 233,
+    "slug": "tamarack-shelter",
+    "description": "Tamarack Shelter was a frame lean-to at the Long Trail and Shrewsbury Peak Trail junction, notable for a ski trail being cut within 20 feet of it before it was dismantled in 1984."
+  },
+  {
+    "id": 234,
+    "slug": "taylor-lodge-1",
+    "description": "Taylor Lodge 1st was lodge, named for the founder of the GMC, was built by the Burlington Section in 1926 under the skillful direction of Ernest E."
+  },
+  {
+    "id": 235,
+    "slug": "taylor-lodge-2",
+    "description": "74 hikers attended the dedication and cabin-shower part at the GMC's Taylor Lodge."
+  },
+  {
+    "id": 236,
+    "slug": "taylor-lodge-3",
+    "description": "Taylor Lodge was built in 1978 on the site of the lodge that burned in 1977, and its open porch and enclosed bunk room slept about 15 hikers."
+  },
+  {
+    "id": 237,
+    "slug": "thendara-camp",
+    "description": "Thendara Camp was built near Harmon Hill to replace Deerview Cabin, and heavy snows destroyed it in 1958."
+  },
+  {
+    "id": 238,
+    "slug": "thendara-lodge",
+    "description": "Thendara Lodge was a New York Section camp on Lake Tiorati that became a long-running recreation center with community cooking and winter use."
+  },
+  {
+    "id": 239,
+    "slug": "theron-dean-lodge",
+    "description": "Theron Dean Lodge was a small Swiss-style shelter built in 1924, notable for its northern views and unreliable water in dry weather."
+  },
+  {
+    "id": 240,
+    "slug": "theron-dean-shelter",
+    "description": "Theron Dean Shelter was small log shelter with space for 5 was built in 1966 by the Long Trail Patrol."
+  },
+  {
+    "id": 241,
+    "slug": "thistle-hill-shelter",
+    "description": "Thistle Hill Shelter was is a typical Adirondak style shelter on the Appalachian Trail near the New Hampshire border."
+  },
+  {
+    "id": 242,
+    "slug": "thompson-home",
+    "description": "Thompson Home was a boarding stop in Bolton Village where Mrs. George H. Thompson provided rooms, board, and ferry service across the Winooski River."
+  },
+  {
+    "id": 243,
+    "slug": "three-shanties",
+    "description": "Three Shanties was a shelter in the deserted town of Griffith that hikers could use only with the owners' permission."
+  },
+  {
+    "id": 244,
+    "slug": "tillotson-camp-1",
+    "description": "Tillotson Camp was the original Tillotson shelter, built in 1929 by Red Tillotson after he served as the Belvidere Tower watchman."
+  },
+  {
+    "id": 245,
+    "slug": "tillotson-camp-2",
+    "description": "Tillotson Camp was rebuilt in 1939 to replace the original shelter on Tillotson Mountain, becoming a new stopping place with modern conveniences."
+  },
+  {
+    "id": 246,
+    "slug": "true-temper-inn",
+    "description": "True Temper Inn was a Wallingford hotel that catered to Long Trail hikers, with a basement locker room and planned shower baths for their use."
+  },
+  {
+    "id": 247,
+    "slug": "tucker-johnson-shelter-1",
+    "description": "Tucker-Johnson Shelter was a framed eight-bunk shelter built north of Willard Gap in 1969, and it was named for Fred H. Tucker and Otto Johnson."
+  },
+  {
+    "id": 248,
+    "slug": "tucker-lodge",
+    "description": "Tucker Lodge was a large lodge built in 1937 north of the trail near good water, and it was burned in 1971 to prevent misuse and accidents."
+  },
+  {
+    "id": 249,
+    "slug": "twin-brooks-tenting-area",
+    "description": "Twin Brooks Tenting Area was dedicated in 1996 to the memory of Roland Boucher, a longtime Long Trail maintainer on Mount Mansfield."
+  },
+  {
+    "id": 250,
+    "slug": "underhill-state-park",
+    "description": "Underhill State Park was a Long Trail shelter active from about 1951 to 1964."
+  },
+  {
+    "id": 251,
+    "slug": "vondell-shelter",
+    "description": "Vondell Shelter is located about 0.2 mile from Long Trail at Willis Ross Clearing on south shore of Stratton Pond."
+  },
+  {
+    "id": 252,
+    "slug": "voter-white-lodge",
+    "description": "Voter-White Lodge was a log cabin with bunks for 10 to 12 was built by the Middlebury Mountain Club in 1952 and named for Professor P."
+  },
+  {
+    "id": 253,
+    "slug": "watson-camp",
+    "description": "Green Mountain Valley School in Waitsfield coordinated a of strong, eager students to work with GMC's construction team on tearing down Watson Camp."
+  },
+  {
+    "id": 254,
+    "slug": "wheeler-pond-camps",
+    "description": "Ironically, the beavers for which Beaver Dam Camp is named raised the level of Wheeler Pond and the cabin's foundation posts began to slowly tilt toward the water."
+  },
+  {
+    "id": 255,
+    "slug": "whiteface-lodge",
+    "description": "Whiteface Lodge was a shelter that was built in 1922 Water at the spring 50 ft west on Long Trail south."
+  },
+  {
+    "id": 256,
+    "slug": "whiteface-shelter",
+    "description": "Whiteface Shelter was a shelter that was built at old location - Adirondack log construction."
+  },
+  {
+    "id": 257,
+    "slug": "whitman-lodge",
+    "description": "Whitman Lodge was primitive Worcester Section camp is located on the shores of Cedar Meadow Lake in Leicester Massachusettes."
+  },
+  {
+    "id": 258,
+    "slug": "wiley-lodge-1",
+    "description": "Wiley Lodge 1st appears in the source as a reference associated with Buchanan Lodge."
+  },
+  {
+    "id": 259,
+    "slug": "wiley-lodge-2",
+    "description": "Camp Emeritus (Wiley Lodge) at the Girl Scout Roundup, Button Bay State Park, 1962 Originally constructed as a GMC exhibit at the."
+  },
+  {
+    "id": 260,
+    "slug": "william-b-douglass-shelter",
+    "description": "William B. Douglass Shelter was the former Swezey Shelter, renamed in 1973 to honor a key contributor to its planning and construction."
+  },
+  {
+    "id": 261,
+    "slug": "willis-ross-annex-1",
+    "description": "Just across the little bay and on a point of land facing Willis Ross Camp is an open front log shelter, erected by the Worcester Section in 1934."
+  },
+  {
+    "id": 262,
+    "slug": "willis-ross-annex-2",
+    "description": "Willis-Ross Annex 2nd was shelter replaced Willis Ross Annex (1st)."
+  },
+  {
+    "id": 263,
+    "slug": "willis-ross-camp",
+    "description": "Willis-Ross Camp was built by the Worcester Section in 1929 on Stratton Pond and named for Willis Ross of Rutland."
+  },
+  {
+    "id": 264,
+    "slug": "wintturi-shelter-1",
+    "description": "If you want Mauri Wintturi's real opinion on the the stretch of Appalachian Trail from Maine Junction to the New Hampshire border, all you have to do is give him a beer."
+  },
+  {
+    "id": 265,
+    "slug": "wintturi-shelter-2",
+    "description": "Wintturi Shelter was rebuilt on its original Appalachian Trail site in 1994, and its distinctive red roof gave it the nickname Red Roof Inn."
+  },
+  {
+    "id": 266,
+    "slug": "worth-mountain-lodge",
+    "description": "Worth Mountain Lodge was a 1959 Middlebury Mountain Club lodge behind Voter-White Shelter that served skiers in winter and hikers the rest of the year until it was decommissioned after vandalism."
+  },
+  {
+    "id": 267,
+    "slug": "wyanokie-lodge",
+    "description": "Wyanokie Lodge was built by Professor Will S."
+  },
+  {
+    "id": 268,
+    "slug": "tucker-johnson-shelter-2",
+    "description": "Tucker-Johnson Shelter 2nd was a Long Trail shelter active from about 2018."
+  },
+  {
+    "id": 270,
+    "slug": "vermont-state-ski-dorm",
+    "description": "The Vermont State Ski Dorm is a 1934 CCC-built lodge on Mount Mansfield that became a low-cost state-run ski dorm and summer crew base."
+  },
+  {
+    "id": 271,
+    "slug": "shrewsbury-peak-shelter",
+    "description": "The Shrewsbury Peak Shelter was built in service of an idea about how Long Trail hikers were going to use the Coolidge Range."
+  },
+  {
+    "id": 272,
+    "slug": "russell-hill-shelter",
+    "description": "Russel Hill Shelter was a Long Trail shelter active from about 1933."
+  },
+  {
+    "id": 273,
+    "slug": "bromley-lodge",
+    "description": "Bromley Lodge was small lodge with bunks for 12, sat on a small brook and proved popular with trail travelers."
+  },
+  {
+    "id": 274,
+    "slug": "twin-shelters",
+    "description": "Twin Shelters were built to house crews working on the Monroe Skyline section of the Long Trail."
+  },
+  {
+    "id": 275,
+    "slug": "deusos-farm",
+    "description": "Deuso Farm was a farm near Hazen's Notch that hosted Long Trail hikers."
+  }
+]

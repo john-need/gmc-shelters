@@ -3,9 +3,15 @@
     "allow": [
       "Bash(python3 *)",
       "Bash(chmod +x *)",
-      "Bash(sqlite3 -json database/gmc_shelters.sqlite 'SELECT * FROM photos LIMIT 1')"
+      "Bash(sqlite3 -json database/gmc_shelters.sqlite 'SELECT * FROM photos LIMIT 1')",
       "Bash(git reflog *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(xargs ls -1)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && head -20 {}')",
+      "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM photos LIMIT 2')",
+      "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM timelines LIMIT 3')",
+      "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM shelters LIMIT 1')",
+      "Bash(pip install *)"
     ]
   }
 }

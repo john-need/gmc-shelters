@@ -1,10 +1,101 @@
-[{"id":1,"name":"Button Bay Shelter","latitude":44.18189199999999773,"longitude":-73.35647799999999564,"notes":"Original Name and location AKA Camp Emeritus","shelter_id":256,"year":1962},
-{"id":2,"name":"Wiley Lodge 2nd","latitude":44.35073660999999845,"longitude":-72.92642514000000631,"notes":"Moved and renamed","shelter_id":256,"year":1963},
-{"id":3,"name":"East Short Shelter","latitude":43.39860511255889719,"longitude":-72.95539764114660385,"notes":"Original Name and location","shelter_id":156,"year":1962},
-{"id":4,"name":"Lula Tye Shelter","latitude":43.39759399999999801,"longitude":-72.95490100000000667,"notes":"Moved","shelter_id":156,"year":1973},
-{"id":5,"name":"Gulf Shelter","latitude":43.66208000000000312,"longitude":-72.62207999999999686,"notes":"Original Name and Location","shelter_id":264,"year":1966},
-{"id":6,"name":"Gulf Shelter","latitude":43.66208000000000312,"longitude":-72.62207999999999686,"notes":"Moved and Rebuilt","shelter_id":264,"year":1977},
-{"id":7,"name":"Wintturi Shelter 1st","latitude":43.66312082091120316,"longitude":-72.61973486644480146,"notes":"Moved and Renamed","shelter_id":264,"year":1984},
-{"id":8,"name":"Hazen's Notch Camp","latitude":44.85108000000000317,"longitude":-72.51484999999999559,"notes":"Moved to Jay Peak","shelter_id":119,"year":1988},
-{"id":9,"name":"Lula Tye Shelter","latitude":43.39860511255889719,"longitude":-72.95539764114660385,"notes":"renamed Lula Tye","shelter_id":156,"year":1963},
-{"id":10,"name":"Inn at Long Trail","latitude":43.66440433999999726,"longitude":-72.83273803000000158,"notes":"Bought,restored and renamed by McGrath Family","shelter_id":77,"year":1977}]
+[
+  {
+    "id": 1,
+    "name": "Button Bay Shelter",
+    "latitude": 44.181892,
+    "longitude": -73.356478,
+    "notes": "Original Name and location AKA Camp Emeritus",
+    "shelter_id": 256,
+    "year": 1962
+  },
+  {
+    "id": 2,
+    "name": "Wiley Lodge 2nd",
+    "latitude": 44.35073661,
+    "longitude": -72.92642514,
+    "notes": "Moved and renamed",
+    "shelter_id": 256,
+    "year": 1963
+  },
+  {
+    "id": 3,
+    "name": "East Short Shelter",
+    "latitude": 43.3986051125589,
+    "longitude": -72.9553976411466,
+    "notes": "Original Name and location",
+    "shelter_id": 156,
+    "year": 1962
+  },
+  {
+    "id": 4,
+    "name": "Lula Tye Shelter",
+    "latitude": 43.397594,
+    "longitude": -72.954901,
+    "notes": "Moved",
+    "shelter_id": 156,
+    "year": 1973
+  },
+  {
+    "id": 5,
+    "name": "Gulf Shelter",
+    "latitude": 43.66208,
+    "longitude": -72.62208,
+    "notes": "Original Name and Location",
+    "shelter_id": 264,
+    "year": 1966
+  },
+  {
+    "id": 6,
+    "name": "Gulf Shelter",
+    "latitude": 43.66208,
+    "longitude": -72.62208,
+    "notes": "Moved and Rebuilt",
+    "shelter_id": 264,
+    "year": 1977
+  },
+  {
+    "id": 7,
+    "name": "Wintturi Shelter 1st",
+    "latitude": 43.6631208209112,
+    "longitude": -72.6197348664448,
+    "notes": "Moved and Renamed",
+    "shelter_id": 264,
+    "year": 1984
+  },
+  {
+    "id": 8,
+    "name": "Hazen's Notch Camp",
+    "latitude": 44.85108,
+    "longitude": -72.51485,
+    "notes": "Moved to Jay Peak",
+    "shelter_id": 119,
+    "year": 1988
+  },
+  {
+    "id": 9,
+    "name": "Lula Tye Shelter",
+    "latitude": 43.3986051125589,
+    "longitude": -72.9553976411466,
+    "notes": "renamed Lula Tye",
+    "shelter_id": 156,
+    "year": 1963
+  },
+  {
+    "id": 10,
+    "name": "Inn at Long Trail",
+    "latitude": 43.66440434,
+    "longitude": -72.83273803,
+    "notes": "Bought,restored and renamed by McGrath Family",
+    "shelter_id": 77,
+    "year": 1977
+  },
+  {
+    "id": 11,
+    "name": "Little Rock Pond Shelter 2nd",
+    "latitude": 43.40338709,
+    "longitude": -72.95367375,
+    "notes": "Moved: Floated down stream",
+    "shelter_id": 147,
+    "year": 1972
+  }
+]

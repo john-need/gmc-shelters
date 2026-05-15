@@ -568,7 +568,7 @@
     <routine id="213" parent="1" name="fts5_insttoken"/>
     <schema id="214" parent="1" name="main">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2026-05-09.20:40:29</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2026-05-12.11:47:07</LastIntrospectionLocalTimestamp>
     </schema>
     <argument id="215" parent="14">
       <ArgumentDirection>R</ArgumentDirection>
@@ -1952,6 +1952,7 @@
       <StoredType>TEXT|0s</StoredType>
     </column>
     <column id="665" parent="630" name="slug">
+      <NotNull>1</NotNull>
       <Position>6</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
@@ -2004,74 +2005,78 @@
       <Position>18</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <index id="678" parent="630" name="shelters_name_index">
+    <index id="678" parent="630" name="shelters_slug_uindex">
+      <ColNames>slug</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="679" parent="630" name="shelters_name_index">
       <ColNames>name</ColNames>
     </index>
-    <key id="679" parent="630" name="shelters_pk">
+    <key id="680" parent="630" name="shelters_pk">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="680" parent="631" name="type">
+    <column id="681" parent="631" name="type">
       <Position>1</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="681" parent="631" name="name">
+    <column id="682" parent="631" name="name">
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="682" parent="631" name="tbl_name">
+    <column id="683" parent="631" name="tbl_name">
       <Position>3</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="683" parent="631" name="rootpage">
+    <column id="684" parent="631" name="rootpage">
       <Position>4</Position>
       <StoredType>INT|0s</StoredType>
     </column>
-    <column id="684" parent="631" name="sql">
+    <column id="685" parent="631" name="sql">
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="685" parent="632" name="name">
+    <column id="686" parent="632" name="name">
       <Position>1</Position>
     </column>
-    <column id="686" parent="632" name="seq">
+    <column id="687" parent="632" name="seq">
       <Position>2</Position>
     </column>
-    <column id="687" parent="633" name="id">
+    <column id="688" parent="633" name="id">
       <AutoIncrement>1</AutoIncrement>
       <Position>1</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="688" parent="633" name="name">
+    <column id="689" parent="633" name="name">
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="689" parent="633" name="latitude">
+    <column id="690" parent="633" name="latitude">
       <Position>3</Position>
       <StoredType>REAL|0s</StoredType>
     </column>
-    <column id="690" parent="633" name="longitude">
+    <column id="691" parent="633" name="longitude">
       <Position>4</Position>
       <StoredType>REAL|0s</StoredType>
     </column>
-    <column id="691" parent="633" name="notes">
+    <column id="692" parent="633" name="notes">
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="692" parent="633" name="shelter_id">
+    <column id="693" parent="633" name="shelter_id">
       <Position>6</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <column id="693" parent="633" name="year">
+    <column id="694" parent="633" name="year">
       <Position>7</Position>
       <StoredType>integer|0s</StoredType>
     </column>
-    <foreign-key id="694" parent="633" name="table_name_shelters_id_fk">
+    <foreign-key id="695" parent="633" name="table_name_shelters_id_fk">
       <ColNames>shelter_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>shelters</RefTableName>
     </foreign-key>
-    <key id="695" parent="633" name="table_name_pk">
+    <key id="696" parent="633" name="table_name_pk">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
