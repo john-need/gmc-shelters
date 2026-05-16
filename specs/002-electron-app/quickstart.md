@@ -173,3 +173,67 @@ Photos are loaded from `shelters/<slug>/photos/` relative to the repo root. Conf
 
 **Window doesn't open**  
 Check the terminal output for errors. Common causes: port conflict on the Vite dev server (default 5173), or `database/gmc_shelters.sqlite` not found at the repo root.
+
+---
+
+## Testing the Main Process Without a Live Electron Binary
+
+Main-process Jest tests (`src/main/**/*.test.ts`) use a manual mock for the `electron` module. This
+allows IPC handlers, window creation logic, and the logger to be tested without launching a real
+Electron binary.
+
+**How it works:**
+
+- `jest.config.ts` maps `^electron$` → `src/main/__mocks__/electron.ts` for the `main` project.
+- The mock exports `app`, `BrowserWindow`, `ipcMain`, `ipcRenderer`, `contextBridge`, `Menu`, and
+  `shell` as jest functions. All async methods return `Promise.resolve(undefined)` by default.
+
+**Overriding `app.isPackaged` per test:**
+
+```typescript
+const { app } = await import('electron');
+Object.defineProperty(app, 'isPackaged', { value: true, configurable: true });
+```
+
+Reset it after each test with `jest.resetModules()` and `jest.clearAllMocks()`.
+
+**Running main-process tests only:**
+
+```bash
+npm test -- --selectProjects main
+```
+
+**Running renderer tests only:**
+
+```bash
+npm test -- --selectProjects renderer
+```
+
+---
+
+## Manual Verification Checklist (run after `npm install`)
+
+Complete these steps after first-time setup and after significant changes:
+
+- [ ] `npm start` → desktop window opens within 5 seconds; title bar shows "gmc-shelters"
+- [ ] Edit a file in `src/renderer/` → change appears in the running app without a full restart (HMR)
+- [ ] Open a second terminal and run `npm start` again → second process exits immediately; original window gains focus
+- [ ] Close the main window → terminal process exits cleanly with code 0 (no hang, no error)
+- [ ] `npm test` → both `main` and `renderer` projects report green (0 failures)
+- [ ] `npm run lint` → exits with code 0 and reports 0 problems
+
+---
+
+## Cross-Platform Distribution
+
+macOS, Windows, and Linux builds require running `npm run make` on the target OS (cross-compilation
+is not supported). Expected output paths:
+
+| Platform | Command | Artifact |
+|---|---|---|
+| macOS | `npm run make` | `out/make/*.dmg` |
+| Windows | `npm run make` | `out/make/zip/win32/*.zip` |
+| Linux | `npm run make` | `out/make/zip/linux/*.zip` |
+
+Before distributing, replace `assets/icon.png` (and `assets/icon.icns` / `assets/icon.ico` for
+macOS and Windows respectively) with a real application icon at 1024×1024 pixels.

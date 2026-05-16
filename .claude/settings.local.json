@@ -17,7 +17,15 @@
       "WebFetch(domain:api.anthropic.com)",
       "Bash(tar -xf /tmp/gmc-design.html -C /tmp/gmc-design)",
       "Bash(bash *)",
-      "Skill(speckit-tasks)"
+      "Skill(speckit-tasks)",
+      "Bash(npm test *)",
+      "Bash(node -e \"const v = require\\('./node_modules/jest-config/build/Defaults'\\); console.log\\(Object.keys\\(v.default || v\\).filter\\(k => k.toLowerCase\\(\\).includes\\('setup'\\)\\)\\)\")",
+      "Bash(node -e \"const cfg = require\\('./node_modules/@electron-forge/core/dist/forge.config.js'\\); console.log\\('ok'\\)\")",
+      "Bash(node_modules/.bin/electron-forge --version)",
+      "Bash(npm rebuild *)",
+      "Bash(npm start *)",
+      "Bash(kill %1)",
+      "Bash(npm run *)"
     ]
   }
 }

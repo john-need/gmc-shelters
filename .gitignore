@@ -1,3 +1,7 @@
+# Electron / electron-forge
+.vite/
+out/make/
+
 dist
 .idea/
 *.iml
