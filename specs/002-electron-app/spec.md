@@ -71,9 +71,9 @@ A developer or CI pipeline produces a distributable package of the application f
 
 ### Edge Cases
 
-- What happens when the application is launched while another instance is already running?
-- How does the app behave when launched with no network connectivity?
-- What happens when a test file imports a module that requires a live Electron context?
+- If a second instance is launched, the existing window is focused and the new process exits — no duplicate windows are permitted.
+- The initial scaffold makes no network calls, so network connectivity has no effect on launch or operation.
+- Tests that require a live Electron context are isolated to the main-process test directory (`node` environment); renderer tests run in `jsdom` and never import Electron-specific APIs directly.
 - How does linting handle files that are auto-generated or in `node_modules`?
 
 ## Source of Truth & External Impact *(mandatory)*
@@ -104,6 +104,19 @@ A developer or CI pipeline produces a distributable package of the application f
 - **FR-008**: The project MUST include a `package.json` with clearly named scripts for: starting the app in development, running tests, and running the linter
 - **FR-009**: The project MUST include a build script that produces a distributable application artifact
 - **FR-010**: The initial application window MUST display a branded splash screen with the application name "gmc-shelters"; data integration is deferred to subsequent features
+- **FR-011**: The renderer process MUST run with `contextIsolation` enabled; all renderer↔main communication MUST use IPC through a typed API bridge exposed via a preload script — direct Node.js access from the renderer is prohibited
+- **FR-012**: The application MUST enforce a single running instance; if a second launch is attempted, the existing window MUST be brought to the foreground and the new process MUST exit immediately
+- **FR-013**: The application MUST write structured logs to stdout during development; in production builds, logs MUST be written to a rotating local log file in the OS-appropriate user data directory
+- **FR-014**: The test suite MUST use a `node` environment for main-process tests and a `jsdom` environment for renderer-process tests, configured per directory so each runs without requiring a live Electron window
+- **FR-015**: The application MUST include a native OS menu bar with: an app menu containing About and Quit; an Edit menu with standard clipboard shortcuts; and a Window menu with Minimize and Zoom
+- **FR-016**: The renderer process MUST use React as its UI rendering layer
+- **FR-017**: The application MUST use Redux Toolkit (RTK) for global state management, using `createSlice` and `createAsyncThunk` — plain Redux action creators are not used
+- **FR-018**: All UI components MUST be built using the Material UI component library for visual consistency
+- **FR-019**: The application MUST define a minimal custom MUI theme with brand primary and secondary colors and base typography; all other design tokens inherit MUI defaults
+- **FR-020**: The renderer MUST include a client-side router; the initial scaffold MUST wire up a root route pointing to the splash/home screen so that future screens can be added as additional routes without restructuring
+- **FR-021**: The renderer process MUST be bundled using Vite; the development server MUST support hot module replacement (HMR) so UI changes are reflected without a full app restart
+- **FR-022**: The application MUST use electron-forge with its Vite plugin for packaging and distribution; the forge config MUST cover development startup, production build, and creation of platform-specific distributables
+- **FR-023**: The splash/home screen MUST serve as the persistent root route; it does not auto-dismiss — it remains the visible screen until a subsequent feature introduces additional routes
 
 ### Key Entities
 
@@ -111,6 +124,9 @@ A developer or CI pipeline produces a distributable package of the application f
 - **Source Module**: A TypeScript file under `src/` that implements part of the application; belongs to either the main process (Node.js environment) or renderer process (browser-like environment)
 - **Test Suite**: A collection of test files that verify the behavior of source modules; runnable independently of a live desktop session
 - **Lint Configuration**: A set of rules applied uniformly to all TypeScript source files to enforce code quality and style
+- **React Component**: A UI building block rendered in the renderer process; composed into pages and layouts using Material UI primitives
+- **Redux Store**: The central state container for the application; holds app-level state accessible to any React component
+- **MUI Theme**: Design token configuration (colors, typography, spacing) applied globally to all Material UI components
 
 ## Success Criteria *(mandatory)*
 
@@ -121,6 +137,27 @@ A developer or CI pipeline produces a distributable package of the application f
 - **SC-003**: The lint command completes with zero errors on the initial scaffold codebase
 - **SC-004**: A new developer can install dependencies, launch the app, run tests, and run the linter by following the README — without prior knowledge of the project — in under 15 minutes
 - **SC-005**: The packaged application can be built and run on macOS, Windows, and Linux
+- **SC-006**: In production, application errors and crashes are captured in a local log file discoverable without attaching a debugger
+
+## Clarifications
+
+### Session 2026-05-15
+
+- Q: What Electron security model should the scaffold use? → A: `contextIsolation: true`, preload script exposes API bridge via `contextBridge`, IPC for all main↔renderer communication
+- Q: What should happen when a second app instance is launched? → A: Enforce single instance — focus the existing window and exit the new process immediately
+- Q: What error/crash logging strategy should the scaffold include? → A: Structured logs to stdout in development; rotating local log file in production — no external service
+- Q: What Jest test environment should the scaffold use? → A: Split — `node` environment for main-process tests, `jsdom` for renderer tests, configured per directory
+- Q: Should the scaffold include a native OS menu bar? → A: Yes — minimal menu: app menu (About, Quit), Edit (clipboard shortcuts), Window (Minimize, Zoom)
+- Stack addition: renderer UI uses React; global state managed with Redux; UI components from Material UI
+- Q: Redux Toolkit or plain Redux? → A: Redux Toolkit (RTK) — `createSlice`, `createAsyncThunk`, Immer included
+- Q: MUI theme depth? → A: Minimal custom theme — primary/secondary brand colors and base typography; all other tokens inherit MUI defaults
+- Q: Include React Router in the scaffold? → A: Yes — wire up a root router with a single splash/home route; all future screens add routes without restructuring
+
+### Session 2026-05-15 (continued)
+
+- Q: What build tool should bundle the renderer process? → A: Vite — fast HMR, minimal config, TypeScript-native
+- Q: What Electron packaging tool should handle distribution builds? → A: electron-forge with Vite plugin — official tooling, native Vite integration, unified dev+build+publish lifecycle
+- Q: Does the splash screen auto-dismiss or serve as the persistent home screen? → A: Splash is the home screen — root route renders it permanently until future screens are added
 
 ## Assumptions
 

@@ -11,7 +11,13 @@
       "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM photos LIMIT 2')",
       "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM timelines LIMIT 3')",
       "Bash(sqlite3 -json /Users/johnneed/Projects/gmc-shelters/database/gmc_shelters.sqlite 'SELECT * FROM shelters LIMIT 1')",
-      "Bash(pip install *)"
+      "Bash(pip install *)",
+      "Bash(bash .specify/scripts/bash/check-prerequisites.sh --json --paths-only)",
+      "Bash(bash .specify/scripts/bash/check-prerequisites.sh --json)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(tar -xf /tmp/gmc-design.html -C /tmp/gmc-design)",
+      "Bash(bash *)",
+      "Skill(speckit-tasks)"
     ]
   }
 }

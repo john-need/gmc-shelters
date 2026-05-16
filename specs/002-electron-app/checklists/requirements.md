@@ -31,4 +31,4 @@
 
 ## Notes
 
-- All items resolved. Spec is ready for `/speckit-plan`.
+- All items resolved. 5 clarification questions answered (2026-05-15 session). Spec is ready for `/speckit-plan`.
