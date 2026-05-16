@@ -1,3 +1,7 @@
+# Google OAuth credentials (never commit)
+credentials.json
+token.json
+
 # Large data directories and files (kept locally, excluded from git)
 sources/
 maps/
