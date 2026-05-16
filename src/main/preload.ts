@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { CHANNELS } from '../shared/ipc-types';
+import { CHANNELS } from '@shared/ipc-types';
 import type { ElectronAPI, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput } from '../shared/ipc-types';
 
 const api: ElectronAPI = {

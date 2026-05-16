@@ -10,6 +10,7 @@ module.exports = {
       },
       moduleNameMapper: {
         '^electron$': '<rootDir>/src/main/__mocks__/electron.ts',
+        '^@shared/(.*)$': '<rootDir>/src/shared/$1',
       },
       setupFiles: ['<rootDir>/src/main/jest.setup.cjs'],
     },
@@ -27,6 +28,7 @@ module.exports = {
       moduleNameMapper: {
         '\\.css$': 'identity-obj-proxy',
         '^electron$': '<rootDir>/src/main/__mocks__/electron.ts',
+        '^@shared/(.*)$': '<rootDir>/src/shared/$1',
       },
       setupFilesAfterEnv: ['<rootDir>/src/renderer/setupTests.ts'],
     },

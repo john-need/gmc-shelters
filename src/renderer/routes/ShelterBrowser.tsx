@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Box } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
 import { loadShelters } from '../store/sheltersSlice';
@@ -7,28 +6,23 @@ import Titlebar from '../components/AppShell/Titlebar';
 import AppHeader from '../components/AppShell/AppHeader';
 import AppBody from '../components/AppShell/AppBody';
 import Toast from '../components/ui/Toast';
+import NewShelterModal from '../components/modals/NewShelterModal';
 
 export default function ShelterBrowser() {
   const dispatch = useDispatch<AppDispatch>();
+  const [showNewModal, setShowNewModal] = useState(false);
 
   useEffect(() => {
     dispatch(loadShelters());
   }, [dispatch]);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
-        backgroundColor: 'background.default',
-      }}
-    >
+    <div className="app-window">
       <Titlebar />
-      <AppHeader />
+      <AppHeader onNewShelter={() => setShowNewModal(true)} />
       <AppBody />
       <Toast />
-    </Box>
+      {showNewModal && <NewShelterModal onClose={() => setShowNewModal(false)} />}
+    </div>
   );
 }

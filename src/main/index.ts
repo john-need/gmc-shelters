@@ -1,6 +1,11 @@
 import { app, BrowserWindow, Menu } from 'electron';
 import path from 'path';
 import { log } from './logger';
+import { registerShelterHandlers } from './ipc/shelters';
+import { registerPhotoHandlers } from './ipc/photos';
+import { registerSourceHandlers } from './ipc/sources';
+import { registerHistoryHandlers } from './ipc/history';
+import { registerShellHandlers } from './ipc/shell';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -79,12 +84,17 @@ if (!app.requestSingleInstanceLock()) {
     }
   });
 
-  app.on('ready', createWindow);
+  app.on('ready', () => {
+    registerShelterHandlers();
+    registerPhotoHandlers();
+    registerSourceHandlers();
+    registerHistoryHandlers();
+    registerShellHandlers();
+    createWindow();
+  });
 
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      app.quit();
-    }
+    if (process.platform !== 'darwin') app.quit();
   });
 
   app.on('activate', () => {

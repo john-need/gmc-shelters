@@ -1,18 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { store } from './store';
-import theme from './theme';
 import App from './App';
 
 function renderApp() {
   return render(
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <App />
-      </ThemeProvider>
+      <App />
     </Provider>,
   );
 }
@@ -27,13 +21,13 @@ describe('App', () => {
     expect(screen.getByTestId('titlebar')).toBeInTheDocument();
   });
 
-  it('renders the sidebar placeholder', () => {
+  it('renders the sidebar', () => {
     renderApp();
-    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+    expect(screen.getByRole('complementary')).toBeInTheDocument();
   });
 
-  it('renders the main pane placeholder', () => {
+  it('renders the main pane', () => {
     renderApp();
-    expect(screen.getByTestId('main-pane')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toBeInTheDocument();
   });
 });

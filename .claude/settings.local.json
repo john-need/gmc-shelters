@@ -25,7 +25,21 @@
       "Bash(npm rebuild *)",
       "Bash(npm start *)",
       "Bash(kill %1)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(cp \"/Users/johnneed/.claude/projects/-Users-johnneed-Projects-gmc-shelters/f86775a1-c68a-4221-86f4-1118a65d1b44/tool-results/webfetch-1778900601935-22ybcp.bin\" /tmp/gmc-design/archive.tar.gz)",
+      "Bash(tar -xzf /tmp/gmc-design/archive.tar.gz -C /tmp/gmc-design/)",
+      "Bash(sqlite3 database/gmc_shelters.sqlite \".tables\")",
+      "Bash(sqlite3 database/gmc_shelters.sqlite \".schema\")",
+      "Bash(sqlite3 *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Read(//Users/johnneed/Library/Logs/gmc-shelters/**)",
+      "Read(//Users/johnneed/Library/Logs/**)",
+      "Bash(node *)",
+      "Bash(/Users/johnneed/Projects/gmc-shelters/node_modules/.bin/electron --version)",
+      "Bash(./node_modules/.bin/electron-rebuild *)",
+      "Bash(npx jest *)"
     ]
   }
 }

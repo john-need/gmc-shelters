@@ -5,11 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.tmp-jsdom-render-check.cjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/002-electron-app/quickstart.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/002-electron-app/quickstart.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/002-electron-app/tasks.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/002-electron-app/tasks.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jest.config.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/jest.config.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppBody.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppBody.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/ui/Toast.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/ui/Toast.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/routes/ShelterBrowser.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/routes/ShelterBrowser.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/photosSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/photosSlice.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/sourcesSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/sourcesSlice.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shared/cite-chicago.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/cite-chicago.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vite.preload.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/vite.preload.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,14 +36,31 @@
   <component name="CopilotChats">
     <option name="panelChat">
       <chat>
-        <option name="activeSessionId" value="71ee177e-c222-417e-b0b1-5fc385938f5c" />
+        <option name="activeSessionId" value="4c8903cd-781d-4c93-a9b1-7fee0958016b" />
         <option name="sessions">
           <session>
             <option name="chatType" value="PANEL" />
             <option name="id" value="71ee177e-c222-417e-b0b1-5fc385938f5c" />
             <option name="modeId" value="Agent" />
             <option name="modelType" value="builtin_family" />
-            <option name="modelValue" value="auto" />
+            <option name="modelValue" value="gpt-5.4" />
+            <option name="status" value="Stopped" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="55cdd941-9450-4a39-bf48-7641fb64365c" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="claude-sonnet-4.6" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="4c8903cd-781d-4c93-a9b1-7fee0958016b" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="claude-sonnet-4.6" />
             <option name="targetType" value="LOCAL" />
           </session>
         </option>
@@ -92,6 +126,7 @@
     "Shell Script.build dist.executor": "Run",
     "Shell Script.build manifest.executor": "Run",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
     "git-widget-placeholder": "002-electron-app",
     "javascript.preferred.runtime.type.id": "node",
@@ -131,7 +166,7 @@
       <recent name="$PROJECT_DIR$/shelters/mad-tom-notch-shelter" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.Deploy 2 Drive">
+  <component name="RunManager" selected="npm.start">
     <configuration name="Deploy 2 Drive" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="python3 ./scripts/deploy_to_drive.py" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
