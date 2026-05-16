@@ -1,7 +1,13 @@
-# Large data directories (kept locally, excluded from git)
+# Large data directories and files (kept locally, excluded from git)
 sources/
 maps/
 shelters/
+shelters.zip
+data/
+articles/
+histories/
+gmc-website-content/
+unidentified-shelters/
 
 # Electron / electron-forge
 .vite/
