@@ -39,7 +39,18 @@
       "Bash(node *)",
       "Bash(/Users/johnneed/Projects/gmc-shelters/node_modules/.bin/electron --version)",
       "Bash(./node_modules/.bin/electron-rebuild *)",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git gc *)",
+      "Bash(git count-objects *)",
+      "Bash(git rev-list *)",
+      "Bash(git cat-file *)",
+      "Bash(sort -k3 -rn)",
+      "Bash(awk '{printf \"%s MB  %s\\\\n\", int\\($3/1048576\\), $4}')",
+      "Bash(git filter-repo *)",
+      "Bash(git push *)"
     ]
   }
 }
