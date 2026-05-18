@@ -13,20 +13,10 @@ function makeStore() {
 
 function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
   return {
-    id: 1,
-    shelter_id: 10,
-    latitude: 44.1,
-    longitude: -71.5,
-    name: 'Test',
-    start_year: 1960,
-    end_year: 1990,
-    change_type: 'Original',
-    notes: '',
-    slug: 'test-shelter',
-    is_extant: false,
-    photo_id: null,
-    created: '2020-01-01',
-    updated: '2020-01-01',
+    id: 1, shelter_id: 10, latitude: 44.1, longitude: -71.5,
+    name: 'Test', start_year: 1960, end_year: 1990, change_type: 'Original',
+    notes: '', slug: 'test-shelter', is_extant: false,
+    photo_id: null, created: '2020-01-01', updated: '2020-01-01',
     ...overrides,
   };
 }
@@ -35,11 +25,7 @@ describe('mapMarkersSlice', () => {
   describe('initial state', () => {
     it('has the correct shape', () => {
       const store = makeStore();
-      expect(store.getState().mapMarkers).toEqual({
-        byShelter: {},
-        loading: false,
-        error: null,
-      });
+      expect(store.getState().mapMarkers).toEqual({ byShelter: {}, loading: false, error: null });
     });
   });
 
@@ -67,19 +53,14 @@ describe('mapMarkersSlice', () => {
   });
 
   describe('createMarker', () => {
-    it('appends marker to byShelter on fulfilled', () => {
+    it('replaces byShelter list on fulfilled', () => {
       const store = makeStore();
-      const marker = makeMarker({ id: 5, shelter_id: 10 });
-      store.dispatch(createMarker.fulfilled(marker, '', {
-        shelter_id: 10,
-        latitude: 44.1,
-        longitude: -71.5,
-        name: 'Test',
-        start_year: 1960,
-        end_year: 1990,
-        change_type: 'Original',
-        notes: '',
-      }));
+      const markers = [makeMarker({ id: 5, shelter_id: 10 })];
+      store.dispatch(createMarker.fulfilled(
+        { shelterId: 10, markers },
+        '',
+        { shelter_id: 10, latitude: 44.1, longitude: -71.5, name: 'Test', start_year: 1960, change_type: 'Original', notes: '' },
+      ));
       expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(1);
       expect(store.getState().mapMarkers.byShelter[10][0].id).toBe(5);
     });
@@ -92,7 +73,11 @@ describe('mapMarkersSlice', () => {
       store.dispatch(loadMapMarkers.fulfilled({ shelterId: 10, markers: [original] }, '', 10));
 
       const updated = makeMarker({ id: 3, shelter_id: 10, name: 'New' });
-      store.dispatch(updateMarker.fulfilled(updated, '', { id: 3, input: { shelter_id: 10, latitude: 44.1, longitude: -71.5, name: 'New', start_year: 1960, end_year: 1990, change_type: 'Original', notes: '' } }));
+      store.dispatch(updateMarker.fulfilled(
+        { shelterId: 10, marker: updated },
+        '',
+        { id: 3, shelterId: 10, input: { latitude: 44.1, longitude: -71.5, name: 'New', change_type: 'Original', notes: '' } },
+      ));
 
       const list = store.getState().mapMarkers.byShelter[10];
       expect(list).toHaveLength(1);
@@ -101,24 +86,16 @@ describe('mapMarkersSlice', () => {
   });
 
   describe('deleteMarker', () => {
-    it('removes marker from byShelter on void fulfilled', () => {
-      const store = makeStore();
-      const marker = makeMarker({ id: 7, shelter_id: 10 });
-      store.dispatch(loadMapMarkers.fulfilled({ shelterId: 10, markers: [marker] }, '', 10));
-      store.dispatch(deleteMarker.fulfilled({ deleted: true, markerId: 7, shelterId: 10 }, '', { id: 7, shelterId: 10 }));
-      expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(0);
-    });
-
-    it('does NOT mutate byShelter when gap-warning is returned', () => {
+    it('replaces byShelter list on fulfilled', () => {
       const store = makeStore();
       const marker = makeMarker({ id: 7, shelter_id: 10 });
       store.dispatch(loadMapMarkers.fulfilled({ shelterId: 10, markers: [marker] }, '', 10));
       store.dispatch(deleteMarker.fulfilled(
-        { gapWarning: true as const, uncoveredRange: '1980–1990', markerId: 7, shelterId: 10 },
+        { shelterId: 10, markers: [] },
         '',
         { id: 7, shelterId: 10 },
       ));
-      expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(1);
+      expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(0);
     });
   });
 });

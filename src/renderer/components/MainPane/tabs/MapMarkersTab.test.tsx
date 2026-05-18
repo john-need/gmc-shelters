@@ -1,12 +1,52 @@
 import React from 'react';
-import { render, screen, fireEvent, within, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import mapMarkersReducer, { loadMapMarkers, createMarker, deleteMarker } from '../../../store/mapMarkersSlice';
+import mapMarkersReducer, { createMarker, deleteMarker } from '../../../store/mapMarkersSlice';
 import sheltersReducer from '../../../store/sheltersSlice';
 import uiReducer from '../../../store/uiSlice';
 import MapMarkersTab from './MapMarkersTab';
-import type { MapMarker } from '../../../../shared/ipc-types';
+import type { MapMarker, Shelter } from '../../../../shared/ipc-types';
+
+// Mock Leaflet 2.0 — jsdom has no real layout engine.
+// Leaflet 2.0 uses constructors (new L.Map, new L.Marker, etc.) not factory fns.
+jest.mock('leaflet', () => {
+  const mockMarker = {
+    addTo: jest.fn().mockReturnThis(),
+    on: jest.fn().mockReturnThis(),
+    remove: jest.fn(),
+    setIcon: jest.fn(),
+    getLatLng: jest.fn(() => ({ lat: 44.1, lng: -71.5 })),
+  };
+  const mapStub = {
+    on: jest.fn(),
+    off: jest.fn(),
+    remove: jest.fn(),
+    getContainer: jest.fn(() => ({ style: {} as CSSStyleDeclaration })),
+  };
+  return {
+    __esModule: true,
+    default: {
+      Map: jest.fn(() => mapStub),
+      TileLayer: jest.fn(() => ({ addTo: jest.fn() })),
+      DivIcon: jest.fn(() => ({})),
+      Marker: jest.fn(() => ({ ...mockMarker })),
+    },
+  };
+});
+
+function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
+  return {
+    id: 10, name: 'Test Shelter', slug: 'test-shelter',
+    start_year: 1950, end_year: 2000,
+    description: '', longitude: -71.5, latitude: 44.0,
+    default_photo_id: null, is_gmc: false, is_extant: false,
+    architecture: '', built_by: '', notes: '',
+    created: '2020-01-01', updated: '2020-01-01',
+    category: '', show_on_web: false,
+    ...overrides,
+  };
+}
 
 function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
   return {
@@ -19,28 +59,25 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
 }
 
 function makeStore(markers: MapMarker[] = [], shelterId = 10) {
-  const preloadedState = {
-    mapMarkers: {
-      byShelter: markers.length > 0 ? { [shelterId]: markers } : {},
-      loading: false,
-      error: null,
-    },
-  };
   return configureStore({
     reducer: { mapMarkers: mapMarkersReducer, shelters: sheltersReducer, ui: uiReducer },
-    preloadedState: preloadedState as any,
+    preloadedState: {
+      mapMarkers: {
+        byShelter: markers.length > 0 ? { [shelterId]: markers } : {},
+        loading: false, error: null,
+      },
+    } as any,
   });
 }
 
-const defaultProps = { shelterId: 10 };
+const shelter = makeShelter();
+const defaultProps = { shelterId: 10, shelter };
 
 describe('MapMarkersTab', () => {
   describe('empty state', () => {
     it('shows empty-state message with add prompt', () => {
       const store = makeStore([]);
-      render(
-        <Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>,
-      );
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
       expect(screen.getByText(/no map markers/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /add.*marker/i })).toBeInTheDocument();
     });
@@ -116,10 +153,11 @@ describe('MapMarkersTab', () => {
 
       const newMarker = makeMarker({ id: 2, start_year: 1975, end_year: 1990 });
       act(() => {
-        store.dispatch(createMarker.fulfilled(newMarker, '', {
-          shelter_id: 10, latitude: 44, longitude: -71,
-          name: 'New', start_year: 1975, end_year: 1990, change_type: 'Relocated', notes: '',
-        }));
+        store.dispatch(createMarker.fulfilled(
+          { shelterId: 10, markers: [makeMarker({ id: 1 }), newMarker] },
+          '',
+          { shelter_id: 10, latitude: 44, longitude: -71, name: 'New', start_year: 1975, change_type: 'Relocated', notes: '' },
+        ));
       });
       expect(screen.getAllByTestId('marker-row')).toHaveLength(2);
     });
@@ -132,7 +170,7 @@ describe('MapMarkersTab', () => {
 
       act(() => {
         store.dispatch(deleteMarker.fulfilled(
-          { deleted: true, markerId: 2, shelterId: 10 },
+          { shelterId: 10, markers: [makeMarker({ id: 1 })] },
           '',
           { id: 2, shelterId: 10 },
         ));
@@ -145,9 +183,9 @@ describe('MapMarkersTab', () => {
     beforeEach(() => {
       (window as any).api = {
         mapMarkers: {
-          create: jest.fn().mockResolvedValue(makeMarker({ id: 99 })),
-          delete: jest.fn(),
-          update: jest.fn(),
+          create: jest.fn().mockResolvedValue([makeMarker({ id: 99 })]),
+          delete: jest.fn().mockResolvedValue([]),
+          update: jest.fn().mockResolvedValue(makeMarker()),
           getByShelter: jest.fn().mockResolvedValue([]),
         },
       };
@@ -202,8 +240,8 @@ describe('MapMarkersTab', () => {
       (window as any).api = {
         mapMarkers: {
           update: jest.fn().mockResolvedValue({ ...marker, name: 'Updated Site' }),
-          delete: jest.fn(),
-          create: jest.fn(),
+          delete: jest.fn().mockResolvedValue([]),
+          create: jest.fn().mockResolvedValue([marker]),
           getByShelter: jest.fn().mockResolvedValue([marker]),
         },
       };
@@ -235,10 +273,10 @@ describe('MapMarkersTab', () => {
       expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
     });
 
-    it('shows confirmation dialog when gap warning is returned', async () => {
+    it('removes marker from store when delete succeeds', async () => {
       (window as any).api = {
         mapMarkers: {
-          delete: jest.fn().mockResolvedValue({ gapWarning: true, uncoveredRange: '1980–1990' }),
+          delete: jest.fn().mockResolvedValue([]),
           create: jest.fn(),
           update: jest.fn(),
           getByShelter: jest.fn().mockResolvedValue([marker]),
@@ -247,7 +285,8 @@ describe('MapMarkersTab', () => {
       const store = makeStore([marker]);
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
-      expect(await screen.findByText(/1980–1990/)).toBeInTheDocument();
+      await screen.findByText(/no map markers/i);
+      expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(0);
     });
   });
 });

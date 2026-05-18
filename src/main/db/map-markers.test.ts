@@ -6,6 +6,7 @@ import {
   insertMapMarker,
   updateMapMarker,
   deleteMapMarker,
+  recomputeEndYears,
 } from './map-markers';
 
 jest.mock('./connection');
@@ -31,12 +32,28 @@ const SCHEMA = `
   ${MIGRATION_SQL}
 `;
 
-function makeShelter(db: Database.Database, overrides: Record<string, unknown> = {}): { id: number; slug: string; is_extant: number; default_photo_id: number | null; start_year: number; end_year: number | null } {
+function makeShelter(db: Database.Database, overrides: Record<string, unknown> = {}) {
   const o = { slug: 'test-shelter', is_extant: 1, default_photo_id: null, start_year: 1960, end_year: 1990, ...overrides };
   db.exec(`INSERT INTO shelters (name, slug, is_extant, default_photo_id, start_year, end_year, created, updated)
     VALUES ('Test', '${o.slug}', ${o.is_extant}, ${o.default_photo_id ?? 'NULL'}, ${o.start_year}, ${o.end_year ?? 'NULL'}, '2020-01-01', '2020-01-01')`);
-  const row = db.prepare('SELECT id, slug, is_extant, default_photo_id, start_year, end_year FROM shelters ORDER BY id DESC LIMIT 1').get() as { id: number; slug: string; is_extant: number; default_photo_id: number | null; start_year: number; end_year: number | null };
-  return row;
+  return db.prepare('SELECT id, slug, is_extant, default_photo_id, start_year, end_year FROM shelters ORDER BY id DESC LIMIT 1').get() as
+    { id: number; slug: string; is_extant: number; default_photo_id: number | null; start_year: number; end_year: number | null };
+}
+
+function insertAndGet(db: Database.Database, shelter: ReturnType<typeof makeShelter>, overrides: Record<string, unknown> = {}) {
+  const input = {
+    shelter_id: shelter.id,
+    latitude: 44.0,
+    longitude: -71.0,
+    name: 'X',
+    start_year: 1960,
+    change_type: 'Original' as const,
+    notes: '',
+    ...overrides,
+  };
+  insertMapMarker(db, input, shelter);
+  const markers = getMarkersByShelter(shelter.id);
+  return markers[markers.length - 1];
 }
 
 describe('db/map-markers', () => {
@@ -83,73 +100,43 @@ describe('db/map-markers', () => {
   });
 
   describe('insertMapMarker', () => {
-    it('inserts a marker and returns it', () => {
-      const marker = insertMapMarker(db, {
+    it('inserts a marker and it appears in getMarkersByShelter', () => {
+      insertMapMarker(db, {
         shelter_id: shelter.id,
         latitude: 44.1234,
         longitude: -71.5678,
         name: 'Original Site',
         start_year: 1960,
-        end_year: 1990,
         change_type: 'Original',
         notes: '',
       }, shelter);
-      expect(marker.id).toBeGreaterThan(0);
-      expect(marker.shelter_id).toBe(shelter.id);
-      expect(marker.latitude).toBe(44.1234);
-      expect(marker.name).toBe('Original Site');
+      const markers = getMarkersByShelter(shelter.id);
+      expect(markers).toHaveLength(1);
+      expect(markers[0].shelter_id).toBe(shelter.id);
+      expect(markers[0].latitude).toBe(44.1234);
+      expect(markers[0].name).toBe('Original Site');
     });
 
     it('copies denormalized fields from shelter', () => {
-      const marker = insertMapMarker(db, {
-        shelter_id: shelter.id,
-        latitude: 44.0,
-        longitude: -71.0,
-        name: 'X',
-        start_year: 1960,
-        end_year: 1990,
-        change_type: 'Original',
-        notes: '',
-      }, shelter);
+      const marker = insertAndGet(db, shelter);
       expect(marker.slug).toBe(shelter.slug);
       expect(marker.is_extant).toBe(Boolean(shelter.is_extant));
       expect(marker.photo_id).toBe(shelter.default_photo_id);
     });
 
     it('returns is_extant as boolean', () => {
-      const marker = insertMapMarker(db, {
-        shelter_id: shelter.id,
-        latitude: 44.0,
-        longitude: -71.0,
-        name: 'X',
-        start_year: 1960,
-        end_year: 1990,
-        change_type: 'Original',
-        notes: '',
-      }, shelter);
+      const marker = insertAndGet(db, shelter);
       expect(typeof marker.is_extant).toBe('boolean');
     });
   });
 
   describe('updateMapMarker', () => {
     it('updates user-editable fields and returns updated marker', () => {
-      const created = insertMapMarker(db, {
-        shelter_id: shelter.id,
-        latitude: 44.0,
-        longitude: -71.0,
-        name: 'Old Name',
-        start_year: 1960,
-        end_year: 1980,
-        change_type: 'Original',
-        notes: '',
-      }, shelter);
+      const created = insertAndGet(db, shelter, { name: 'Old Name', latitude: 44.0, longitude: -71.0, change_type: 'Original' });
       const updated = updateMapMarker(db, created.id, {
-        shelter_id: shelter.id,
         latitude: 45.0,
         longitude: -72.0,
         name: 'New Name',
-        start_year: 1960,
-        end_year: 1980,
         change_type: 'Relocated',
         notes: 'updated',
       });
@@ -157,38 +144,54 @@ describe('db/map-markers', () => {
       expect(updated.latitude).toBe(45.0);
       expect(updated.change_type).toBe('Relocated');
     });
+
+    it('does not change start_year or end_year', () => {
+      const created = insertAndGet(db, shelter, { start_year: 1960 });
+      recomputeEndYears(db, shelter.id, shelter);
+      const before = getMarkersByShelter(shelter.id)[0];
+
+      updateMapMarker(db, created.id, {
+        latitude: 45.0, longitude: -72.0, name: 'Updated', change_type: 'Original', notes: '',
+      });
+      const after = getMarkersByShelter(shelter.id)[0];
+      expect(after.start_year).toBe(before.start_year);
+      expect(after.end_year).toBe(before.end_year);
+    });
   });
 
   describe('deleteMapMarker', () => {
     it('removes the marker from the database', () => {
-      const marker = insertMapMarker(db, {
-        shelter_id: shelter.id,
-        latitude: 44.0,
-        longitude: -71.0,
-        name: 'X',
-        start_year: 1960,
-        end_year: 1990,
-        change_type: 'Original',
-        notes: '',
-      }, shelter);
+      const marker = insertAndGet(db, shelter);
       deleteMapMarker(db, marker.id);
       expect(getMarkersByShelter(shelter.id)).toHaveLength(0);
+    });
+  });
+
+  describe('recomputeEndYears', () => {
+    it('sets end_year of each marker to the next marker start_year minus 1', () => {
+      // Use a non-extant shelter so the last marker gets shelter.end_year (not null)
+      const goneShelter = makeShelter(db, { slug: 'gone', is_extant: 0, end_year: 1990 });
+      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'A', start_year: 1960, change_type: 'Original', notes: '' }, goneShelter);
+      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'B', start_year: 1975, change_type: 'Relocated', notes: '' }, goneShelter);
+      recomputeEndYears(db, goneShelter.id, goneShelter);
+      const markers = getMarkersByShelter(goneShelter.id);
+      expect(markers[0].end_year).toBe(1974); // 1975 - 1
+      expect(markers[1].end_year).toBe(goneShelter.end_year); // last marker of non-extant shelter → shelter end_year
+    });
+
+    it('sets null end_year for last marker when shelter is extant', () => {
+      const extantShelter = makeShelter(db, { slug: 'extant', is_extant: 1, end_year: null });
+      insertMapMarker(db, { shelter_id: extantShelter.id, latitude: 44, longitude: -71, name: 'A', start_year: 1960, change_type: 'Original', notes: '' }, extantShelter);
+      recomputeEndYears(db, extantShelter.id, extantShelter);
+      const markers = getMarkersByShelter(extantShelter.id);
+      expect(markers[0].end_year).toBeNull();
     });
   });
 
   describe('cascade delete', () => {
     it('removes markers when shelter is deleted', () => {
       db.pragma('foreign_keys = ON');
-      insertMapMarker(db, {
-        shelter_id: shelter.id,
-        latitude: 44.0,
-        longitude: -71.0,
-        name: 'X',
-        start_year: 1960,
-        end_year: 1990,
-        change_type: 'Original',
-        notes: '',
-      }, shelter);
+      insertAndGet(db, shelter);
       db.exec(`DELETE FROM shelters WHERE id = ${shelter.id}`);
       const rows = db.prepare('SELECT * FROM map_markers WHERE shelter_id = ?').all(shelter.id);
       expect(rows).toHaveLength(0);

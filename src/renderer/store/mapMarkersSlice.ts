@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { MapMarker, MapMarkerInput, DeleteMarkerOptions, DeleteMarkerResult } from '../../shared/ipc-types';
+import type { MapMarker, MapMarkerCreateInput, MapMarkerUpdateInput } from '../../shared/ipc-types';
 
 export interface MapMarkersState {
   byShelter: Record<number, MapMarker[]>;
@@ -26,45 +26,25 @@ export const loadMapMarkers = createAsyncThunk(
 
 export const createMarker = createAsyncThunk(
   'mapMarkers/create',
-  async (input: MapMarkerInput) => {
-    const marker = await window.api.mapMarkers.create(input);
-    return marker;
+  async (input: MapMarkerCreateInput) => {
+    const markers = await window.api.mapMarkers.create(input);
+    return { shelterId: input.shelter_id, markers };
   },
 );
 
 export const updateMarker = createAsyncThunk(
   'mapMarkers/update',
-  async ({ id, input }: { id: number; input: MapMarkerInput }) => {
+  async ({ id, shelterId, input }: { id: number; shelterId: number; input: MapMarkerUpdateInput }) => {
     const marker = await window.api.mapMarkers.update(id, input);
-    return marker;
+    return { shelterId, marker };
   },
 );
 
-interface DeleteArgs {
-  id: number;
-  shelterId: number;
-  opts?: DeleteMarkerOptions;
-}
-
-interface DeleteFulfilled {
-  deleted: true;
-  markerId: number;
-  shelterId: number;
-}
-
-interface DeleteGapWarning extends DeleteMarkerResult {
-  markerId: number;
-  shelterId: number;
-}
-
 export const deleteMarker = createAsyncThunk(
   'mapMarkers/delete',
-  async ({ id, shelterId, opts }: DeleteArgs): Promise<DeleteFulfilled | DeleteGapWarning> => {
-    const result = await window.api.mapMarkers.delete(id, opts);
-    if (result && (result as DeleteMarkerResult).gapWarning) {
-      return { ...(result as DeleteMarkerResult), markerId: id, shelterId };
-    }
-    return { deleted: true, markerId: id, shelterId };
+  async ({ id, shelterId }: { id: number; shelterId: number }) => {
+    const markers = await window.api.mapMarkers.delete(id);
+    return { shelterId, markers };
   },
 );
 
@@ -87,28 +67,20 @@ const mapMarkersSlice = createSlice({
         state.error = action.error.message ?? 'Failed to load map markers';
       })
       .addCase(createMarker.fulfilled, (state, action) => {
-        const marker = action.payload;
-        if (!state.byShelter[marker.shelter_id]) {
-          state.byShelter[marker.shelter_id] = [];
-        }
-        state.byShelter[marker.shelter_id].push(marker);
-        state.byShelter[marker.shelter_id].sort((a, b) => a.start_year - b.start_year);
+        const { shelterId, markers } = action.payload;
+        state.byShelter[shelterId] = markers;
       })
       .addCase(updateMarker.fulfilled, (state, action) => {
-        const marker = action.payload;
-        const list = state.byShelter[marker.shelter_id];
+        const { shelterId, marker } = action.payload;
+        const list = state.byShelter[shelterId];
         if (list) {
           const idx = list.findIndex((m) => m.id === marker.id);
           if (idx >= 0) list[idx] = marker;
         }
       })
       .addCase(deleteMarker.fulfilled, (state, action) => {
-        const payload = action.payload;
-        if ('gapWarning' in payload) return; // gap warning — do not mutate state
-        const { markerId, shelterId } = payload as DeleteFulfilled;
-        if (state.byShelter[shelterId]) {
-          state.byShelter[shelterId] = state.byShelter[shelterId].filter((m) => m.id !== markerId);
-        }
+        const { shelterId, markers } = action.payload;
+        state.byShelter[shelterId] = markers;
       });
   },
 });

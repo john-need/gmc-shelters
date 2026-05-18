@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { registerMapMarkerHandlers } from './map-markers';
-import { getMarkerById, getMarkersByShelter, insertMapMarker, updateMapMarker, deleteMapMarker } from '../db/map-markers';
+import { getMarkerById, getMarkersByShelter, insertMapMarker, updateMapMarker, deleteMapMarker, recomputeEndYears } from '../db/map-markers';
 import { getShelterById } from '../db/shelters';
 import type { MapMarker, Shelter } from '../../shared/ipc-types';
 
@@ -48,8 +48,8 @@ beforeEach(() => {
 });
 
 describe('MAP_MARKERS_GET_BY_SHELTER', () => {
-  it('returns markers sorted by start_year', async () => {
-    const markers = [makeMarker({ id: 1, start_year: 1960 }), makeMarker({ id: 2, start_year: 1975 })];
+  it('returns markers for a shelter', async () => {
+    const markers = [makeMarker({ id: 1 }), makeMarker({ id: 2 })];
     (getMarkersByShelter as jest.Mock).mockReturnValue(markers);
     const handler = getHandler('mapMarkers:getByShelter');
     const result = await handler(nullEvent, { shelterId: 10 });
@@ -70,17 +70,20 @@ describe('MAP_MARKERS_CREATE', () => {
     shelter_id: 10,
     latitude: 44.0,
     longitude: -71.0,
-    name: 'New',
-    start_year: 1960,
-    end_year: 1990,
+    name: 'Spring',
+    start_year: 1965,
     change_type: 'Original' as const,
     notes: '',
   };
 
+  const shelter = makeShelter({ start_year: 1960, end_year: 1990, is_extant: false });
+  const resultMarkers = [makeMarker()];
+
   beforeEach(() => {
-    (getShelterById as jest.Mock).mockReturnValue(makeShelter());
-    (getMarkersByShelter as jest.Mock).mockReturnValue([]);
-    (insertMapMarker as jest.Mock).mockReturnValue(makeMarker());
+    (getShelterById as jest.Mock).mockReturnValue(shelter);
+    (insertMapMarker as jest.Mock).mockReturnValue(undefined);
+    (recomputeEndYears as jest.Mock).mockReturnValue(undefined);
+    (getMarkersByShelter as jest.Mock).mockReturnValue(resultMarkers);
   });
 
   it('rejects when latitude is missing', async () => {
@@ -98,74 +101,50 @@ describe('MAP_MARKERS_CREATE', () => {
     await expect(handler(nullEvent, { ...validInput, longitude: -181 })).rejects.toThrow(/longitude/i);
   });
 
+  it('rejects when shelter not found', async () => {
+    (getShelterById as jest.Mock).mockReturnValue(null);
+    const handler = getHandler('mapMarkers:create');
+    await expect(handler(nullEvent, validInput)).rejects.toThrow(/shelter/i);
+  });
+
   it('rejects when start_year is before shelter start_year', async () => {
     const handler = getHandler('mapMarkers:create');
     await expect(handler(nullEvent, { ...validInput, start_year: 1950 })).rejects.toThrow(/start_year/i);
   });
 
-  it('rejects when start_year is after shelter end_year', async () => {
+  it('rejects when start_year is after shelter end_year for non-extant shelter', async () => {
     const handler = getHandler('mapMarkers:create');
     await expect(handler(nullEvent, { ...validInput, start_year: 1995 })).rejects.toThrow(/start_year/i);
   });
 
-  it('rejects when start_year duplicates an existing marker', async () => {
-    (getMarkersByShelter as jest.Mock).mockReturnValue([makeMarker({ start_year: 1960, end_year: 1990 })]);
-    const handler = getHandler('mapMarkers:create');
-    await expect(handler(nullEvent, validInput)).rejects.toThrow(/duplicate|start_year/i);
-  });
-
-  it('rejects when marker would create a gap', async () => {
-    (getMarkersByShelter as jest.Mock).mockReturnValue([makeMarker({ start_year: 1960, end_year: 1975 })]);
-    const handler = getHandler('mapMarkers:create');
-    // Trying to add 1980–1990 leaves gap 1975–1980
-    await expect(handler(nullEvent, { ...validInput, start_year: 1980, end_year: 1990 })).rejects.toThrow(/gap|not covered/i);
-  });
-
-  it('rejects when marker would create an overlap', async () => {
-    (getMarkersByShelter as jest.Mock).mockReturnValue([makeMarker({ start_year: 1960, end_year: 1975 })]);
-    const handler = getHandler('mapMarkers:create');
-    // 1970–1990 overlaps with existing 1960–1975
-    await expect(handler(nullEvent, { ...validInput, start_year: 1970, end_year: 1990 })).rejects.toThrow(/overlap/i);
-  });
-
-  it('accepts valid marker with no gap', async () => {
+  it('accepts marker with start_year within shelter range', async () => {
     const handler = getHandler('mapMarkers:create');
     const result = await handler(nullEvent, validInput);
-    expect(result).toMatchObject({ id: 1 });
+    expect(Array.isArray(result)).toBe(true);
     expect(insertMapMarker).toHaveBeenCalled();
+    expect(recomputeEndYears).toHaveBeenCalled();
   });
 
-  it('accepts null end_year when shelter is_extant and marker is last', async () => {
-    (getShelterById as jest.Mock).mockReturnValue(makeShelter({ is_extant: true, end_year: null }));
-    (getMarkersByShelter as jest.Mock).mockReturnValue([]);
+  it('rejects duplicate start_year', async () => {
+    (getMarkersByShelter as jest.Mock)
+      .mockReturnValueOnce([makeMarker({ start_year: 1965 })])
+      .mockReturnValue([makeMarker({ start_year: 1965 })]);
     const handler = getHandler('mapMarkers:create');
-    const result = await handler(nullEvent, { ...validInput, end_year: null });
-    expect(result).toBeDefined();
-  });
-
-  it('rejects null end_year when shelter is not extant', async () => {
-    const handler = getHandler('mapMarkers:create');
-    await expect(handler(nullEvent, { ...validInput, end_year: null })).rejects.toThrow(/end_year/i);
+    await expect(handler(nullEvent, validInput)).rejects.toThrow(/marker already starts/i);
   });
 });
 
 describe('MAP_MARKERS_UPDATE', () => {
-  const existing = makeMarker({ id: 3, start_year: 1960, end_year: 1990 });
   const validInput = {
-    shelter_id: 10,
     latitude: 44.5,
     longitude: -71.5,
-    name: 'Updated',
-    start_year: 1960,
-    end_year: 1990,
+    name: 'Updated Spring',
     change_type: 'Relocated' as const,
     notes: '',
   };
 
   beforeEach(() => {
-    (getShelterById as jest.Mock).mockReturnValue(makeShelter());
-    (getMarkersByShelter as jest.Mock).mockReturnValue([existing]);
-    (updateMapMarker as jest.Mock).mockReturnValue({ ...existing, ...validInput });
+    (updateMapMarker as jest.Mock).mockReturnValue(makeMarker({ name: 'Updated Spring' }));
   });
 
   it('rejects coordinate out of range', async () => {
@@ -173,75 +152,36 @@ describe('MAP_MARKERS_UPDATE', () => {
     await expect(handler(nullEvent, { id: 3, input: { ...validInput, latitude: 100 } })).rejects.toThrow(/latitude/i);
   });
 
-  it('rejects start_year duplicate (excluding self)', async () => {
-    (getMarkersByShelter as jest.Mock).mockReturnValue([
-      makeMarker({ id: 3, start_year: 1960, end_year: 1975 }),
-      makeMarker({ id: 5, start_year: 1975, end_year: 1990 }),
-    ]);
-    const handler = getHandler('mapMarkers:update');
-    // Trying to set id=3 start_year to 1975 (same as id=5)
-    await expect(handler(nullEvent, { id: 3, input: { ...validInput, start_year: 1975 } })).rejects.toThrow(/duplicate|start_year/i);
-  });
-
-  it('accepts valid edit', async () => {
+  it('accepts valid edit and returns updated marker', async () => {
     const handler = getHandler('mapMarkers:update');
     const result = await handler(nullEvent, { id: 3, input: validInput });
-    expect(result).toMatchObject({ name: 'Updated' });
-  });
-
-  it('rejects gap-creating edit', async () => {
-    (getMarkersByShelter as jest.Mock).mockReturnValue([
-      makeMarker({ id: 3, start_year: 1960, end_year: 1990 }),
-    ]);
-    const handler = getHandler('mapMarkers:update');
-    // Shrink end_year to 1975 — last marker no longer reaches shelter end 1990
-    await expect(handler(nullEvent, { id: 3, input: { ...validInput, end_year: 1975 } })).rejects.toThrow(/gap|not covered|ends at/i);
+    expect(result).toMatchObject({ name: 'Updated Spring' });
   });
 });
 
 describe('MAP_MARKERS_DELETE', () => {
-  const existing = makeMarker({ id: 7, shelter_id: 10, start_year: 1960, end_year: 1990 });
+  const existing = makeMarker({ id: 7, shelter_id: 10 });
+  const shelter = makeShelter();
 
   beforeEach(() => {
     (getMarkerById as jest.Mock).mockReturnValue(existing);
-    (getShelterById as jest.Mock).mockReturnValue(makeShelter());
-    (getMarkersByShelter as jest.Mock).mockReturnValue([existing]);
+    (getShelterById as jest.Mock).mockReturnValue(shelter);
     (deleteMapMarker as jest.Mock).mockReturnValue(undefined);
+    (recomputeEndYears as jest.Mock).mockReturnValue(undefined);
+    (getMarkersByShelter as jest.Mock).mockReturnValue([]);
   });
 
-  it('deletes marker when no gap would result', async () => {
-    // After removing id=7, remaining is empty — shelter with just one marker
-    (getMarkersByShelter as jest.Mock).mockReturnValue([existing]);
+  it('deletes the marker and returns remaining markers array', async () => {
     const handler = getHandler('mapMarkers:delete');
-    // single marker covers full shelter range — no gap when removed
-    const result = await handler(nullEvent, { id: 7, opts: {} });
-    // The remaining list after filtering is [] — shelter is_extant=false with end_year=1990
-    // Coverage on [] won't fail (no markers to validate against)
-    // Actually coverage on empty list returns null so no warning → delete proceeds
-    expect(deleteMapMarker).toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    const result = await handler(nullEvent, { id: 7 });
+    expect(deleteMapMarker).toHaveBeenCalledWith(expect.anything(), 7);
+    expect(recomputeEndYears).toHaveBeenCalled();
+    expect(Array.isArray(result)).toBe(true);
   });
 
-  it('returns gap warning without deleting when gap would result', async () => {
-    const markerA = makeMarker({ id: 7, shelter_id: 10, start_year: 1960, end_year: 1975 });
-    const markerB = makeMarker({ id: 8, shelter_id: 10, start_year: 1975, end_year: 1990 });
-    (getMarkerById as jest.Mock).mockReturnValue(markerA);
-    (getMarkersByShelter as jest.Mock).mockReturnValue([markerA, markerB]);
+  it('throws when marker not found', async () => {
+    (getMarkerById as jest.Mock).mockReturnValue(null);
     const handler = getHandler('mapMarkers:delete');
-    // Deleting id=7 (1960–1975) leaves only 1975–1990 — gap at 1960–1975
-    const result = await handler(nullEvent, { id: 7, opts: {} });
-    expect(deleteMapMarker).not.toHaveBeenCalled();
-    expect(result).toMatchObject({ gapWarning: true });
-  });
-
-  it('deletes with confirmed=true even when gap would result', async () => {
-    const markerA = makeMarker({ id: 7, shelter_id: 10, start_year: 1960, end_year: 1975 });
-    const markerB = makeMarker({ id: 8, shelter_id: 10, start_year: 1975, end_year: 1990 });
-    (getMarkerById as jest.Mock).mockReturnValue(markerA);
-    (getMarkersByShelter as jest.Mock).mockReturnValue([markerA, markerB]);
-    const handler = getHandler('mapMarkers:delete');
-    const result = await handler(nullEvent, { id: 7, opts: { confirmed: true } });
-    expect(deleteMapMarker).toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    await expect(handler(nullEvent, { id: 999 })).rejects.toThrow(/not found/i);
   });
 });

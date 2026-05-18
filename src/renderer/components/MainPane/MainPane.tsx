@@ -156,12 +156,12 @@ export default function MainPane() {
         ))}
       </div>
 
-      <div className="tab-body">
+      <div className={`tab-body${activeTab === 'markers' ? ' tab-body--map' : ''}`}>
         {activeTab === 'shelter' && <ShelterTab />}
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'sources' && <SourcesTab />}
         {activeTab === 'photos' && <PhotosTab />}
-        {activeTab === 'markers' && s && <MapMarkersTab shelterId={s.id} />}
+        {activeTab === 'markers' && s && <MapMarkersTab shelterId={s.id} shelter={s} />}
       </div>
     </main>
   );

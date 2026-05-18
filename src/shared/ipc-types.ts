@@ -45,25 +45,24 @@ export interface MapMarker {
   updated: string;
 }
 
-export type MapMarkerInput = {
+export type MapMarkerCreateInput = {
   shelter_id: number;
   latitude: number;
   longitude: number;
   name: string;
   start_year: number;
-  end_year: number | null;
   change_type: ChangeType;
   notes: string;
 };
 
-export interface DeleteMarkerOptions {
-  confirmed?: boolean;
-}
+export type MapMarkerUpdateInput = {
+  latitude: number;
+  longitude: number;
+  name: string;
+  change_type: ChangeType;
+  notes: string;
+};
 
-export interface DeleteMarkerResult {
-  gapWarning: true;
-  uncoveredRange: string;
-}
 
 export type SourceType =
   | 'book'
@@ -188,9 +187,9 @@ export interface ElectronAPI {
   };
   mapMarkers: {
     getByShelter: (shelterId: number) => Promise<MapMarker[]>;
-    create: (input: MapMarkerInput) => Promise<MapMarker>;
-    update: (id: number, input: MapMarkerInput) => Promise<MapMarker>;
-    delete: (id: number, opts?: DeleteMarkerOptions) => Promise<void | DeleteMarkerResult>;
+    create: (input: MapMarkerCreateInput) => Promise<MapMarker[]>;
+    update: (id: number, input: MapMarkerUpdateInput) => Promise<MapMarker>;
+    delete: (id: number) => Promise<MapMarker[]>;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;

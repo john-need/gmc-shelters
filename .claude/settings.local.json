@@ -51,7 +51,8 @@
       "Bash(awk '{printf \"%s MB  %s\\\\n\", int\\($3/1048576\\), $4}')",
       "Bash(git filter-repo *)",
       "Bash(git push *)",
-      "Bash(.specify/scripts/bash/check-prerequisites.sh *)"
+      "Bash(.specify/scripts/bash/check-prerequisites.sh *)",
+      "Bash(npm info *)"
     ]
   }
 }

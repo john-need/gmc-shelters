@@ -1697,3 +1697,363 @@ html, body {
   font-size: 20px;
   color: var(--ink-2);
 }
+
+/* ─────────── Map markers tab ─────────── */
+
+/* Tab body override — the map needs flex, no scroll */
+.tab-body--map {
+  overflow: hidden;
+  display: flex;
+  min-height: 0;
+}
+
+.mm-wrap {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ── List pane ── */
+
+.mm-list-pane {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line-2);
+  background: var(--surface);
+  min-height: 0;
+}
+
+.mm-list-head {
+  height: 44px;
+  padding: 0 14px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.mm-list-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mm-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+  min-height: 0;
+}
+.mm-list-scroll::-webkit-scrollbar { width: 8px; }
+.mm-list-scroll::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+/* Empty state */
+.mm-empty {
+  padding: 32px 20px;
+  text-align: center;
+}
+.mm-empty-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.mm-empty-hint {
+  font-size: 12px;
+  color: var(--ink-4);
+  line-height: 1.5;
+}
+
+/* Marker row */
+.mm-marker-row {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 10px;
+  padding: 8px 12px 8px 10px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+.mm-marker-row:hover { background: var(--hover); }
+.mm-marker-row.selected {
+  background: var(--selected);
+  border-left-color: var(--rust);
+}
+
+.mm-pin-num {
+  grid-row: span 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--rust);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  align-self: center;
+}
+.mm-pin-num.gone {
+  background: transparent;
+  border: 1.5px dashed var(--ink-3);
+  color: var(--ink-3);
+}
+
+.mm-row-body {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.mm-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mm-row-years {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.mm-row-type {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mm-row-coords {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--ink-4);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.mm-row-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.mm-marker-row:hover .mm-row-actions,
+.mm-marker-row.selected .mm-row-actions { opacity: 1; }
+
+/* ── Detail panel (pinned to bottom of list pane) ── */
+
+.mm-detail {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line-2);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  max-height: 420px;
+}
+
+.mm-detail-head {
+  padding: 10px 14px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mm-detail-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-1);
+}
+
+.mm-detail-hint {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--rust);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mm-error {
+  padding: 6px 14px;
+  font-size: 11.5px;
+  color: var(--danger);
+  background: rgba(168,58,42,0.07);
+  border-bottom: 1px solid rgba(168,58,42,0.15);
+  flex-shrink: 0;
+}
+
+.mm-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  min-height: 0;
+}
+.mm-detail-body::-webkit-scrollbar { width: 8px; }
+.mm-detail-body::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+.mm-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+.mm-field { display: flex; flex-direction: column; gap: 3px; }
+.mm-col2 { grid-column: span 2; }
+
+.mm-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mm-label-hint {
+  font-size: 8.5px;
+  color: var(--ink-4);
+  text-transform: none;
+  letter-spacing: 0;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+}
+
+.mm-detail-foot {
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Map pane ── */
+
+.mm-map-pane {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  background: var(--surface-3);
+}
+
+.mm-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Placing banner overlay */
+.mm-placing-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--rust);
+  color: #fff3e0;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Hover coordinates display */
+.mm-map-coords {
+  position: absolute;
+  bottom: 28px;
+  right: 10px;
+  z-index: 1000;
+  background: rgba(28,23,13,0.72);
+  color: rgba(245,235,210,0.9);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  pointer-events: none;
+  backdrop-filter: blur(3px);
+}
+
+/* ── Leaflet pin icons (injected via L.divIcon html) ── */
+
+.mm-pin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rust);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid var(--surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+  cursor: pointer;
+}
+.mm-pin.mm-pin--selected {
+  background: var(--forest);
+  border-color: var(--forest-deep);
+  box-shadow: 0 0 0 3px rgba(45,74,50,0.35), 0 2px 8px rgba(0,0,0,0.28);
+}
+.mm-pin.mm-pin--gone {
+  background: transparent;
+  border: 2px dashed var(--ink-3);
+  color: var(--ink-3);
+}
+.mm-pin.mm-pin--draft {
+  background: var(--ochre);
+  border-color: var(--surface);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* Shelter reference pin */
+.mm-shelter-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--forest);
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
