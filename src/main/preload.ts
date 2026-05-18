@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput } from '../shared/ipc-types';
+import type { ElectronAPI, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput, MapMarkerInput, DeleteMarkerOptions } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   shelters: {
@@ -30,6 +30,15 @@ const api: ElectronAPI = {
     create: (input: SourceInput) => ipcRenderer.invoke(CHANNELS.SOURCES_CREATE, input),
     update: (source: Source) => ipcRenderer.invoke(CHANNELS.SOURCES_UPDATE, source),
     delete: (id: number) => ipcRenderer.invoke(CHANNELS.SOURCES_DELETE, { id }),
+  },
+  mapMarkers: {
+    getByShelter: (shelterId: number) =>
+      ipcRenderer.invoke(CHANNELS.MAP_MARKERS_GET_BY_SHELTER, { shelterId }),
+    create: (input: MapMarkerInput) => ipcRenderer.invoke(CHANNELS.MAP_MARKERS_CREATE, input),
+    update: (id: number, input: MapMarkerInput) =>
+      ipcRenderer.invoke(CHANNELS.MAP_MARKERS_UPDATE, { id, input }),
+    delete: (id: number, opts?: DeleteMarkerOptions) =>
+      ipcRenderer.invoke(CHANNELS.MAP_MARKERS_DELETE, { id, opts }),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),

@@ -4,11 +4,13 @@ import type { AppDispatch, RootState } from '../../store';
 import { loadHistory } from '../../store/sheltersSlice';
 import { loadPhotos } from '../../store/photosSlice';
 import { loadSources } from '../../store/sourcesSlice';
+import { loadMapMarkers } from '../../store/mapMarkersSlice';
 import { setActiveTab } from '../../store/uiSlice';
 import ShelterTab from './tabs/ShelterTab';
 import HistoryTab from './tabs/HistoryTab';
 import PhotosTab from './tabs/PhotosTab';
 import SourcesTab from './tabs/SourcesTab';
+import MapMarkersTab from './tabs/MapMarkersTab';
 
 export default function MainPane() {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,12 +24,16 @@ export default function MainPane() {
   const sources = useSelector((state: RootState) =>
     s ? (state.sources.byShelter[s.id] ?? []) : [],
   );
+  const markers = useSelector((state: RootState) =>
+    s ? (state.mapMarkers.byShelter[s.id] ?? []) : [],
+  );
 
   useEffect(() => {
     if (!s || selectedId === null) return;
     dispatch(loadHistory(s.slug));
     dispatch(loadPhotos(s.id));
     dispatch(loadSources(s.id));
+    dispatch(loadMapMarkers(s.id));
   }, [selectedId]);
 
   if (!s) {
@@ -85,6 +91,16 @@ export default function MainPane() {
         </svg>
       ),
       count: photos.length,
+    },
+    {
+      id: 'markers' as const,
+      label: 'Map Markers',
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      ),
+      count: markers.length,
     },
   ];
 
@@ -145,6 +161,7 @@ export default function MainPane() {
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'sources' && <SourcesTab />}
         {activeTab === 'photos' && <PhotosTab />}
+        {activeTab === 'markers' && s && <MapMarkersTab shelterId={s.id} />}
       </div>
     </main>
   );

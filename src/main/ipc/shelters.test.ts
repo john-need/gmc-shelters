@@ -1,11 +1,13 @@
 jest.mock('electron');
 jest.mock('../db/shelters');
+jest.mock('../db/map-markers');
 jest.mock('../fs/photos');
 jest.mock('../fs/history');
 jest.mock('../logger', () => ({ log: { info: jest.fn(), error: jest.fn() } }));
 
 import { ipcMain } from 'electron';
 import * as dbShelters from '../db/shelters';
+import * as dbMapMarkers from '../db/map-markers';
 import * as fsPhotos from '../fs/photos';
 import * as fsHistory from '../fs/history';
 import { registerShelterHandlers } from './shelters';
@@ -65,12 +67,14 @@ describe('ipc/shelters', () => {
     expect(result).toBe(shelter);
   });
 
-  it('SHELTERS_UPDATE calls updateShelter', () => {
-    const shelter = { id: 1, name: 'Updated' };
+  it('SHELTERS_UPDATE calls updateShelter and syncs markers', () => {
+    const shelter = { id: 1, name: 'Updated', slug: 'updated', is_extant: true, default_photo_id: 5 };
     (dbShelters.updateShelter as jest.Mock).mockReturnValue(shelter);
+    (dbMapMarkers.syncMarkersFromShelter as jest.Mock).mockReturnValue(undefined);
     const handler = getHandler(CHANNELS.SHELTERS_UPDATE);
     const result = handler(null, shelter);
     expect(dbShelters.updateShelter).toHaveBeenCalledWith(shelter);
+    expect(dbMapMarkers.syncMarkersFromShelter).toHaveBeenCalledWith(shelter);
     expect(result).toBe(shelter);
   });
 

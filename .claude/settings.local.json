@@ -50,7 +50,8 @@
       "Bash(sort -k3 -rn)",
       "Bash(awk '{printf \"%s MB  %s\\\\n\", int\\($3/1048576\\), $4}')",
       "Bash(git filter-repo *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh *)"
     ]
   }
 }
