@@ -11,7 +11,7 @@ export interface AdvancedFilters {
 
 export interface UiState {
   sidebarCollapsed: boolean;
-  activeTab: 'shelter' | 'history' | 'sources' | 'photos';
+  activeTab: 'shelter' | 'history' | 'sources' | 'photos' | 'markers';
   query: string;
   filter: 'all' | 'extant' | 'gone' | 'gmc';
   advancedFilters: AdvancedFilters;

@@ -29,6 +29,8 @@ module.exports = {
         '\\.css$': 'identity-obj-proxy',
         '^electron$': '<rootDir>/src/main/__mocks__/electron.ts',
         '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+        '^leaflet$': '<rootDir>/src/renderer/__mocks__/leaflet.ts',
+        '^leaflet/.*$': 'identity-obj-proxy',
       },
       setupFilesAfterEnv: ['<rootDir>/src/renderer/setupTests.ts'],
     },

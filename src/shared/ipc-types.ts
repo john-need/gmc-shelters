@@ -16,10 +16,53 @@ export const CHANNELS = {
   SOURCES_CREATE: 'sources:create',
   SOURCES_UPDATE: 'sources:update',
   SOURCES_DELETE: 'sources:delete',
+  MAP_MARKERS_GET_BY_SHELTER: 'mapMarkers:getByShelter',
+  MAP_MARKERS_CREATE: 'mapMarkers:create',
+  MAP_MARKERS_UPDATE: 'mapMarkers:update',
+  MAP_MARKERS_DELETE: 'mapMarkers:delete',
   SHELL_OPEN_EXTERNAL: 'shell:openExternal',
   APP_GET_VERSION: 'app:getVersion',
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
 } as const;
+
+export const CHANGE_TYPES = ['Original', 'Relocated', 'Rebuilt', 'Destroyed', 'Removed'] as const;
+export type ChangeType = (typeof CHANGE_TYPES)[number] | `Other: ${string}`;
+
+export interface MapMarker {
+  id: number;
+  shelter_id: number;
+  latitude: number;
+  longitude: number;
+  name: string;
+  start_year: number;
+  end_year: number | null;
+  change_type: ChangeType;
+  notes: string;
+  slug: string;
+  is_extant: boolean;
+  photo_id: number | null;
+  created: string;
+  updated: string;
+}
+
+export type MapMarkerCreateInput = {
+  shelter_id: number;
+  latitude: number;
+  longitude: number;
+  name: string;
+  start_year: number;
+  change_type: ChangeType;
+  notes: string;
+};
+
+export type MapMarkerUpdateInput = {
+  latitude: number;
+  longitude: number;
+  name: string;
+  change_type: ChangeType;
+  notes: string;
+};
+
 
 export type SourceType =
   | 'book'
@@ -141,6 +184,12 @@ export interface ElectronAPI {
     create: (input: SourceInput) => Promise<Source>;
     update: (source: Source) => Promise<Source>;
     delete: (id: number) => Promise<void>;
+  };
+  mapMarkers: {
+    getByShelter: (shelterId: number) => Promise<MapMarker[]>;
+    create: (input: MapMarkerCreateInput) => Promise<MapMarker[]>;
+    update: (id: number, input: MapMarkerUpdateInput) => Promise<MapMarker>;
+    delete: (id: number) => Promise<MapMarker[]>;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;

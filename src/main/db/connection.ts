@@ -33,16 +33,30 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
   if (!fs.existsSync(migrationsDir)) return;
 
   // Apply 002-add-sources-table.sql if sources table doesn't exist
-  const tables = database
+  const sourceTables = database
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='sources'")
     .all() as { name: string }[];
 
-  if (tables.length === 0) {
+  if (sourceTables.length === 0) {
     const migrationPath = path.join(migrationsDir, '002-add-sources-table.sql');
     if (fs.existsSync(migrationPath)) {
       const sql = fs.readFileSync(migrationPath, 'utf8');
       database.exec(sql);
       log.info('Applied migration: 002-add-sources-table.sql');
+    }
+  }
+
+  // Apply 003-add-map-markers-table.sql if map_markers table doesn't exist
+  const markerTables = database
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='map_markers'")
+    .all() as { name: string }[];
+
+  if (markerTables.length === 0) {
+    const migrationPath = path.join(migrationsDir, '003-add-map-markers-table.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 003-add-map-markers-table.sql');
     }
   }
 }

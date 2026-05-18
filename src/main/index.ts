@@ -6,6 +6,7 @@ import { registerPhotoHandlers } from './ipc/photos';
 import { registerSourceHandlers } from './ipc/sources';
 import { registerHistoryHandlers } from './ipc/history';
 import { registerShellHandlers } from './ipc/shell';
+import { registerMapMarkerHandlers } from './ipc/map-markers';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -90,6 +91,7 @@ if (!app.requestSingleInstanceLock()) {
     registerSourceHandlers();
     registerHistoryHandlers();
     registerShellHandlers();
+    registerMapMarkerHandlers();
     createWindow();
   });
 

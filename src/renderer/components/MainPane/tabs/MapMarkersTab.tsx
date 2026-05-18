@@ -1,0 +1,493 @@
+import { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import type { AppDispatch, RootState } from '../../../store';
+import type { MapMarker, MapMarkerCreateInput, MapMarkerUpdateInput, Shelter } from '../../../../shared/ipc-types';
+import { CHANGE_TYPES } from '../../../../shared/ipc-types';
+import { createMarker, updateMarker, deleteMarker } from '../../../store/mapMarkersSlice';
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function splitChangeType(raw: string): { base: string; custom: string } {
+  if (raw.startsWith('Other: ')) return { base: 'Other', custom: raw.slice(7) };
+  return { base: raw, custom: '' };
+}
+
+function combineChangeType(base: string, custom: string): MapMarker['change_type'] {
+  return base === 'Other' ? (`Other: ${custom}` as MapMarker['change_type']) : (base as MapMarker['change_type']);
+}
+
+function computePreviewEndYear(
+  markers: MapMarker[],
+  startYear: number,
+  shelter: Shelter,
+): number | null {
+  const next = markers.find((m) => m.start_year > startYear);
+  if (next) return next.start_year - 1;
+  return shelter.is_extant ? null : shelter.end_year;
+}
+
+// ─── types ────────────────────────────────────────────────────────────────
+
+interface FormState {
+  name: string;
+  latitude: string;
+  longitude: string;
+  start_year: string;
+  changeTypeBase: string;
+  changeTypeCustom: string;
+  notes: string;
+}
+
+function emptyForm(): FormState {
+  return { name: '', latitude: '', longitude: '', start_year: '', changeTypeBase: 'Original', changeTypeCustom: '', notes: '' };
+}
+
+function markerToForm(m: MapMarker): FormState {
+  const { base, custom } = splitChangeType(m.change_type);
+  return {
+    name: m.name,
+    latitude: String(m.latitude),
+    longitude: String(m.longitude),
+    start_year: String(m.start_year),
+    changeTypeBase: base,
+    changeTypeCustom: custom,
+    notes: m.notes,
+  };
+}
+
+// ─── icon factories ────────────────────────────────────────────────────────
+
+function makeNumberedIcon(num: number, selected: boolean, extant: boolean): L.DivIcon {
+  const cls = ['mm-pin', selected ? 'mm-pin--selected' : extant ? '' : 'mm-pin--gone']
+    .filter(Boolean).join(' ');
+  return new L.DivIcon({ className: '', html: `<div class="${cls}">${num}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
+}
+
+function makeDraftIcon(): L.DivIcon {
+  return new L.DivIcon({ className: '', html: `<div class="mm-pin mm-pin--draft">+</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
+}
+
+function makeShelterIcon(): L.DivIcon {
+  return new L.DivIcon({ className: 'mm-shelter-pin', iconSize: [14, 14], iconAnchor: [7, 7] });
+}
+
+// ─── component ────────────────────────────────────────────────────────────
+
+interface Props {
+  shelterId: number;
+  shelter: Shelter;
+}
+
+export default function MapMarkersTab({ shelterId, shelter }: Props) {
+  const dispatch = useDispatch<AppDispatch>();
+  const markers = useSelector((state: RootState) =>
+    [...(state.mapMarkers.byShelter[shelterId] ?? [])].sort((a, b) => a.start_year - b.start_year),
+  );
+
+  const [mode, setMode] = useState<'idle' | 'add' | 'edit'>('idle');
+  const [editId, setEditId] = useState<number | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm());
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [hoverCoords, setHoverCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const pinLayerRef = useRef<Map<number, L.Marker>>(new Map());
+  const draftPinRef = useRef<L.Marker | null>(null);
+  const modeRef = useRef<'idle' | 'add' | 'edit'>('idle');
+
+  useEffect(() => { modeRef.current = mode; }, [mode]);
+
+  // ── init map ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const lat = shelter.latitude ?? 44.0;
+    const lng = shelter.longitude ?? -71.5;
+
+    const map = new L.Map(mapContainerRef.current, { center: [lat, lng], zoom: 13 });
+
+    new L.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    if (shelter.latitude != null && shelter.longitude != null) {
+      new L.Marker([shelter.latitude, shelter.longitude] as L.LatLngExpression, { icon: makeShelterIcon() }).addTo(map);
+    }
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      if (modeRef.current === 'add' || modeRef.current === 'edit') {
+        setForm((f) => ({
+          ...f,
+          latitude: e.latlng.lat.toFixed(6),
+          longitude: e.latlng.lng.toFixed(6),
+        }));
+      }
+    });
+
+    map.on('mousemove', (e: L.LeafletMouseEvent) => {
+      setHoverCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+    map.on('mouseout', () => setHoverCoords(null));
+
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── sync marker pins ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    pinLayerRef.current.forEach((pin) => pin.remove());
+    pinLayerRef.current.clear();
+
+    markers.forEach((m, idx) => {
+      const pin = new L.Marker([m.latitude, m.longitude] as L.LatLngExpression, {
+        icon: makeNumberedIcon(idx + 1, m.id === selectedId, m.is_extant),
+      }).addTo(map).on('click', () => {
+        setSelectedId((cur) => (cur === m.id ? null : m.id));
+      });
+      pinLayerRef.current.set(m.id, pin);
+    });
+  }, [markers, selectedId]);
+
+  // ── draft pin ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (draftPinRef.current) { draftPinRef.current.remove(); draftPinRef.current = null; }
+
+    const lat = parseFloat(form.latitude);
+    const lng = parseFloat(form.longitude);
+    if (mode === 'add' && !isNaN(lat) && !isNaN(lng)) {
+      draftPinRef.current = new L.Marker([lat, lng] as L.LatLngExpression, { icon: makeDraftIcon(), draggable: true })
+        .addTo(map)
+        .on('dragend', function (this: L.Marker) {
+          const pos = this.getLatLng();
+          setForm((f) => ({ ...f, latitude: pos.lat.toFixed(6), longitude: pos.lng.toFixed(6) }));
+        });
+    }
+  }, [mode, form.latitude, form.longitude]);
+
+  // ── map cursor ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const container = mapRef.current?.getContainer();
+    if (container) container.style.cursor = (mode === 'add' || mode === 'edit') ? 'crosshair' : '';
+  }, [mode]);
+
+  // ── actions ───────────────────────────────────────────────────────────────
+  function startAdd() {
+    const defaultYear = markers.length === 0
+      ? shelter.start_year
+      : markers[markers.length - 1].start_year + 1;
+    setForm({ ...emptyForm(), start_year: String(defaultYear) });
+    setEditId(null);
+    setMode('add');
+    setErrorMsg(null);
+  }
+
+  function startEdit(m: MapMarker) {
+    setForm(markerToForm(m));
+    setEditId(m.id);
+    setSelectedId(m.id);
+    setMode('edit');
+    setErrorMsg(null);
+  }
+
+  function cancelForm() {
+    setMode('idle');
+    setEditId(null);
+    setForm(emptyForm());
+    setErrorMsg(null);
+  }
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    setErrorMsg(null);
+    try {
+      if (mode === 'edit' && editId != null) {
+        const input: MapMarkerUpdateInput = {
+          latitude: parseFloat(form.latitude),
+          longitude: parseFloat(form.longitude),
+          name: form.name,
+          change_type: combineChangeType(form.changeTypeBase, form.changeTypeCustom),
+          notes: form.notes,
+        };
+        await dispatch(updateMarker({ id: editId, shelterId, input })).unwrap();
+      } else {
+        const input: MapMarkerCreateInput = {
+          shelter_id: shelterId,
+          latitude: parseFloat(form.latitude),
+          longitude: parseFloat(form.longitude),
+          name: form.name,
+          start_year: parseInt(form.start_year, 10),
+          change_type: combineChangeType(form.changeTypeBase, form.changeTypeCustom),
+          notes: form.notes,
+        };
+        await dispatch(createMarker(input)).unwrap();
+      }
+      cancelForm();
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(markerId: number) {
+    await dispatch(deleteMarker({ id: markerId, shelterId }));
+    if (selectedId === markerId) setSelectedId(null);
+    if (editId === markerId) cancelForm();
+  }
+
+  // ── derived ───────────────────────────────────────────────────────────────
+  const canSave = form.latitude.trim() !== '' && form.longitude.trim() !== '';
+  const editingMarker = editId != null ? markers.find((m) => m.id === editId) : undefined;
+  const previewEndYear = mode === 'add' && form.start_year.trim() !== ''
+    ? computePreviewEndYear(markers, parseInt(form.start_year, 10), shelter)
+    : (editingMarker?.end_year ?? null);
+  const endYearDisplay = mode === 'add'
+    ? (form.start_year.trim() ? (previewEndYear != null ? String(previewEndYear) : 'present') : '—')
+    : (editingMarker ? (editingMarker.end_year != null ? String(editingMarker.end_year) : 'present') : '—');
+
+  // ── render ────────────────────────────────────────────────────────────────
+  return (
+    <div className="mm-wrap">
+
+      {/* ── LEFT PANE ─────────────────────────────────────────────────────── */}
+      <div className="mm-list-pane">
+
+        {/* header */}
+        <div className="mm-list-head">
+          <span className="mm-list-title">
+            Markers
+            {markers.length > 0 && <span className="count">{markers.length}</span>}
+          </span>
+          {mode === 'idle' ? (
+            <button className="btn sm" onClick={startAdd}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              {' '}Add marker
+            </button>
+          ) : (
+            <button className="btn sm ghost" onClick={cancelForm}>Cancel</button>
+          )}
+        </div>
+
+        {/* list */}
+        <div className="mm-list-scroll">
+          {markers.length === 0 && mode === 'idle' && (
+            <div className="mm-empty">
+              <div className="mm-empty-label">No map markers recorded.</div>
+              <div className="mm-empty-hint">Click "Add marker" then click the map to place the first location.</div>
+            </div>
+          )}
+
+          {markers.map((m, idx) => {
+            const { base } = splitChangeType(m.change_type);
+            return (
+              <div
+                key={m.id}
+                className={`mm-marker-row${m.id === selectedId ? ' selected' : ''}`}
+                data-testid="marker-row"
+                onClick={() => setSelectedId((cur) => (cur === m.id ? null : m.id))}
+              >
+                <div className={`mm-pin-num${!m.is_extant ? ' gone' : ''}`}>{idx + 1}</div>
+                <div className="mm-row-body">
+                  <span className="mm-row-name" data-testid="marker-name">{m.name || '(unnamed)'}</span>
+                  <span className="mm-row-years">
+                    {m.start_year}–{m.end_year != null ? m.end_year : 'present'}
+                  </span>
+                  <span className="mm-row-type">{base}</span>
+                </div>
+                <div className="mm-row-coords">
+                  {m.latitude.toFixed(4)}°N, {Math.abs(m.longitude).toFixed(4)}°W
+                </div>
+                <div className="mm-row-actions">
+                  <button
+                    className="btn sm ghost icon"
+                    aria-label="Edit"
+                    title="Edit"
+                    onClick={(e) => { e.stopPropagation(); startEdit(m); }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button
+                    className="btn sm ghost icon"
+                    aria-label="Delete"
+                    title="Delete"
+                    onClick={(e) => { e.stopPropagation(); handleDelete(m.id); }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* detail / edit panel */}
+        {(mode === 'add' || mode === 'edit') && (
+          <div className="mm-detail">
+            <div className="mm-detail-head">
+              <span className="mm-detail-title">
+                {mode === 'add' ? 'New marker' : (editingMarker?.name || 'Edit marker')}
+              </span>
+              {mode === 'add' && (
+                <span className="mm-detail-hint">
+                  {form.latitude && form.longitude ? 'Location set' : 'Click map to set location'}
+                </span>
+              )}
+            </div>
+
+            {errorMsg && <div className="mm-error">{errorMsg}</div>}
+
+            <div className="mm-detail-body">
+              <div className="mm-field-grid">
+                {/* name — full width */}
+                <div className="mm-field mm-col2">
+                  <label className="mm-label">Name</label>
+                  <input
+                    className="input"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="e.g. Original site"
+                  />
+                </div>
+
+                {/* coordinates */}
+                <div className="mm-field">
+                  <label className="mm-label" htmlFor="mm-lat">Latitude</label>
+                  <input
+                    id="mm-lat"
+                    aria-label="Latitude"
+                    className="input mono"
+                    type="number"
+                    step="0.000001"
+                    value={form.latitude}
+                    onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
+                    placeholder="44.0000"
+                  />
+                </div>
+                <div className="mm-field">
+                  <label className="mm-label" htmlFor="mm-lng">Longitude</label>
+                  <input
+                    id="mm-lng"
+                    aria-label="Longitude"
+                    className="input mono"
+                    type="number"
+                    step="0.000001"
+                    value={form.longitude}
+                    onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
+                    placeholder="-71.0000"
+                  />
+                </div>
+
+                {/* years */}
+                <div className="mm-field">
+                  <label className="mm-label">Start year</label>
+                  {mode === 'add' ? (
+                    <input
+                      className="input mono"
+                      type="number"
+                      value={form.start_year}
+                      onChange={(e) => setForm((f) => ({ ...f, start_year: e.target.value }))}
+                      min={shelter.start_year}
+                      max={shelter.end_year ?? undefined}
+                    />
+                  ) : (
+                    <input className="input mono" value={form.start_year} disabled title="Start year cannot be changed after creation" />
+                  )}
+                </div>
+                <div className="mm-field">
+                  <label className="mm-label">
+                    End year
+                    <span className="mm-label-hint">auto</span>
+                  </label>
+                  <input className="input mono" value={endYearDisplay} disabled title="Computed automatically from adjacent markers" />
+                </div>
+
+                {/* change type — full width */}
+                <div className="mm-field mm-col2">
+                  <label className="mm-label" htmlFor="mm-type">Change type</label>
+                  <select
+                    id="mm-type"
+                    aria-label="Change Type"
+                    className="select"
+                    value={form.changeTypeBase}
+                    onChange={(e) => setForm((f) => ({ ...f, changeTypeBase: e.target.value }))}
+                  >
+                    {CHANGE_TYPES.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                  {form.changeTypeBase === 'Other' && (
+                    <input
+                      className="input"
+                      style={{ marginTop: 6 }}
+                      placeholder="Describe the change type"
+                      value={form.changeTypeCustom}
+                      onChange={(e) => setForm((f) => ({ ...f, changeTypeCustom: e.target.value }))}
+                    />
+                  )}
+                </div>
+
+                {/* notes — full width */}
+                <div className="mm-field mm-col2">
+                  <label className="mm-label">Notes</label>
+                  <textarea
+                    className="textarea"
+                    value={form.notes}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mm-detail-foot">
+              <button className="btn sm primary" onClick={handleSave} disabled={!canSave || saving}>
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── RIGHT PANE — map ──────────────────────────────────────────────── */}
+      <div className="mm-map-pane">
+        {mode === 'add' && !form.latitude && (
+          <div className="mm-placing-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            Click the map to place this marker
+          </div>
+        )}
+        {hoverCoords && (
+          <div className="mm-map-coords">
+            {hoverCoords.lat.toFixed(4)}°N,{' '}
+            {Math.abs(hoverCoords.lng).toFixed(4)}°W
+          </div>
+        )}
+        <div ref={mapContainerRef} className="mm-map" />
+      </div>
+    </div>
+  );
+}
