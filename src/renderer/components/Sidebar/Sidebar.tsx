@@ -83,14 +83,8 @@ export default function Sidebar() {
     return xs;
   }, [shelters, query, filter, adv]);
 
-  const grouped = useMemo(() => {
-    const extant = filtered
-      .filter((s) => s.is_extant)
-      .sort((a, b) => a.name.localeCompare(b.name));
-    const gone = filtered
-      .filter((s) => !s.is_extant)
-      .sort((a, b) => a.name.localeCompare(b.name));
-    return { extant, gone };
+  const sortedShelters = useMemo(() => {
+    return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
   }, [filtered]);
 
   const archOptions = useMemo(
@@ -269,29 +263,7 @@ export default function Sidebar() {
       )}
 
       <div className="shelter-list">
-        {!collapsed && (
-          <div className="sidebar-section">
-            <span>Extant</span>
-            <span className="sidebar-section-count">{grouped.extant.length}</span>
-          </div>
-        )}
-        {grouped.extant.map((s: Shelter) => (
-          <ShelterRow
-            key={s.id}
-            shelter={s}
-            selected={s.id === selectedId}
-            onSelect={() => handleSelect(s.id)}
-            collapsed={collapsed}
-          />
-        ))}
-
-        {!collapsed && grouped.gone.length > 0 && (
-          <div className="sidebar-section">
-            <span>Removed / Lost</span>
-            <span className="sidebar-section-count">{grouped.gone.length}</span>
-          </div>
-        )}
-        {grouped.gone.map((s: Shelter) => (
+        {sortedShelters.map((s: Shelter) => (
           <ShelterRow
             key={s.id}
             shelter={s}

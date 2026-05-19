@@ -33,10 +33,6 @@ function FlagCheck({
   );
 }
 
-function formatYearRange(shelter: Shelter): string {
-  return `${shelter.start_year}${shelter.end_year ? `–${shelter.end_year}` : '–present'}`;
-}
-
 function formatPhotoDate(photo: Photo | null): string {
   if (!photo?.date_taken) return 'Date unknown';
   return photo.date_taken;
@@ -123,10 +119,7 @@ export default function ShelterTab() {
     ? buildPhotoUrl(repoRoot, s.slug, defaultPhoto.file_name)
     : '';
   const photoCount = photos.length || s.photo_count || 0;
-  const publishedCount = photos.filter((photo) => photo.include_in_post).length;
-  const photoSummary = defaultPhoto
-    ? (defaultPhoto.title || defaultPhoto.file_name)
-    : 'No default photo selected';
+  const photoSummary = defaultPhoto ? (defaultPhoto.title || defaultPhoto.file_name) : 'No default photo selected';
   const photoCaption = defaultPhoto?.caption || defaultPhoto?.description || 'Managed from the Photos tab.';
 
   return (
@@ -214,35 +207,17 @@ export default function ShelterTab() {
                 <span>{s.name.charAt(0).toUpperCase()}</span>
               </div>
             )}
-            <div className="shelter-media-overlay">
-              <span className="shelter-media-badge">Default photo</span>
-              {defaultPhoto && <span className="shelter-media-badge muted">#{defaultPhoto.id}</span>}
-            </div>
+            {defaultPhoto && (
+              <div className="shelter-media-overlay">
+                <span className="shelter-media-badge">Default photo</span>
+              </div>
+            )}
           </div>
           <div className="shelter-media-meta">
-            <div className="shelter-media-meta-row">
-              <div>
-                <div className="shelter-media-title">{photoSummary}</div>
-                <div className="shelter-media-sub">
-                  {defaultPhoto
-                    ? `${defaultPhoto.photographer || 'Unknown photographer'} · ${formatPhotoDate(defaultPhoto)}`
-                    : 'Pick a lead image in the Photos tab to feature it here.'}
-                </div>
-              </div>
-              <div className="shelter-media-side-meta">
-                <span className="shelter-media-side-value">{formatYearRange(s)}</span>
-                <span className="shelter-media-side-sub">{photoCount} photos · {publishedCount} published</span>
-              </div>
+            <div className="shelter-media-title">{photoSummary}</div>
+            <div className="shelter-media-sub">
+              {defaultPhoto ? `Photo ID ${defaultPhoto.id}` : 'Pick a lead image in the Photos tab to feature it here.'}
             </div>
-            <div className="shelter-media-badges-inline">
-              <span className="id">#{String(s.id).padStart(6, '0')}</span>
-              <span className={`badge ${s.is_extant ? 'extant' : 'gone'}`}>
-                {s.is_extant ? 'Extant' : 'Lost'}
-              </span>
-              {s.is_gmc && <span className="badge gmc">GMC</span>}
-              {s.show_on_web && <span className="badge web">Web</span>}
-            </div>
-            <p className="shelter-media-caption">{photoCaption}</p>
           </div>
         </button>
       </div>

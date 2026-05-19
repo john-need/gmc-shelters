@@ -15,7 +15,14 @@ const noopApi: ElectronAPI = {
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   shell: { openExternal: noop },
-  app: { getVersion: noop, getRepoRoot: noop },
+  app: {
+    getVersion: noop,
+    getRepoRoot: noop,
+    closeWindow: noop,
+    minimizeWindow: noop,
+    toggleFullscreen: noop,
+    isFullscreen: noop,
+  },
 };
 
 export function useIpc(): ElectronAPI {

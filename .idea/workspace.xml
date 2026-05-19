@@ -5,42 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
-      <change afterPath="$PROJECT_DIR$/CONTEXT.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/database/migrations/004-5nf-normalisation.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/adr/0001-retire-timelines-in-favour-of-map-markers.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/adr/0002-normalise-sources-with-shelter-sources-join-table.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/adr/0003-shelter-years-as-constraint-boundaries.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GMC Shelters App _standalone_.html" beforeDir="false" afterPath="$PROJECT_DIR$/GMC Shelters App _standalone_.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/architectures.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/architectures.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/connection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/connection.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/map-markers.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/map-markers.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/map-markers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/map-markers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/shelters.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/shelters.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/shelters.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/shelters.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/sources.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/sources.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/index.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/map-markers.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/map-markers.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/shell.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/shell.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/shell.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/shell.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/preload.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/MainPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/MainPane.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/Titlebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Settings/SettingsLayout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Settings/SettingsLayout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Sidebar/ShelterRow.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Sidebar/ShelterRow.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/routes/ShelterBrowser.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/routes/ShelterBrowser.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/setupTests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/setupTests.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/mapMarkersSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/mapMarkersSlice.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -171,7 +151,7 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "shelter-list",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Projects/gmc-shelters/shelters/bourn-pond-shelter-south",

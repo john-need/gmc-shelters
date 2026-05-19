@@ -31,6 +31,10 @@ export const CHANNELS = {
   SHELL_OPEN_EXTERNAL: 'shell:openExternal',
   APP_GET_VERSION: 'app:getVersion',
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
+  APP_WINDOW_CLOSE: 'app:windowClose',
+  APP_WINDOW_MINIMIZE: 'app:windowMinimize',
+  APP_WINDOW_TOGGLE_FULLSCREEN: 'app:windowToggleFullscreen',
+  APP_WINDOW_IS_FULLSCREEN: 'app:windowIsFullscreen',
 } as const;
 
 export interface Architecture {
@@ -240,6 +244,10 @@ export interface ElectronAPI {
   app: {
     getVersion: () => Promise<string>;
     getRepoRoot: () => Promise<string>;
+    closeWindow: () => Promise<void>;
+    minimizeWindow: () => Promise<void>;
+    toggleFullscreen: () => Promise<void>;
+    isFullscreen: () => Promise<boolean>;
   };
 }
 

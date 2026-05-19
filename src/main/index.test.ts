@@ -47,6 +47,26 @@ describe('main process index', () => {
     expect(electron.Menu.setApplicationMenu).toHaveBeenCalled();
   });
 
+  it('registers a View menu item with the macOS DevTools shortcut', async () => {
+    const electron = await import('electron');
+    await import('./index');
+    const readyCalls = (electron.app.on as jest.Mock).mock.calls as Array<[string, () => void]>;
+    const readyCall = readyCalls.find(([event]) => event === 'ready');
+    if (readyCall) await readyCall[1]();
+
+    expect(electron.Menu.buildFromTemplate).toHaveBeenCalled();
+    const [template] = (electron.Menu.buildFromTemplate as jest.Mock).mock.calls[0] as [Array<{
+      label: string;
+      submenu?: Array<{ role?: string; accelerator?: string } | { type: string }>;
+    }>];
+    const viewMenu = template.find((item) => item.label === 'View');
+
+    expect(viewMenu).toBeDefined();
+    expect(viewMenu?.submenu).toEqual(expect.arrayContaining([
+      expect.objectContaining({ role: 'toggleDevTools', accelerator: 'Alt+Command+I' }),
+    ]));
+  });
+
   it('creates BrowserWindow with contextIsolation:true and nodeIntegration:false', async () => {
     const electron = await import('electron');
     await import('./index');

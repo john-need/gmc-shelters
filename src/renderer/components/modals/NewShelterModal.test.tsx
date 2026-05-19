@@ -45,6 +45,7 @@ describe('NewShelterModal', () => {
     renderModal();
     fireEvent.change(screen.getByPlaceholderText(/Mossy Brook/i), { target: { value: 'Bear Notch Shelter' } });
     expect(screen.getByDisplayValue('bear-notch-shelter')).toBeInTheDocument();
+    expect(screen.getByText('/shelters/bear-notch-shelter/bear-notch-shelter.md')).toBeInTheDocument();
   });
 
   it('calls onClose when Cancel is clicked', () => {

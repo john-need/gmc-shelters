@@ -123,8 +123,9 @@ describe('ShelterTab', () => {
     });
 
     expect(screen.getByText('Default View')).toBeInTheDocument();
-    expect(screen.getByText(/1932–present/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 photos · 1 published/i)).toBeInTheDocument();
+    expect(screen.getByText(/photo id 11/i)).toBeInTheDocument();
+    expect(screen.queryByText(/1 photos · 1 published/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1932–present/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /open default photo preview/i }));
 
