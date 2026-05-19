@@ -132,6 +132,20 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </button>
+            <button className="settings-menu-item" onClick={() => openPage('categories')}>
+              <span className="ico">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 6h16M4 12h16M4 18h7"/>
+                </svg>
+              </span>
+              <span className="text">
+                <span className="title">Shelter categories</span>
+                <span className="sub">Type classification</span>
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', color: 'var(--ink-4)' }}>
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
             <button className="settings-menu-item" onClick={() => openPage('paths')}>
               <span className="ico">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

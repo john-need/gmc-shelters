@@ -13,8 +13,6 @@ const shelter: Shelter = {
   architecture: '',
   built_by: '',
   notes: '',
-  latitude: null,
-  longitude: null,
   is_extant: true,
   is_gmc: false,
   show_on_web: false,

@@ -5,11 +5,12 @@ import uiReducer from '../../store/uiSlice';
 import sheltersReducer from '../../store/sheltersSlice';
 import photosReducer from '../../store/photosSlice';
 import sourcesReducer from '../../store/sourcesSlice';
+import categoriesReducer from '../../store/categoriesSlice';
 import NewShelterModal from './NewShelterModal';
 
 function makeStore() {
   return configureStore({
-    reducer: { ui: uiReducer, shelters: sheltersReducer, photos: photosReducer, sources: sourcesReducer },
+    reducer: { ui: uiReducer, shelters: sheltersReducer, photos: photosReducer, sources: sourcesReducer, categories: categoriesReducer },
   });
 }
 
@@ -62,7 +63,7 @@ describe('NewShelterModal', () => {
     const mockShelter = {
       id: 1, name: 'Test Shelter', slug: 'test-shelter', start_year: 2020,
       end_year: null, category: 'Shelter', architecture: '', built_by: '',
-      description: '', notes: '', latitude: null, longitude: null,
+      description: '', notes: '',
       is_extant: true, is_gmc: false, show_on_web: false, default_photo_id: null,
       created: '2020-01-01', updated: '2020-01-01', photo_count: 0,
     };

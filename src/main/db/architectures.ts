@@ -42,22 +42,10 @@ export function createArchitecture(input: ArchitectureInput): Architecture {
 export function updateArchitecture(arch: Architecture): Architecture {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
-  const old = db
-    .prepare('SELECT name FROM architectures WHERE id = ?')
-    .get(arch.id) as { name: string } | undefined;
-
   db.prepare(
     'UPDATE architectures SET name = ?, description = ?, updated = ? WHERE id = ?',
   ).run(arch.name, arch.description, today, arch.id);
-
-  // Cascade rename to shelters
-  if (old && old.name !== arch.name) {
-    db.prepare("UPDATE shelters SET architecture = ? WHERE architecture = ?").run(
-      arch.name,
-      old.name,
-    );
-  }
-
+  // No text cascade needed — shelters reference architectures via architecture_id FK
   const row = db
     .prepare('SELECT * FROM architectures WHERE id = ?')
     .get(arch.id) as ArchRow;
@@ -67,15 +55,19 @@ export function updateArchitecture(arch: Architecture): Architecture {
 export function deleteArchitecture(id: number, reassignTo?: string): void {
   const db = getDb();
   if (reassignTo) {
-    const old = db
-      .prepare('SELECT name FROM architectures WHERE id = ?')
-      .get(id) as { name: string } | undefined;
-    if (old) {
-      db.prepare("UPDATE shelters SET architecture = ? WHERE architecture = ?").run(
-        reassignTo,
-        old.name,
+    const target = db
+      .prepare('SELECT id FROM architectures WHERE name = ?')
+      .get(reassignTo) as { id: number } | undefined;
+    if (target) {
+      db.prepare('UPDATE shelters SET architecture_id = ? WHERE architecture_id = ?').run(
+        target.id,
+        id,
       );
+    } else {
+      db.prepare('UPDATE shelters SET architecture_id = NULL WHERE architecture_id = ?').run(id);
     }
+  } else {
+    db.prepare('UPDATE shelters SET architecture_id = NULL WHERE architecture_id = ?').run(id);
   }
   db.prepare('DELETE FROM architectures WHERE id = ?').run(id);
 }

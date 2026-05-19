@@ -15,7 +15,7 @@ function makeStore(shelterCount = 0) {
         list: Array.from({ length: shelterCount }, (_, i) => ({
           id: i + 1, name: `Shelter ${i + 1}`, slug: `shelter-${i + 1}`,
           start_year: 1960, end_year: null, description: '', category: 'lean-to',
-          architecture: '', built_by: '', notes: '', latitude: null, longitude: null,
+          architecture: '', built_by: '', notes: '',
           is_extant: true, is_gmc: false, show_on_web: false, default_photo_id: null,
           created: '2020-01-01', updated: '2020-01-01', photo_count: 0,
         })),

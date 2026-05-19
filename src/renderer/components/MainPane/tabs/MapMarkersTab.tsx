@@ -9,15 +9,6 @@ import { createMarker, updateMarker, deleteMarker } from '../../../store/mapMark
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function splitChangeType(raw: string): { base: string; custom: string } {
-  if (raw.startsWith('Other: ')) return { base: 'Other', custom: raw.slice(7) };
-  return { base: raw, custom: '' };
-}
-
-function combineChangeType(base: string, custom: string): MapMarker['change_type'] {
-  return base === 'Other' ? (`Other: ${custom}` as MapMarker['change_type']) : (base as MapMarker['change_type']);
-}
-
 function computePreviewEndYear(
   markers: MapMarker[],
   startYear: number,
@@ -36,23 +27,20 @@ interface FormState {
   longitude: string;
   start_year: string;
   changeTypeBase: string;
-  changeTypeCustom: string;
   notes: string;
 }
 
 function emptyForm(): FormState {
-  return { name: '', latitude: '', longitude: '', start_year: '', changeTypeBase: 'Original', changeTypeCustom: '', notes: '' };
+  return { name: '', latitude: '', longitude: '', start_year: '', changeTypeBase: 'Original', notes: '' };
 }
 
 function markerToForm(m: MapMarker): FormState {
-  const { base, custom } = splitChangeType(m.change_type);
   return {
     name: m.name,
     latitude: String(m.latitude),
     longitude: String(m.longitude),
     start_year: String(m.start_year),
-    changeTypeBase: base,
-    changeTypeCustom: custom,
+    changeTypeBase: m.change_type,
     notes: m.notes,
   };
 }
@@ -106,19 +94,12 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const lat = shelter.latitude ?? 44.0;
-    const lng = shelter.longitude ?? -71.5;
-
-    const map = new L.Map(mapContainerRef.current, { center: [lat, lng], zoom: 13 });
+    const map = new L.Map(mapContainerRef.current, { center: [44.0, -71.5], zoom: 13 });
 
     new L.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map);
-
-    if (shelter.latitude != null && shelter.longitude != null) {
-      new L.Marker([shelter.latitude, shelter.longitude] as L.LatLngExpression, { icon: makeShelterIcon() }).addTo(map);
-    }
 
     map.on('click', (e: L.LeafletMouseEvent) => {
       if (modeRef.current === 'add' || modeRef.current === 'edit') {
@@ -218,7 +199,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           latitude: parseFloat(form.latitude),
           longitude: parseFloat(form.longitude),
           name: form.name,
-          change_type: combineChangeType(form.changeTypeBase, form.changeTypeCustom),
+          change_type: form.changeTypeBase as MapMarker['change_type'],
           notes: form.notes,
         };
         await dispatch(updateMarker({ id: editId, shelterId, input })).unwrap();
@@ -229,7 +210,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           longitude: parseFloat(form.longitude),
           name: form.name,
           start_year: parseInt(form.start_year, 10),
-          change_type: combineChangeType(form.changeTypeBase, form.changeTypeCustom),
+          change_type: form.changeTypeBase as MapMarker['change_type'],
           notes: form.notes,
         };
         await dispatch(createMarker(input)).unwrap();
@@ -293,7 +274,6 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           )}
 
           {markers.map((m, idx) => {
-            const { base } = splitChangeType(m.change_type);
             return (
               <div
                 key={m.id}
@@ -307,7 +287,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
                   <span className="mm-row-years">
                     {m.start_year}–{m.end_year != null ? m.end_year : 'present'}
                   </span>
-                  <span className="mm-row-type">{base}</span>
+                  <span className="mm-row-type">{m.change_type}</span>
                 </div>
                 <div className="mm-row-coords">
                   {m.latitude.toFixed(4)}°N, {Math.abs(m.longitude).toFixed(4)}°W
@@ -435,17 +415,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
                     onChange={(e) => setForm((f) => ({ ...f, changeTypeBase: e.target.value }))}
                   >
                     {CHANGE_TYPES.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
-                    <option value="Other">Other</option>
                   </select>
-                  {form.changeTypeBase === 'Other' && (
-                    <input
-                      className="input"
-                      style={{ marginTop: 6 }}
-                      placeholder="Describe the change type"
-                      value={form.changeTypeCustom}
-                      onChange={(e) => setForm((f) => ({ ...f, changeTypeCustom: e.target.value }))}
-                    />
-                  )}
                 </div>
 
                 {/* notes — full width */}

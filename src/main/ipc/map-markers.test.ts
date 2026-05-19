@@ -24,7 +24,7 @@ function getHandler(channel: string) {
 function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
     id: 10, name: 'Test', slug: 'test', start_year: 1960, end_year: 1990,
-    description: '', longitude: -71, latitude: 44, default_photo_id: null,
+    description: '', default_photo_id: null,
     is_gmc: false, architecture: '', built_by: '', notes: '', created: '2020-01-01',
     updated: '2020-01-01', is_extant: false, category: '', show_on_web: false,
     ...overrides,
@@ -35,7 +35,7 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
   return {
     id: 1, shelter_id: 10, latitude: 44.1, longitude: -71.5, name: 'A',
     start_year: 1960, end_year: 1990, change_type: 'Original', notes: '',
-    slug: 'test', is_extant: false, photo_id: null, created: '2020-01-01', updated: '2020-01-01',
+    is_extant: false, photo_id: null, created: '2020-01-01', updated: '2020-01-01',
     ...overrides,
   };
 }
@@ -139,7 +139,7 @@ describe('MAP_MARKERS_UPDATE', () => {
     latitude: 44.5,
     longitude: -71.5,
     name: 'Updated Spring',
-    change_type: 'Relocated' as const,
+    change_type: 'Moved' as const,
     notes: '',
   };
 

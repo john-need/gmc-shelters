@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../store';
 import { createShelter } from '../../store/sheltersSlice';
 import { showToast, setActiveTab } from '../../store/uiSlice';
-
-const CATEGORIES = ['Lodge', 'Cabin', 'Shelter', 'Lean-to', 'Camp', 'Privy', 'Other'];
 
 interface Props {
   onClose: () => void;
@@ -12,9 +10,10 @@ interface Props {
 
 export default function NewShelterModal({ onClose }: Props) {
   const dispatch = useDispatch<AppDispatch>();
+  const catList = useSelector((s: RootState) => s.categories.list);
   const [name, setName] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
-  const [category, setCategory] = useState('Shelter');
+  const [category, setCategory] = useState('');
   const [isGmc, setIsGmc] = useState(true);
 
   const slug =
@@ -75,7 +74,8 @@ export default function NewShelterModal({ onClose }: Props) {
             <div className="field">
               <label className="label">Category</label>
               <select className="select" value={category} onChange={(e) => setCategory(e.target.value)}>
-                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                <option value="">— none —</option>
+                {catList.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
             </div>
           </div>

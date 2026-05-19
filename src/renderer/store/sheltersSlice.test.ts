@@ -11,7 +11,7 @@ import type { Shelter } from '../../shared/ipc-types';
 const mockShelter: Shelter = {
   id: 1, name: 'Test Shelter', slug: 'test-shelter',
   start_year: 1940, end_year: null, description: '',
-  latitude: 44.0, longitude: -72.8, default_photo_id: null,
+  default_photo_id: null,
   is_gmc: true, architecture: '', built_by: '', notes: '',
   created: '2020-01-01', updated: '2020-01-01',
   is_extant: true, category: 'Shelter', show_on_web: false, photo_count: 0,

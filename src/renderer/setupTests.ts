@@ -4,6 +4,12 @@ import type { ElectronAPI } from '../shared/ipc-types';
 const noop = jest.fn().mockResolvedValue(undefined);
 
 const mockApi: ElectronAPI = {
+  categories: {
+    getAll: jest.fn().mockResolvedValue([]),
+    create: noop,
+    update: noop,
+    delete: noop,
+  },
   architectures: {
     getAll: jest.fn().mockResolvedValue([]),
     create: noop,

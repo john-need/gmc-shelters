@@ -15,7 +15,7 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
   return {
     id: 1, shelter_id: 10, latitude: 44.1, longitude: -71.5,
     name: 'Test', start_year: 1960, end_year: 1990, change_type: 'Original',
-    notes: '', slug: 'test-shelter', is_extant: false,
+    notes: '', is_extant: false,
     photo_id: null, created: '2020-01-01', updated: '2020-01-01',
     ...overrides,
   };

@@ -4,6 +4,10 @@ export const CHANNELS = {
   ARCHITECTURES_CREATE: 'architectures:create',
   ARCHITECTURES_UPDATE: 'architectures:update',
   ARCHITECTURES_DELETE: 'architectures:delete',
+  CATEGORIES_GET_ALL: 'categories:getAll',
+  CATEGORIES_CREATE: 'categories:create',
+  CATEGORIES_UPDATE: 'categories:update',
+  CATEGORIES_DELETE: 'categories:delete',
   SHELTERS_GET_ALL: 'shelters:getAll',
   SHELTERS_GET_BY_ID: 'shelters:getById',
   SHELTERS_CREATE: 'shelters:create',
@@ -42,8 +46,8 @@ export type ArchitectureInput = {
   description: string;
 };
 
-export const CHANGE_TYPES = ['Original', 'Relocated', 'Rebuilt', 'Destroyed', 'Removed'] as const;
-export type ChangeType = (typeof CHANGE_TYPES)[number] | `Other: ${string}`;
+export const CHANGE_TYPES = ['Original', 'Moved', 'Renamed', 'Moved & Renamed'] as const;
+export type ChangeType = (typeof CHANGE_TYPES)[number];
 
 export interface MapMarker {
   id: number;
@@ -55,7 +59,6 @@ export interface MapMarker {
   end_year: number | null;
   change_type: ChangeType;
   notes: string;
-  slug: string;
   is_extant: boolean;
   photo_id: number | null;
   created: string;
@@ -102,8 +105,6 @@ export interface Shelter {
   end_year: number | null;
   description: string;
   slug: string;
-  longitude: number | null;
-  latitude: number | null;
   default_photo_id: number | null;
   is_gmc: boolean;
   architecture: string;
@@ -116,6 +117,19 @@ export interface Shelter {
   show_on_web: boolean;
   photo_count?: number;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  created: string;
+  updated: string;
+}
+
+export type CategoryInput = {
+  name: string;
+  description: string;
+};
 
 export interface Photo {
   id: number;
@@ -182,6 +196,12 @@ export interface ElectronAPI {
     getAll: () => Promise<Architecture[]>;
     create: (input: ArchitectureInput) => Promise<Architecture>;
     update: (arch: Architecture) => Promise<Architecture>;
+    delete: (id: number, reassignTo?: string) => Promise<void>;
+  };
+  categories: {
+    getAll: () => Promise<Category[]>;
+    create: (input: CategoryInput) => Promise<Category>;
+    update: (cat: Category) => Promise<Category>;
     delete: (id: number, reassignTo?: string) => Promise<void>;
   };
   shelters: {

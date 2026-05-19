@@ -59,4 +59,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 003-add-map-markers-table.sql');
     }
   }
+
+  // Apply 004-5nf-normalisation.sql if builders table doesn't exist
+  const builderTables = database
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='builders'")
+    .all() as { name: string }[];
+
+  if (builderTables.length === 0) {
+    const migrationPath = path.join(migrationsDir, '004-5nf-normalisation.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 004-5nf-normalisation.sql');
+    }
+  }
 }

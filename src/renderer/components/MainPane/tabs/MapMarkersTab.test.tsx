@@ -39,7 +39,7 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
     id: 10, name: 'Test Shelter', slug: 'test-shelter',
     start_year: 1950, end_year: 2000,
-    description: '', longitude: -71.5, latitude: 44.0,
+    description: '',
     default_photo_id: null, is_gmc: false, is_extant: false,
     architecture: '', built_by: '', notes: '',
     created: '2020-01-01', updated: '2020-01-01',
@@ -52,7 +52,7 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
   return {
     id: 1, shelter_id: 10, latitude: 44.1234, longitude: -71.5678,
     name: 'Original Site', start_year: 1960, end_year: 1975,
-    change_type: 'Original', notes: '', slug: 'test', is_extant: false,
+    change_type: 'Original', notes: '', is_extant: false,
     photo_id: null, created: '2020-01-01', updated: '2020-01-01',
     ...overrides,
   };
@@ -86,8 +86,8 @@ describe('MapMarkersTab', () => {
   describe('list rendering', () => {
     const markers = [
       makeMarker({ id: 1, name: 'Site A', start_year: 1960, end_year: 1975, change_type: 'Original' }),
-      makeMarker({ id: 2, name: 'Site B', start_year: 1975, end_year: 1990, change_type: 'Relocated' }),
-      makeMarker({ id: 3, name: 'Site C', start_year: 1990, end_year: null, change_type: 'Rebuilt', is_extant: true }),
+      makeMarker({ id: 2, name: 'Site B', start_year: 1975, end_year: 1990, change_type: 'Moved' }),
+      makeMarker({ id: 3, name: 'Site C', start_year: 1990, end_year: null, change_type: 'Renamed', is_extant: true }),
     ];
 
     it('renders all markers', () => {
@@ -122,7 +122,7 @@ describe('MapMarkersTab', () => {
       const store = makeStore(markers);
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
       expect(screen.getByText('Original')).toBeInTheDocument();
-      expect(screen.getByText('Relocated')).toBeInTheDocument();
+      expect(screen.getByText('Moved')).toBeInTheDocument();
     });
 
     it('renders markers in start_year order', () => {
@@ -156,7 +156,7 @@ describe('MapMarkersTab', () => {
         store.dispatch(createMarker.fulfilled(
           { shelterId: 10, markers: [makeMarker({ id: 1 }), newMarker] },
           '',
-          { shelter_id: 10, latitude: 44, longitude: -71, name: 'New', start_year: 1975, change_type: 'Relocated', notes: '' },
+          { shelter_id: 10, latitude: 44, longitude: -71, name: 'New', start_year: 1975, change_type: 'Moved', notes: '' },
         ));
       });
       expect(screen.getAllByTestId('marker-row')).toHaveLength(2);
@@ -216,13 +216,6 @@ describe('MapMarkersTab', () => {
       expect(saveBtn).not.toBeDisabled();
     });
 
-    it('shows custom text input when Other is selected for change_type', () => {
-      const store = makeStore([]);
-      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
-      fireEvent.click(screen.getByRole('button', { name: /add.*marker/i }));
-      fireEvent.change(screen.getByLabelText(/change type/i), { target: { value: 'Other' } });
-      expect(screen.getByPlaceholderText(/describe/i)).toBeInTheDocument();
-    });
 
     it('closes form on Cancel', () => {
       const store = makeStore([]);

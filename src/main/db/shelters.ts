@@ -8,20 +8,35 @@ interface ShelterRow {
   end_year: number | null;
   description: string | null;
   slug: string;
-  longitude: number | null;
-  latitude: number | null;
   default_photo_id: number | null;
   is_gmc: number;
-  architecture: string | null;
-  built_by: string | null;
+  architecture_id: number | null;
+  builder_id: number | null;
   notes: string | null;
   created: string;
   updated: string;
   is_extant: number;
-  category: string | null;
+  category_id: number | null;
   show_on_web: number;
   photo_count: number;
+  // JOINed resolved names
+  architecture: string | null;
+  category: string | null;
+  built_by: string | null;
 }
+
+const SELECT_SHELTERS = `
+  SELECT s.*,
+    a.name              AS architecture,
+    c.category_name     AS category,
+    b.name              AS built_by,
+    COUNT(p.id)         AS photo_count
+  FROM shelters s
+  LEFT JOIN architectures a ON a.id = s.architecture_id
+  LEFT JOIN categories    c ON c.id = s.category_id
+  LEFT JOIN builders      b ON b.id = s.builder_id
+  LEFT JOIN photos        p ON p.shelter_id = s.id
+`;
 
 function rowToShelter(row: ShelterRow): Shelter {
   return {
@@ -31,8 +46,6 @@ function rowToShelter(row: ShelterRow): Shelter {
     end_year: row.end_year,
     description: row.description ?? '',
     slug: row.slug,
-    longitude: row.longitude,
-    latitude: row.latitude,
     default_photo_id: row.default_photo_id,
     is_gmc: Boolean(row.is_gmc),
     architecture: row.architecture ?? '',
@@ -50,13 +63,7 @@ function rowToShelter(row: ShelterRow): Shelter {
 export function getAllShelters(): Shelter[] {
   const db = getDb();
   const rows = db
-    .prepare(
-      `SELECT s.*, COUNT(p.id) as photo_count
-       FROM shelters s
-       LEFT JOIN photos p ON p.shelter_id = s.id
-       GROUP BY s.id
-       ORDER BY s.name`,
-    )
+    .prepare(`${SELECT_SHELTERS} GROUP BY s.id ORDER BY s.name`)
     .all() as ShelterRow[];
   return rows.map(rowToShelter);
 }
@@ -64,15 +71,34 @@ export function getAllShelters(): Shelter[] {
 export function getShelterById(id: number): Shelter | null {
   const db = getDb();
   const row = db
-    .prepare(
-      `SELECT s.*, COUNT(p.id) as photo_count
-       FROM shelters s
-       LEFT JOIN photos p ON p.shelter_id = s.id
-       WHERE s.id = ?
-       GROUP BY s.id`,
-    )
+    .prepare(`${SELECT_SHELTERS} WHERE s.id = ? GROUP BY s.id`)
     .get(id) as ShelterRow | undefined;
   return row ? rowToShelter(row) : null;
+}
+
+function resolveArchitectureId(db: ReturnType<typeof getDb>, name: string): number | null {
+  if (!name) return null;
+  const row = db
+    .prepare('SELECT id FROM architectures WHERE name = ?')
+    .get(name) as { id: number } | undefined;
+  return row?.id ?? null;
+}
+
+function resolveCategoryId(db: ReturnType<typeof getDb>, name: string): number | null {
+  if (!name) return null;
+  const row = db
+    .prepare('SELECT id FROM categories WHERE category_name = ?')
+    .get(name) as { id: number } | undefined;
+  return row?.id ?? null;
+}
+
+function resolveBuilderIdUpsert(db: ReturnType<typeof getDb>, name: string): number | null {
+  if (!name) return null;
+  db.prepare('INSERT OR IGNORE INTO builders (name) VALUES (?)').run(name);
+  const row = db
+    .prepare('SELECT id FROM builders WHERE name = ?')
+    .get(name) as { id: number } | undefined;
+  return row?.id ?? null;
 }
 
 export function createShelter(input: ShelterCreateInput): Shelter {
@@ -83,15 +109,16 @@ export function createShelter(input: ShelterCreateInput): Shelter {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+  const categoryId = resolveCategoryId(db, input.category);
+
   const result = db
     .prepare(
       `INSERT INTO shelters
-         (name, slug, start_year, category, is_gmc, is_extant, show_on_web,
-          architecture, built_by, description, notes, latitude, longitude, created, updated)
-       VALUES
-         (?, ?, ?, ?, ?, 1, 0, '', '', '', '', 44.0, -72.8, ?, ?)`,
+         (name, slug, start_year, category_id, is_gmc, is_extant, show_on_web,
+          architecture_id, builder_id, description, notes, created, updated)
+       VALUES (?, ?, ?, ?, ?, 1, 0, NULL, NULL, '', '', ?, ?)`,
     )
-    .run(input.name, slug, input.start_year, input.category, input.is_gmc ? 1 : 0, today, today);
+    .run(input.name, slug, input.start_year, categoryId, input.is_gmc ? 1 : 0, today, today);
 
   return getShelterById(result.lastInsertRowid as number) as Shelter;
 }
@@ -100,12 +127,16 @@ export function updateShelter(shelter: Shelter): Shelter {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
 
+  const architectureId = resolveArchitectureId(db, shelter.architecture);
+  const categoryId = resolveCategoryId(db, shelter.category);
+  const builderId = resolveBuilderIdUpsert(db, shelter.built_by);
+
   db.prepare(
     `UPDATE shelters SET
        name = ?, slug = ?, start_year = ?, end_year = ?, description = ?,
-       longitude = ?, latitude = ?, default_photo_id = ?, is_gmc = ?,
-       architecture = ?, built_by = ?, notes = ?, is_extant = ?,
-       category = ?, show_on_web = ?, updated = ?
+       default_photo_id = ?, is_gmc = ?,
+       architecture_id = ?, builder_id = ?, notes = ?, is_extant = ?,
+       category_id = ?, show_on_web = ?, updated = ?
      WHERE id = ?`,
   ).run(
     shelter.name,
@@ -113,15 +144,13 @@ export function updateShelter(shelter: Shelter): Shelter {
     shelter.start_year,
     shelter.end_year ?? null,
     shelter.description,
-    shelter.longitude ?? null,
-    shelter.latitude ?? null,
     shelter.default_photo_id ?? null,
     shelter.is_gmc ? 1 : 0,
-    shelter.architecture,
-    shelter.built_by,
+    architectureId,
+    builderId,
     shelter.notes,
     shelter.is_extant ? 1 : 0,
-    shelter.category,
+    categoryId,
     shelter.show_on_web ? 1 : 0,
     today,
     shelter.id,

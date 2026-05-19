@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
 import { loadShelters } from '../store/sheltersSlice';
 import { loadArchitectures } from '../store/architecturesSlice';
+import { loadCategories } from '../store/categoriesSlice';
 import Titlebar from '../components/AppShell/Titlebar';
 import AppHeader from '../components/AppShell/AppHeader';
 import AppBody from '../components/AppShell/AppBody';
@@ -18,6 +19,7 @@ export default function ShelterBrowser() {
   useEffect(() => {
     dispatch(loadShelters());
     dispatch(loadArchitectures());
+    dispatch(loadCategories());
   }, [dispatch]);
 
   const openSettings = (page: string) => setSettingsPage(page);

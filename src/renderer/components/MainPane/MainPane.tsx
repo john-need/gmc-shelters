@@ -122,8 +122,9 @@ export default function MainPane() {
               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
             <span style={{ fontFamily: 'var(--font-mono)' }}>
-              {s.latitude != null ? s.latitude.toFixed(4) : '—'}°N,{' '}
-              {s.longitude != null ? Math.abs(s.longitude).toFixed(4) : '—'}°W
+              {markers[0] != null
+                ? `${markers[0].latitude.toFixed(4)}°N, ${Math.abs(markers[0].longitude).toFixed(4)}°W`
+                : '—'}
             </span>
           </div>
         </div>

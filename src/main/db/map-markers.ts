@@ -12,7 +12,6 @@ interface MapMarkerRow {
   end_year: number | null;
   change_type: string;
   notes: string;
-  slug: string;
   is_extant: number;
   photo_id: number | null;
   created: string;
@@ -30,7 +29,6 @@ function rowToMapMarker(row: MapMarkerRow): MapMarker {
     end_year: row.end_year,
     change_type: row.change_type as MapMarker['change_type'],
     notes: row.notes,
-    slug: row.slug,
     is_extant: Boolean(row.is_extant),
     photo_id: row.photo_id,
     created: row.created,
@@ -55,14 +53,14 @@ export function getMarkersByShelter(shelterId: number): MapMarker[] {
 export function insertMapMarker(
   db: Database.Database,
   input: MapMarkerCreateInput,
-  shelter: { slug: string; is_extant: number | boolean; default_photo_id: number | null },
+  shelter: { is_extant: number | boolean; default_photo_id: number | null },
 ): void {
   const today = new Date().toISOString().slice(0, 10);
   db.prepare(
     `INSERT INTO map_markers
        (shelter_id, latitude, longitude, name, start_year, end_year, change_type, notes,
-        slug, is_extant, photo_id, created, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_extant, photo_id, created, updated)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     input.shelter_id,
     input.latitude,
@@ -72,7 +70,6 @@ export function insertMapMarker(
     null, // end_year set by recomputeEndYears
     input.change_type,
     input.notes,
-    shelter.slug,
     shelter.is_extant ? 1 : 0,
     shelter.default_photo_id ?? null,
     today,
@@ -132,12 +129,11 @@ export function deleteMapMarker(db: Database.Database, id: number): void {
 
 export function syncMarkersFromShelter(shelter: {
   id: number;
-  slug: string;
   is_extant: boolean;
   default_photo_id: number | null;
 }): void {
   const db = getDb();
   db.prepare(
-    'UPDATE map_markers SET slug = ?, is_extant = ?, photo_id = ? WHERE shelter_id = ?',
-  ).run(shelter.slug, shelter.is_extant ? 1 : 0, shelter.default_photo_id ?? null, shelter.id);
+    'UPDATE map_markers SET is_extant = ?, photo_id = ? WHERE shelter_id = ?',
+  ).run(shelter.is_extant ? 1 : 0, shelter.default_photo_id ?? null, shelter.id);
 }

@@ -5,6 +5,7 @@ import sourcesReducer from './sourcesSlice';
 import mapMarkersReducer from './mapMarkersSlice';
 import uiReducer from './uiSlice';
 import architecturesReducer from './architecturesSlice';
+import categoriesReducer from './categoriesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     mapMarkers: mapMarkersReducer,
     ui: uiReducer,
     architectures: architecturesReducer,
+    categories: categoriesReducer,
   },
 });
 

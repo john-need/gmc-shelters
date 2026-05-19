@@ -1,10 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setEditBuffer, revertEditBuffer, saveShelter } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
-import type { Shelter } from '../../../../shared/ipc-types';
-
-const CATEGORIES = ['Lodge', 'Cabin', 'Shelter', 'Lean-to', 'Camp', 'Privy', 'Other'];
+import type { Photo, Shelter } from '../../../../shared/ipc-types';
 
 function FlagCheck({
   on,
@@ -34,6 +33,20 @@ function FlagCheck({
   );
 }
 
+function formatYearRange(shelter: Shelter): string {
+  return `${shelter.start_year}${shelter.end_year ? `–${shelter.end_year}` : '–present'}`;
+}
+
+function formatPhotoDate(photo: Photo | null): string {
+  if (!photo?.date_taken) return 'Date unknown';
+  return photo.date_taken;
+}
+
+function buildPhotoUrl(repoRoot: string, slug: string, fileName: string): string {
+  const normalizedRoot = repoRoot.replace(/\\/g, '/').replace(/\/$/, '');
+  return encodeURI(`file://${normalizedRoot}/shelters/${slug}/photos/${fileName}`);
+}
+
 export default function ShelterTab() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer) as Shelter;
@@ -44,6 +57,40 @@ export default function ShelterTab() {
   );
 
   const archList = useSelector((state: RootState) => state.architectures.list);
+  const catList = useSelector((state: RootState) => state.categories.list);
+
+  const [repoRoot, setRepoRoot] = useState('');
+  const [isPhotoModalOpen, setPhotoModalOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (typeof window === 'undefined' || !window.api) return undefined;
+
+    window.api.app.getRepoRoot()
+      .then((root) => {
+        if (!cancelled) setRepoRoot(root);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          dispatch(showToast({ id: Date.now().toString(), message: 'Could not load local photo preview.' }));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!isPhotoModalOpen) return undefined;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPhotoModalOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isPhotoModalOpen]);
 
   if (!s) return null;
 
@@ -69,9 +116,21 @@ export default function ShelterTab() {
     }
   };
 
+  const defaultPhoto = s.default_photo_id
+    ? photos.find((photo) => photo.id === s.default_photo_id) ?? null
+    : null;
+  const defaultPhotoUrl = repoRoot && defaultPhoto
+    ? buildPhotoUrl(repoRoot, s.slug, defaultPhoto.file_name)
+    : '';
+  const photoCount = photos.length || s.photo_count || 0;
+  const publishedCount = photos.filter((photo) => photo.include_in_post).length;
+  const photoSummary = defaultPhoto
+    ? (defaultPhoto.title || defaultPhoto.file_name)
+    : 'No default photo selected';
+  const photoCaption = defaultPhoto?.caption || defaultPhoto?.description || 'Managed from the Photos tab.';
+
   return (
-    <div className="form-wrap">
-      {/* Identity */}
+    <div className="form-wrap shelter-tab">
       <div className="section-head">
         <span className="section-num">§ 01</span>
         <span className="section-title">Identity <em>& classification</em></span>
@@ -80,71 +139,123 @@ export default function ShelterTab() {
         </span>
       </div>
 
-      <div className="field-grid">
-        <div className="field col-span-2">
-          <label className="label">
-            Name <span className="req">*</span>
-          </label>
-          <input className="input" value={s.name} onChange={f('name')} />
+      <div className="shelter-identity-grid">
+        <div className="field-grid shelter-identity-fields">
+          <div className="field col-span-2">
+            <label className="label">
+              Name <span className="req">*</span>
+            </label>
+            <input className="input" value={s.name} onChange={f('name')} />
+          </div>
+
+          <div className="field">
+            <label className="label">
+              Slug <span className="hint">URL-safe</span>
+            </label>
+            <input className="input mono" value={s.slug} onChange={f('slug')} />
+          </div>
+
+          <div className="field">
+            <label className="label">Category</label>
+            <select className="select" value={s.category} onChange={f('category')}>
+              {s.category && !catList.some((c) => c.name === s.category) && (
+                <option value={s.category}>{s.category}</option>
+              )}
+              {catList.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="label">
+              Start year <span className="req">*</span>
+            </label>
+            <input className="input mono" type="number" value={s.start_year || ''} onChange={f('start_year')} />
+          </div>
+
+          <div className="field">
+            <label className="label">
+              End year <span className="hint">blank if extant</span>
+            </label>
+            <input
+              className="input mono"
+              type="number"
+              value={s.end_year || ''}
+              onChange={f('end_year')}
+              placeholder="—"
+            />
+          </div>
+
+          <div className="field col-span-2">
+            <label className="label">
+              Description <span className="hint">shown in public catalog</span>
+            </label>
+            <textarea className="textarea" rows={4} value={s.description || ''} onChange={f('description')} />
+          </div>
         </div>
 
-        <div className="field">
-          <label className="label">
-            Slug <span className="hint">URL-safe</span>
-          </label>
-          <input className="input mono" value={s.slug} onChange={f('slug')} />
-        </div>
-
-        <div className="field">
-          <label className="label">Category</label>
-          <select className="select" value={s.category} onChange={f('category')}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="field">
-          <label className="label">
-            Start year <span className="req">*</span>
-          </label>
-          <input className="input mono" type="number" value={s.start_year || ''} onChange={f('start_year')} />
-        </div>
-
-        <div className="field">
-          <label className="label">
-            End year <span className="hint">blank if extant</span>
-          </label>
-          <input
-            className="input mono"
-            type="number"
-            value={s.end_year || ''}
-            onChange={f('end_year')}
-            placeholder="—"
-          />
-        </div>
-
-        <div className="field col-span-2">
-          <label className="label">
-            Description <span className="hint">shown in public catalog</span>
-          </label>
-          <textarea className="textarea" rows={3} value={s.description || ''} onChange={f('description')} />
-        </div>
+        <button
+          type="button"
+          className={`shelter-media-card shelter-identity-media ${defaultPhoto ? 'has-photo' : ''}`}
+          onClick={() => defaultPhoto && setPhotoModalOpen(true)}
+          disabled={!defaultPhoto}
+          aria-label={defaultPhoto ? 'Open default photo preview' : 'No default photo selected'}
+        >
+          <div className="shelter-media-frame">
+            {defaultPhotoUrl ? (
+              <img
+                className="shelter-media-image"
+                src={defaultPhotoUrl}
+                alt={defaultPhoto.alt_text || defaultPhoto.title || `${s.name} default photograph`}
+              />
+            ) : (
+              <div className="shelter-media-placeholder" aria-hidden="true">
+                <span>{s.name.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+            <div className="shelter-media-overlay">
+              <span className="shelter-media-badge">Default photo</span>
+              {defaultPhoto && <span className="shelter-media-badge muted">#{defaultPhoto.id}</span>}
+            </div>
+          </div>
+          <div className="shelter-media-meta">
+            <div className="shelter-media-meta-row">
+              <div>
+                <div className="shelter-media-title">{photoSummary}</div>
+                <div className="shelter-media-sub">
+                  {defaultPhoto
+                    ? `${defaultPhoto.photographer || 'Unknown photographer'} · ${formatPhotoDate(defaultPhoto)}`
+                    : 'Pick a lead image in the Photos tab to feature it here.'}
+                </div>
+              </div>
+              <div className="shelter-media-side-meta">
+                <span className="shelter-media-side-value">{formatYearRange(s)}</span>
+                <span className="shelter-media-side-sub">{photoCount} photos · {publishedCount} published</span>
+              </div>
+            </div>
+            <div className="shelter-media-badges-inline">
+              <span className="id">#{String(s.id).padStart(6, '0')}</span>
+              <span className={`badge ${s.is_extant ? 'extant' : 'gone'}`}>
+                {s.is_extant ? 'Extant' : 'Lost'}
+              </span>
+              {s.is_gmc && <span className="badge gmc">GMC</span>}
+              {s.show_on_web && <span className="badge web">Web</span>}
+            </div>
+            <p className="shelter-media-caption">{photoCaption}</p>
+          </div>
+        </button>
       </div>
 
-      {/* Provenance */}
       <div className="section-head">
         <span className="section-num">§ 02</span>
-        <span className="section-title">Provenance <em>& construction</em></span>
+        <span className="section-title">Provenance <em>& records</em></span>
       </div>
 
       <div className="field-grid">
         <div className="field">
           <label className="label">Architecture</label>
           <select className="select" value={s.architecture} onChange={f('architecture')}>
-            {/* Current value not in list: show it as first option so it's not silently dropped */}
             {s.architecture && !archList.some((a) => a.name === s.architecture) && (
               <option value={s.architecture}>{s.architecture}</option>
             )}
@@ -163,11 +274,10 @@ export default function ShelterTab() {
           <label className="label">
             Internal notes <span className="hint">not published</span>
           </label>
-          <textarea className="textarea" rows={2} value={s.notes || ''} onChange={f('notes')} />
+          <textarea className="textarea" rows={3} value={s.notes || ''} onChange={f('notes')} />
         </div>
       </div>
 
-      {/* Flags */}
       <div className="section-head">
         <span className="section-num">§ 03</span>
         <span className="section-title">Flags <em>& visibility</em></span>
@@ -194,42 +304,36 @@ export default function ShelterTab() {
         />
       </div>
 
-      {/* System */}
       <div className="section-head" style={{ marginTop: 28 }}>
         <span className="section-num">§ 04</span>
-        <span className="section-title">System</span>
+        <span className="section-title">System <em>& sync state</em></span>
         <span className="section-hint">read-only</span>
       </div>
 
-      <div className="field-grid thirds">
-        <div className="field">
-          <label className="label">Record ID</label>
-          <input className="input mono" value={`#${String(s.id).padStart(6, '0')}`} disabled readOnly />
+      <div className="shelter-system-grid">
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Record ID</span>
+          <strong>#{String(s.id).padStart(6, '0')}</strong>
         </div>
-        <div className="field">
-          <label className="label">Default photo</label>
-          <input
-            className="input mono"
-            value={s.default_photo_id ? `photo_${s.default_photo_id}` : '—'}
-            disabled
-            readOnly
-          />
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Default photo</span>
+          <strong>{s.default_photo_id ? `photo_${s.default_photo_id}` : '—'}</strong>
         </div>
-        <div className="field">
-          <label className="label">Photo count</label>
-          <input className="input mono" value={photos.length || s.photo_count || 0} disabled readOnly />
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Photo count</span>
+          <strong>{photoCount}</strong>
         </div>
-        <div className="field">
-          <label className="label">Created</label>
-          <input className="input mono" value={s.created} disabled readOnly />
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Created</span>
+          <strong className="mono">{s.created}</strong>
         </div>
-        <div className="field">
-          <label className="label">Updated</label>
-          <input className="input mono" value={s.updated} disabled readOnly />
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Updated</span>
+          <strong className="mono">{s.updated}</strong>
         </div>
-        <div className="field">
-          <label className="label">Filesystem path</label>
-          <input className="input mono" value={`/shelters/${s.slug}/`} disabled readOnly />
+        <div className="shelter-system-card">
+          <span className="shelter-system-label">Filesystem path</span>
+          <strong className="mono">/shelters/{s.slug}/</strong>
         </div>
       </div>
 
@@ -265,6 +369,51 @@ export default function ShelterTab() {
           </button>
         </div>
       </div>
+
+      {isPhotoModalOpen && defaultPhoto && (
+        <div className="shelter-photo-modal-backdrop" onClick={() => setPhotoModalOpen(false)}>
+          <div
+            className="shelter-photo-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Default photo preview"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="shelter-photo-modal-close"
+              onClick={() => setPhotoModalOpen(false)}
+              aria-label="Close default photo preview"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+
+            <div className="shelter-photo-modal-frame">
+              {defaultPhotoUrl ? (
+                <img
+                  className="shelter-photo-modal-image"
+                  src={defaultPhotoUrl}
+                  alt={defaultPhoto.alt_text || defaultPhoto.title || `${s.name} default photograph`}
+                />
+              ) : (
+                <div className="shelter-photo-modal-placeholder" aria-hidden="true">
+                  <span>{s.name.charAt(0).toUpperCase()}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="shelter-photo-modal-meta">
+              <div className="shelter-photo-modal-title">{photoSummary}</div>
+              <div className="shelter-photo-modal-sub">
+                {defaultPhoto.photographer || 'Unknown photographer'} · {formatPhotoDate(defaultPhoto)}
+              </div>
+              <p>{photoCaption}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

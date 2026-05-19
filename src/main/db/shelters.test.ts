@@ -5,14 +5,37 @@ jest.mock('./connection');
 import { getDb } from './connection';
 
 const SCHEMA = `
+  CREATE TABLE architectures (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+    created TEXT NOT NULL DEFAULT (date('now')),
+    updated TEXT NOT NULL DEFAULT (date('now'))
+  );
+  CREATE TABLE categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+    created TEXT NOT NULL DEFAULT (date('now')),
+    updated TEXT NOT NULL DEFAULT (date('now'))
+  );
+  CREATE TABLE builders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'organization',
+    notes TEXT NOT NULL DEFAULT '',
+    created TEXT NOT NULL DEFAULT (date('now')),
+    updated TEXT NOT NULL DEFAULT (date('now'))
+  );
   CREATE TABLE shelters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT, start_year INTEGER, end_year INTEGER,
     description TEXT, slug TEXT NOT NULL UNIQUE,
-    longitude REAL, latitude REAL, default_photo_id INTEGER,
-    is_gmc INTEGER DEFAULT 0, architecture TEXT, built_by TEXT, notes TEXT,
-    created TEXT, updated TEXT, is_extant INTEGER DEFAULT 1,
-    category TEXT, show_on_web INTEGER DEFAULT 0
+    default_photo_id INTEGER,
+    is_gmc INTEGER DEFAULT 0,
+    architecture_id INTEGER REFERENCES architectures(id),
+    builder_id INTEGER REFERENCES builders(id),
+    notes TEXT, created TEXT, updated TEXT,
+    is_extant INTEGER DEFAULT 1,
+    category_id INTEGER REFERENCES categories(id),
+    show_on_web INTEGER DEFAULT 0
   );
   CREATE TABLE photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

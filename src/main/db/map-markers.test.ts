@@ -12,11 +12,6 @@ import {
 jest.mock('./connection');
 import { getDb } from './connection';
 
-const MIGRATION_SQL = fs.readFileSync(
-  path.join(__dirname, '../../../database/migrations/003-add-map-markers-table.sql'),
-  'utf8',
-);
-
 const SCHEMA = `
   CREATE TABLE shelters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,15 +24,30 @@ const SCHEMA = `
     created TEXT NOT NULL DEFAULT '2020-01-01',
     updated TEXT NOT NULL DEFAULT '2020-01-01'
   );
-  ${MIGRATION_SQL}
+  CREATE TABLE map_markers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    shelter_id  INTEGER NOT NULL REFERENCES shelters(id) ON DELETE CASCADE,
+    latitude    REAL    NOT NULL,
+    longitude   REAL    NOT NULL,
+    name        TEXT    NOT NULL DEFAULT '',
+    start_year  INTEGER NOT NULL,
+    end_year    INTEGER,
+    change_type TEXT    NOT NULL DEFAULT 'Original',
+    notes       TEXT    NOT NULL DEFAULT '',
+    is_extant   INTEGER NOT NULL DEFAULT 0,
+    photo_id    INTEGER,
+    created     TEXT    NOT NULL DEFAULT (date('now')),
+    updated     TEXT    NOT NULL DEFAULT (date('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_map_markers_shelter ON map_markers(shelter_id);
 `;
 
 function makeShelter(db: Database.Database, overrides: Record<string, unknown> = {}) {
   const o = { slug: 'test-shelter', is_extant: 1, default_photo_id: null, start_year: 1960, end_year: 1990, ...overrides };
   db.exec(`INSERT INTO shelters (name, slug, is_extant, default_photo_id, start_year, end_year, created, updated)
     VALUES ('Test', '${o.slug}', ${o.is_extant}, ${o.default_photo_id ?? 'NULL'}, ${o.start_year}, ${o.end_year ?? 'NULL'}, '2020-01-01', '2020-01-01')`);
-  return db.prepare('SELECT id, slug, is_extant, default_photo_id, start_year, end_year FROM shelters ORDER BY id DESC LIMIT 1').get() as
-    { id: number; slug: string; is_extant: number; default_photo_id: number | null; start_year: number; end_year: number | null };
+  return db.prepare('SELECT id, is_extant, default_photo_id, start_year, end_year FROM shelters ORDER BY id DESC LIMIT 1').get() as
+    { id: number; is_extant: number; default_photo_id: number | null; start_year: number; end_year: number | null };
 }
 
 function insertAndGet(db: Database.Database, shelter: ReturnType<typeof makeShelter>, overrides: Record<string, unknown> = {}) {
@@ -75,17 +85,17 @@ describe('db/map-markers', () => {
     });
 
     it('returns markers ordered by start_year ascending', () => {
-      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, slug, is_extant) VALUES
-        (${shelter.id}, 44.0, -71.0, 'B', 1975, 1990, 'Relocated', 'test-shelter', 1),
-        (${shelter.id}, 44.0, -71.0, 'A', 1960, 1975, 'Original', 'test-shelter', 1)`);
+      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, is_extant) VALUES
+        (${shelter.id}, 44.0, -71.0, 'B', 1975, 1990, 'Moved', 1),
+        (${shelter.id}, 44.0, -71.0, 'A', 1960, 1975, 'Original', 1)`);
       const markers = getMarkersByShelter(shelter.id);
       expect(markers[0].name).toBe('A');
       expect(markers[1].name).toBe('B');
     });
 
     it('converts is_extant integer to boolean', () => {
-      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, slug, is_extant) VALUES
-        (${shelter.id}, 44.0, -71.0, 'X', 1960, 1990, 'Original', 'test-shelter', 1)`);
+      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, is_extant) VALUES
+        (${shelter.id}, 44.0, -71.0, 'X', 1960, 1990, 'Original', 1)`);
       const [marker] = getMarkersByShelter(shelter.id);
       expect(typeof marker.is_extant).toBe('boolean');
       expect(marker.is_extant).toBe(true);
@@ -93,8 +103,8 @@ describe('db/map-markers', () => {
 
     it('does not return markers from other shelters', () => {
       const other = makeShelter(db, { slug: 'other' });
-      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, slug, is_extant) VALUES
-        (${other.id}, 44.0, -71.0, 'Other', 1960, 1990, 'Original', 'other', 1)`);
+      db.exec(`INSERT INTO map_markers (shelter_id, latitude, longitude, name, start_year, end_year, change_type, is_extant) VALUES
+        (${other.id}, 44.0, -71.0, 'Other', 1960, 1990, 'Original', 1)`);
       expect(getMarkersByShelter(shelter.id)).toEqual([]);
     });
   });
@@ -119,7 +129,6 @@ describe('db/map-markers', () => {
 
     it('copies denormalized fields from shelter', () => {
       const marker = insertAndGet(db, shelter);
-      expect(marker.slug).toBe(shelter.slug);
       expect(marker.is_extant).toBe(Boolean(shelter.is_extant));
       expect(marker.photo_id).toBe(shelter.default_photo_id);
     });
@@ -137,12 +146,12 @@ describe('db/map-markers', () => {
         latitude: 45.0,
         longitude: -72.0,
         name: 'New Name',
-        change_type: 'Relocated',
+        change_type: 'Moved',
         notes: 'updated',
       });
       expect(updated.name).toBe('New Name');
       expect(updated.latitude).toBe(45.0);
-      expect(updated.change_type).toBe('Relocated');
+      expect(updated.change_type).toBe('Moved');
     });
 
     it('does not change start_year or end_year', () => {
@@ -172,7 +181,7 @@ describe('db/map-markers', () => {
       // Use a non-extant shelter so the last marker gets shelter.end_year (not null)
       const goneShelter = makeShelter(db, { slug: 'gone', is_extant: 0, end_year: 1990 });
       insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'A', start_year: 1960, change_type: 'Original', notes: '' }, goneShelter);
-      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'B', start_year: 1975, change_type: 'Relocated', notes: '' }, goneShelter);
+      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'B', start_year: 1975, change_type: 'Moved', notes: '' }, goneShelter);
       recomputeEndYears(db, goneShelter.id, goneShelter);
       const markers = getMarkersByShelter(goneShelter.id);
       expect(markers[0].end_year).toBe(1974); // 1975 - 1
