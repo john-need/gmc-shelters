@@ -59,6 +59,10 @@ const api: ElectronAPI = {
   app: {
     getVersion: () => ipcRenderer.invoke(CHANNELS.APP_GET_VERSION),
     getRepoRoot: () => ipcRenderer.invoke(CHANNELS.APP_GET_REPO_ROOT),
+    closeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_CLOSE),
+    minimizeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_MINIMIZE),
+    toggleFullscreen: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_TOGGLE_FULLSCREEN),
+    isFullscreen: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_IS_FULLSCREEN),
   },
 };
 

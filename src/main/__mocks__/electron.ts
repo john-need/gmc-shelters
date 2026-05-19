@@ -11,20 +11,29 @@ const app = {
 
 class BrowserWindowMock {
   static getAllWindows = jest.fn(() => []);
+  static fromWebContents = jest.fn();
 
   loadURL = jest.fn();
   loadFile = jest.fn();
   on = jest.fn();
+  close = jest.fn();
+  minimize = jest.fn();
   restore = jest.fn();
   focus = jest.fn();
   show = jest.fn();
   isMinimized = jest.fn(() => false);
+  isFullScreen = jest.fn(() => false);
+  setFullScreen = jest.fn();
   webContents = {
     openDevTools: jest.fn(),
     send: jest.fn(),
   };
 
-  constructor(_options?: unknown) {}
+  constructor(_options?: unknown) {
+    BrowserWindowMock.fromWebContents.mockImplementation((webContents: unknown) =>
+      webContents === this.webContents ? this : null,
+    );
+  }
 }
 
 const ipcMain = {

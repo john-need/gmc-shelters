@@ -50,6 +50,10 @@ const mockApi: ElectronAPI = {
   app: {
     getVersion: jest.fn().mockResolvedValue('0.1.0'),
     getRepoRoot: jest.fn().mockResolvedValue('/tmp'),
+    closeWindow: noop,
+    minimizeWindow: noop,
+    toggleFullscreen: noop,
+    isFullscreen: jest.fn().mockResolvedValue(false),
   },
 };
 

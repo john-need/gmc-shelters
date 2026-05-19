@@ -1,10 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { app } from 'electron';
+import { historyFileName } from '../../shared/history-file';
 import { log } from '../logger';
 
 function historyPath(slug: string): string {
-  return path.join(app.getAppPath(), 'shelters', slug, 'history.md');
+  return path.join(app.getAppPath(), 'shelters', slug, historyFileName(slug));
 }
 
 export async function readHistory(slug: string): Promise<string> {

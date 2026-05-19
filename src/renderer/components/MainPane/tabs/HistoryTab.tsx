@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
+import { historyFileName } from '../../../../shared/history-file';
 import { setHistoryContent, saveHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 
@@ -83,6 +84,7 @@ export default function HistoryTab() {
   const wordCount = (value.match(/\S+/g) || []).length;
   const charCount = value.length;
   const lineCount = value.split('\n').length;
+  const fileName = historyFileName(s.slug);
 
   const onChange = (next: string) => dispatch(setHistoryContent(next));
 
@@ -110,7 +112,7 @@ export default function HistoryTab() {
   const handleSave = async () => {
     const result = await dispatch(saveHistory({ slug: s.slug, content: value }));
     if (saveHistory.fulfilled.match(result)) {
-      dispatch(showToast({ id: Date.now().toString(), message: `Saved · /shelters/${s.slug}/history.md` }));
+      dispatch(showToast({ id: Date.now().toString(), message: `Saved · /shelters/${s.slug}/${fileName}` }));
     }
   };
 
@@ -165,14 +167,14 @@ export default function HistoryTab() {
           {dirty ? (
             <>
               <span style={{ color: 'var(--rust)', fontWeight: 600 }}>● Modified</span>
-              {' · history.md'}
+              {` · ${fileName}`}
             </>
           ) : (
             <>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: 4 }}>
                 <path d="M5 12.5 10 17 19 7.5"/>
               </svg>
-              Saved · history.md
+              {`Saved · ${fileName}`}
             </>
           )}
         </span>
@@ -183,7 +185,7 @@ export default function HistoryTab() {
           <div className="md-pane-head">
             <span>Source</span>
             <span>
-              <span className="filename">/shelters/{s.slug}/history.md</span>
+              <span className="filename">/shelters/{s.slug}/{fileName}</span>
               {dirty && <span className="dirty"> ·</span>}
             </span>
           </div>

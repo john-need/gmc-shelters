@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
+import { historyFileName } from '../../../shared/history-file';
 import { createShelter } from '../../store/sheltersSlice';
 import { showToast, setActiveTab } from '../../store/uiSlice';
 
@@ -21,6 +22,7 @@ export default function NewShelterModal({ onClose }: Props) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '') || 'new-shelter';
+  const fileName = historyFileName(slug);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +42,7 @@ export default function NewShelterModal({ onClose }: Props) {
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <div className="modal-head">
           <h2>Add a new shelter record</h2>
-          <div className="sub">§ creates row · creates folder · writes history.md</div>
+          <div className="sub">§ creates row · creates folder · writes {fileName}</div>
         </div>
         <div className="modal-body">
           <div className="field">
@@ -106,7 +108,7 @@ export default function NewShelterModal({ onClose }: Props) {
             <div>Will create:</div>
             <div style={{ color: 'var(--ink-1)' }}>· DB row in <strong>shelters</strong></div>
             <div style={{ color: 'var(--ink-1)' }}>· folder <strong>/shelters/{slug}/</strong></div>
-            <div style={{ color: 'var(--ink-1)' }}>· file <strong>/shelters/{slug}/history.md</strong></div>
+            <div style={{ color: 'var(--ink-1)' }}>· file <strong>/shelters/{slug}/{fileName}</strong></div>
           </div>
         </div>
         <div className="modal-foot">

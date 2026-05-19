@@ -29,11 +29,7 @@ describe('fs/history', () => {
       (fsp.readFile as jest.Mock).mockResolvedValue('');
       await readHistory('my-slug');
       expect(fsp.readFile).toHaveBeenCalledWith(
-        expect.stringContaining('my-slug'),
-        'utf8',
-      );
-      expect(fsp.readFile).toHaveBeenCalledWith(
-        expect.stringContaining('/base/'),
+        '/base/shelters/my-slug/my-slug.md',
         'utf8',
       );
     });
@@ -44,9 +40,9 @@ describe('fs/history', () => {
       (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
       (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
       await writeHistory('my-slug', '# Content');
-      expect(fsp.mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true });
+      expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-slug', { recursive: true });
       expect(fsp.writeFile).toHaveBeenCalledWith(
-        expect.stringContaining('my-slug'),
+        '/base/shelters/my-slug/my-slug.md',
         '# Content',
         'utf8',
       );

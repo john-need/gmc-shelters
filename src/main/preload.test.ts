@@ -26,4 +26,14 @@ describe('preload contextBridge', () => {
     const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, Record<string, unknown>>];
     expect(typeof api.shelters.getAll).toBe('function');
   });
+
+  it('app window controls are exposed as functions', async () => {
+    const { contextBridge } = await import('electron');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, Record<string, unknown>>];
+    expect(typeof api.app.closeWindow).toBe('function');
+    expect(typeof api.app.minimizeWindow).toBe('function');
+    expect(typeof api.app.toggleFullscreen).toBe('function');
+    expect(typeof api.app.isFullscreen).toBe('function');
+  });
 });

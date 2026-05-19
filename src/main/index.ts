@@ -44,6 +44,15 @@ function buildMenu(): Electron.Menu {
         { role: 'zoom' },
       ],
     },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { type: 'separator' },
+        { role: 'toggleDevTools', accelerator: 'Alt+Command+I' },
+      ],
+    },
   ]);
 }
 
