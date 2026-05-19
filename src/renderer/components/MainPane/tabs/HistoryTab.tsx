@@ -4,6 +4,7 @@ import type { AppDispatch, RootState } from '../../../store';
 import { historyFileName } from '../../../../shared/history-file';
 import { setHistoryContent, saveHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
+import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
 
 function inline(s: string): string {
   s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -77,6 +78,7 @@ export default function HistoryTab() {
   const s = useSelector((state: RootState) => state.shelters.editBuffer);
   const value = useSelector((state: RootState) => state.shelters.historyContent);
   const dirty = useSelector((state: RootState) => state.shelters.historyDirty);
+  const missing = useSelector((state: RootState) => state.shelters.historyMissing);
   const ref = useRef<HTMLTextAreaElement>(null);
 
   if (!s) return null;
@@ -85,6 +87,7 @@ export default function HistoryTab() {
   const charCount = value.length;
   const lineCount = value.split('\n').length;
   const fileName = historyFileName(s.slug);
+  const filePath = buildHistoryFileDisplayPath(loadStoredPaths().SHELTERS_ROOT, s.slug);
 
   const onChange = (next: string) => dispatch(setHistoryContent(next));
 
@@ -112,7 +115,7 @@ export default function HistoryTab() {
   const handleSave = async () => {
     const result = await dispatch(saveHistory({ slug: s.slug, content: value }));
     if (saveHistory.fulfilled.match(result)) {
-      dispatch(showToast({ id: Date.now().toString(), message: `Saved · /shelters/${s.slug}/${fileName}` }));
+      dispatch(showToast({ id: Date.now().toString(), message: `Saved · ${filePath}` }));
     }
   };
 
@@ -180,12 +183,19 @@ export default function HistoryTab() {
         </span>
       </div>
 
+      {missing && (
+        <div className="settings-inline-error" style={{ margin: '0 12px 12px' }}>
+          History file missing at <code style={{ fontFamily: 'var(--font-mono)' }}>{filePath}</code>.
+          Save file to create it.
+        </div>
+      )}
+
       <div className="md-split">
         <div className="md-pane">
           <div className="md-pane-head">
             <span>Source</span>
             <span>
-              <span className="filename">/shelters/{s.slug}/{fileName}</span>
+              <span className="filename">{filePath}</span>
               {dirty && <span className="dirty"> ·</span>}
             </span>
           </div>

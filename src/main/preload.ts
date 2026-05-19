@@ -34,9 +34,10 @@ const api: ElectronAPI = {
     upload: (input: PhotoUploadInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPLOAD, input),
   },
   history: {
-    read: (slug: string) => ipcRenderer.invoke(CHANNELS.HISTORY_READ, { slug }),
-    write: (slug: string, content: string) =>
-      ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { slug, content }),
+    read: (slug: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_READ, { slug, sheltersRoot }),
+    write: (slug: string, content: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { slug, content, sheltersRoot }),
   },
   sources: {
     getByShelter: (shelterId: number) =>
@@ -59,6 +60,11 @@ const api: ElectronAPI = {
   app: {
     getVersion: () => ipcRenderer.invoke(CHANNELS.APP_GET_VERSION),
     getRepoRoot: () => ipcRenderer.invoke(CHANNELS.APP_GET_REPO_ROOT),
+    browseForDatabasePath: (defaultPath?: string) =>
+      ipcRenderer.invoke(CHANNELS.APP_BROWSE_DATABASE_PATH, { defaultPath }),
+    browseForDirectoryPath: (defaultPath?: string) =>
+      ipcRenderer.invoke(CHANNELS.APP_BROWSE_DIRECTORY_PATH, { defaultPath }),
+    validatePath: (input: string) => ipcRenderer.invoke(CHANNELS.APP_VALIDATE_PATH, { input }),
     closeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_CLOSE),
     minimizeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_MINIMIZE),
     toggleFullscreen: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_TOGGLE_FULLSCREEN),

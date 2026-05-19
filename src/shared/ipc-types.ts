@@ -31,6 +31,9 @@ export const CHANNELS = {
   SHELL_OPEN_EXTERNAL: 'shell:openExternal',
   APP_GET_VERSION: 'app:getVersion',
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
+  APP_BROWSE_DATABASE_PATH: 'app:browseDatabasePath',
+  APP_BROWSE_DIRECTORY_PATH: 'app:browseDirectoryPath',
+  APP_VALIDATE_PATH: 'app:validatePath',
   APP_WINDOW_CLOSE: 'app:windowClose',
   APP_WINDOW_MINIMIZE: 'app:windowMinimize',
   APP_WINDOW_TOGGLE_FULLSCREEN: 'app:windowToggleFullscreen',
@@ -195,6 +198,19 @@ export interface PhotoUploadInput {
   title?: string;
 }
 
+export interface AppPathValidation {
+  input: string;
+  resolvedPath: string;
+  exists: boolean;
+  isFile: boolean;
+  isDirectory: boolean;
+}
+
+export interface HistoryReadResult {
+  content: string;
+  missing: boolean;
+}
+
 export interface ElectronAPI {
   architectures: {
     getAll: () => Promise<Architecture[]>;
@@ -223,8 +239,8 @@ export interface ElectronAPI {
     upload: (input: PhotoUploadInput) => Promise<Photo>;
   };
   history: {
-    read: (slug: string) => Promise<string>;
-    write: (slug: string, content: string) => Promise<void>;
+    read: (slug: string, sheltersRoot: string) => Promise<HistoryReadResult>;
+    write: (slug: string, content: string, sheltersRoot: string) => Promise<void>;
   };
   sources: {
     getByShelter: (shelterId: number) => Promise<Source[]>;
@@ -244,6 +260,9 @@ export interface ElectronAPI {
   app: {
     getVersion: () => Promise<string>;
     getRepoRoot: () => Promise<string>;
+    browseForDatabasePath: (defaultPath?: string) => Promise<string | null>;
+    browseForDirectoryPath: (defaultPath?: string) => Promise<string | null>;
+    validatePath: (input: string) => Promise<AppPathValidation>;
     closeWindow: () => Promise<void>;
     minimizeWindow: () => Promise<void>;
     toggleFullscreen: () => Promise<void>;

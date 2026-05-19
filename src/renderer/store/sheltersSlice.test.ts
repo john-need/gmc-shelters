@@ -4,6 +4,8 @@ import sheltersReducer, {
   revertEditBuffer,
   setHistoryContent,
   clearDirty,
+  loadHistory,
+  saveHistory,
 } from './sheltersSlice';
 import type { SheltersState } from './sheltersSlice';
 import type { Shelter } from '../../shared/ipc-types';
@@ -27,6 +29,7 @@ const initial: SheltersState = {
   historyContent: '',
   historyOriginal: '',
   historyDirty: false,
+  historyMissing: false,
 };
 
 describe('sheltersSlice', () => {
@@ -96,5 +99,36 @@ describe('sheltersSlice', () => {
     const cleared = sheltersReducer(dirty, clearDirty());
     expect(cleared.dirty).toBe(false);
     expect(cleared.historyDirty).toBe(false);
+  });
+
+  it('loadHistory uses the saved shelters root from localStorage', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    window.api.history.read = jest.fn().mockResolvedValue({ content: '# Loaded', missing: false });
+
+    await loadHistory('test-shelter')(jest.fn(), () => ({}), undefined);
+
+    expect(window.api.history.read).toHaveBeenCalledWith('test-shelter', '/custom/shelters');
+  });
+
+  it('saveHistory uses the saved shelters root from localStorage', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    window.api.history.write = jest.fn().mockResolvedValue(undefined);
+
+    await saveHistory({ slug: 'test-shelter', content: '# Updated' })(jest.fn(), () => ({}), undefined);
+
+    expect(window.api.history.write).toHaveBeenCalledWith('test-shelter', '# Updated', '/custom/shelters');
+  });
+
+  it('stores the missing-file flag from loadHistory', () => {
+    const action = {
+      type: loadHistory.fulfilled.type,
+      payload: { content: '', missing: true },
+    };
+
+    const state = sheltersReducer(initial, action);
+
+    expect(state.historyContent).toBe('');
+    expect(state.historyMissing).toBe(true);
+    expect(state.historyDirty).toBe(false);
   });
 });

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
+import type { HistoryReadResult, Shelter, ShelterCreateInput } from '../../shared/ipc-types';
+import { loadStoredPaths } from '../pathSettings';
 
 export interface SheltersState {
   list: Shelter[];
@@ -11,6 +12,7 @@ export interface SheltersState {
   historyContent: string;
   historyOriginal: string;
   historyDirty: boolean;
+  historyMissing: boolean;
 }
 
 const initialState: SheltersState = {
@@ -23,6 +25,7 @@ const initialState: SheltersState = {
   historyContent: '',
   historyOriginal: '',
   historyDirty: false,
+  historyMissing: false,
 };
 
 export const loadShelters = createAsyncThunk('shelters/loadAll', async () => {
@@ -90,9 +93,9 @@ export const loadHistory = createAsyncThunk(
   'shelters/loadHistory',
   async (slug: string) => {
     if (typeof window !== 'undefined' && window.api) {
-      return window.api.history.read(slug);
+      return window.api.history.read(slug, loadStoredPaths().SHELTERS_ROOT);
     }
-    return '';
+    return { content: '', missing: false } satisfies HistoryReadResult;
   },
 );
 
@@ -100,7 +103,7 @@ export const saveHistory = createAsyncThunk(
   'shelters/saveHistory',
   async ({ slug, content }: { slug: string; content: string }) => {
     if (typeof window !== 'undefined' && window.api) {
-      await window.api.history.write(slug, content);
+      await window.api.history.write(slug, content, loadStoredPaths().SHELTERS_ROOT);
     }
     return content;
   },
@@ -193,15 +196,18 @@ const sheltersSlice = createSlice({
         state.historyContent = '';
         state.historyOriginal = '';
         state.historyDirty = false;
+        state.historyMissing = false;
       })
       .addCase(loadHistory.fulfilled, (state, action) => {
-        state.historyContent = action.payload;
-        state.historyOriginal = action.payload;
+        state.historyContent = action.payload.content;
+        state.historyOriginal = action.payload.content;
         state.historyDirty = false;
+        state.historyMissing = action.payload.missing;
       })
       .addCase(saveHistory.fulfilled, (state, action) => {
         state.historyOriginal = action.payload;
         state.historyDirty = false;
+        state.historyMissing = false;
       });
   },
 });
