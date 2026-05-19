@@ -168,10 +168,6 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!s.title && !s.author) {
-      alert('A source needs at least a title or an author.');
-      return;
-    }
     onSave(s);
   };
 
@@ -198,7 +194,7 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
 
           <div className="field-grid" style={{ marginTop: 16, marginBottom: 0 }}>
             <div className="field col-span-2">
-              <label className="label">Author <span className="hint">"Last, First" — leave blank for institutional</span></label>
+              <label className="label">Author <span className="hint">&quot;Last, First&quot; — leave blank for institutional</span></label>
               <input className="input" value={s.author ?? ''} onChange={set('author')} placeholder="Calloway, Henry" />
             </div>
             <div className="field col-span-2">
@@ -402,7 +398,7 @@ export default function SourcesTab() {
       return 0;
     });
     return xs;
-  }, [sources, query, type, sort, sortDir]);
+  }, [s, sources, query, type, sort, sortDir]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};

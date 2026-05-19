@@ -1,6 +1,8 @@
 jest.mock('electron');
 
+import fs from 'fs';
 import { ipcMain, shell, app, BrowserWindow } from 'electron';
+import { dialog } from 'electron';
 import { registerShellHandlers } from './shell';
 import { CHANNELS } from '@shared/ipc-types';
 
@@ -27,6 +29,9 @@ describe('ipc/shell', () => {
     expect(registered).toContain(CHANNELS.SHELL_OPEN_EXTERNAL);
     expect(registered).toContain(CHANNELS.APP_GET_VERSION);
     expect(registered).toContain(CHANNELS.APP_GET_REPO_ROOT);
+    expect(registered).toContain(CHANNELS.APP_BROWSE_DATABASE_PATH);
+    expect(registered).toContain(CHANNELS.APP_BROWSE_DIRECTORY_PATH);
+    expect(registered).toContain(CHANNELS.APP_VALIDATE_PATH);
     expect(registered).toContain(CHANNELS.APP_WINDOW_CLOSE);
     expect(registered).toContain(CHANNELS.APP_WINDOW_MINIMIZE);
     expect(registered).toContain(CHANNELS.APP_WINDOW_TOGGLE_FULLSCREEN);
@@ -50,6 +55,63 @@ describe('ipc/shell', () => {
     (app.getAppPath as jest.Mock).mockReturnValue('/path/to/app');
     const handler = getHandler(CHANNELS.APP_GET_REPO_ROOT);
     expect(handler(null)).toBe('/path/to/app');
+  });
+
+  it('APP_BROWSE_DATABASE_PATH opens a filtered file picker and returns the chosen path', async () => {
+    const sender = { id: 'wc' };
+    const fromWebContents = mockFromWebContents({});
+    (app.getAppPath as jest.Mock).mockReturnValue('/repo');
+    (dialog.showOpenDialog as jest.Mock).mockResolvedValue({
+      canceled: false,
+      filePaths: ['/repo/database/gmc_shelters.sqlite'],
+    });
+
+    const handler = getHandler(CHANNELS.APP_BROWSE_DATABASE_PATH);
+    await expect(handler({ sender }, { defaultPath: 'database/gmc_shelters.sqlite' })).resolves.toBe(
+      '/repo/database/gmc_shelters.sqlite',
+    );
+
+    expect(fromWebContents).toHaveBeenCalledWith(sender);
+    expect(dialog.showOpenDialog).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        title: 'Select SQLite database',
+        defaultPath: '/repo/database/gmc_shelters.sqlite',
+        properties: ['openFile'],
+        filters: [{ name: 'SQLite Databases', extensions: ['sqlite', 'sqlite3', 'db'] }],
+      }),
+    );
+  });
+
+  it('APP_BROWSE_DIRECTORY_PATH returns null when the user cancels', async () => {
+    const sender = { id: 'wc' };
+    mockFromWebContents({});
+    (app.getAppPath as jest.Mock).mockReturnValue('/repo');
+    (dialog.showOpenDialog as jest.Mock).mockResolvedValue({
+      canceled: true,
+      filePaths: [],
+    });
+
+    const handler = getHandler(CHANNELS.APP_BROWSE_DIRECTORY_PATH);
+    await expect(handler({ sender }, { defaultPath: 'shelters' })).resolves.toBeNull();
+  });
+
+  it('APP_VALIDATE_PATH resolves relative paths against the app path', () => {
+    (app.getAppPath as jest.Mock).mockReturnValue('/repo');
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+    jest.spyOn(fs, 'statSync').mockReturnValue({
+      isFile: () => true,
+      isDirectory: () => false,
+    } as fs.Stats);
+
+    const handler = getHandler(CHANNELS.APP_VALIDATE_PATH);
+    expect(handler(null, { input: 'database/gmc_shelters.sqlite' })).toEqual({
+      input: 'database/gmc_shelters.sqlite',
+      resolvedPath: '/repo/database/gmc_shelters.sqlite',
+      exists: true,
+      isFile: true,
+      isDirectory: false,
+    });
   });
 
   it('APP_WINDOW_CLOSE closes the sender window', () => {

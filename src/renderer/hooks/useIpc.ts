@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import type { ElectronAPI } from '../../shared/ipc-types';
+import type { ElectronAPI, HistoryReadResult } from '../../shared/ipc-types';
 import type { AppDispatch } from '../store';
 import { showToast } from '../store/uiSlice';
 
 const noop = () => Promise.resolve(undefined as never);
+const noopHistoryRead = () => Promise.resolve({ content: '', missing: false } as HistoryReadResult);
 
 const noopApi: ElectronAPI = {
   categories: { getAll: noop, create: noop, update: noop, delete: noop },
   architectures: { getAll: noop, create: noop, update: noop, delete: noop },
   shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop },
   photos: { getByShelter: noop, update: noop, delete: noop, setDefault: noop, upload: noop },
-  history: { read: noop, write: noop },
+  history: { read: noopHistoryRead, write: noop },
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   shell: { openExternal: noop },

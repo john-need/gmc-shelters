@@ -31,6 +31,9 @@ describe('preload contextBridge', () => {
     const { contextBridge } = await import('electron');
     await import('./preload');
     const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, Record<string, unknown>>];
+    expect(typeof api.app.browseForDatabasePath).toBe('function');
+    expect(typeof api.app.browseForDirectoryPath).toBe('function');
+    expect(typeof api.app.validatePath).toBe('function');
     expect(typeof api.app.closeWindow).toBe('function');
     expect(typeof api.app.minimizeWindow).toBe('function');
     expect(typeof api.app.toggleFullscreen).toBe('function');

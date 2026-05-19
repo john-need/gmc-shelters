@@ -1,42 +1,91 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { DEFAULT_PATHS, loadStoredPaths } from '../../pathSettings';
 
-const DEFAULT_PATHS = {
-  DB_PATH: 'database/gmc_shelters.sqlite',
-  SHELTERS_ROOT: 'shelters/',
-  PHOTOS_PATH: 'shelters/<slug>/photos/',
-};
+type PathSettings = typeof DEFAULT_PATHS;
 
-function loadSaved() {
-  try {
-    const stored = localStorage.getItem('gmc.paths');
-    return stored ? { ...DEFAULT_PATHS, ...JSON.parse(stored) } : { ...DEFAULT_PATHS };
-  } catch {
-    return { ...DEFAULT_PATHS };
-  }
-}
+const SQLITE_FILE_RE = /\.(sqlite|sqlite3|db)$/i;
 
 const PATH_LABELS: Record<string, { label: string; help: string }> = {
-  DB_PATH: { label: 'Database', help: 'SQLite database file (relative to app root)' },
-  SHELTERS_ROOT: { label: 'Shelters root', help: 'Parent folder for per-shelter directories' },
-  PHOTOS_PATH: { label: 'Photos path', help: '<slug> is replaced per record at runtime' },
+  DB_PATH: { label: 'Database', help: 'Existing SQLite database file (.sqlite, .sqlite3, or .db)' },
+  SHELTERS_ROOT: { label: 'Shelters root', help: 'Existing parent folder for per-shelter directories and photos' },
 };
 
 export default function PathsPage() {
-  const [saved, setSaved] = useState(loadSaved);
+  const [saved, setSaved] = useState(loadStoredPaths);
   const [draft, setDraft] = useState(saved);
   const [toast, setToast] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [browsingKey, setBrowsingKey] = useState<keyof PathSettings | null>(null);
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 1600); };
   const dirty = useMemo(() => JSON.stringify(saved) !== JSON.stringify(draft), [saved, draft]);
 
-  const set = (key: string, val: string) => setDraft((d: typeof DEFAULT_PATHS) => ({ ...d, [key]: val }));
-  const save = () => {
-    setSaved(draft);
-    try { localStorage.setItem('gmc.paths', JSON.stringify(draft)); } catch {}
+  const set = (key: keyof PathSettings, val: string) => {
+    setError(null);
+    setDraft((d) => ({ ...d, [key]: val }));
+  };
+
+  const browse = async (key: keyof PathSettings) => {
+    setError(null);
+    setBrowsingKey(key);
+    try {
+      const selected = key === 'DB_PATH'
+        ? await window.api.app.browseForDatabasePath(draft.DB_PATH)
+        : await window.api.app.browseForDirectoryPath(draft.SHELTERS_ROOT);
+
+      if (selected) {
+        setDraft((current) => ({ ...current, [key]: selected }));
+      }
+    } finally {
+      setBrowsingKey(null);
+    }
+  };
+
+  const save = async () => {
+    const next = {
+      DB_PATH: draft.DB_PATH.trim(),
+      SHELTERS_ROOT: draft.SHELTERS_ROOT.trim(),
+    };
+
+    if (!next.DB_PATH || !next.SHELTERS_ROOT) {
+      setError('Database and shelters root are both required.');
+      return;
+    }
+
+    if (!SQLITE_FILE_RE.test(next.DB_PATH)) {
+      setError('Database must end in .sqlite, .sqlite3, or .db.');
+      return;
+    }
+
+    const [dbPath, sheltersRoot] = await Promise.all([
+      window.api.app.validatePath(next.DB_PATH),
+      window.api.app.validatePath(next.SHELTERS_ROOT),
+    ]);
+
+    if (!dbPath.exists || !dbPath.isFile) {
+      setError('Database must point to an existing SQLite file.');
+      return;
+    }
+
+    if (!sheltersRoot.exists || !sheltersRoot.isDirectory) {
+      setError('Shelters root must point to an existing folder.');
+      return;
+    }
+
+    setDraft(next);
+    setSaved(next);
+    try { localStorage.setItem('gmc.paths', JSON.stringify(next)); } catch {}
+    setError(null);
     flash('Paths saved');
   };
-  const revert = () => setDraft(saved);
-  const resetAll = () => setDraft({ ...DEFAULT_PATHS });
+  const revert = () => {
+    setError(null);
+    setDraft(saved);
+  };
+  const resetAll = () => {
+    setError(null);
+    setDraft({ ...DEFAULT_PATHS });
+  };
 
   return (
     <>
@@ -60,7 +109,8 @@ export default function PathsPage() {
             Paths are relative to the application root unless they start with{' '}
             <code style={{ fontFamily: 'var(--font-mono)' }}>/</code> or{' '}
             <code style={{ fontFamily: 'var(--font-mono)' }}>~</code>.
-            Changes apply on save and survive restart.
+            Changes apply on save and survive restart. Shelter photos are always read beneath the shelters root;
+            there is no separate photos root setting.
           </div>
           {Object.entries(PATH_LABELS).map(([key, { label, help }]) => (
             <div key={key} className="path-row">
@@ -69,18 +119,30 @@ export default function PathsPage() {
                 <div className="path-label-text">{label}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <input
-                  className="input mono"
-                  value={(draft as Record<string, string>)[key]}
-                  onChange={(e) => set(key, e.target.value)}
-                  spellCheck={false}
-                />
+                <div className="path-control-row">
+                  <input
+                    className="input mono"
+                    value={draft[key as keyof PathSettings]}
+                    onChange={(e) => set(key as keyof PathSettings, e.target.value)}
+                    spellCheck={false}
+                  />
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => void browse(key as keyof PathSettings)}
+                    disabled={browsingKey !== null}
+                    aria-label={`Browse for ${label.toLowerCase()}`}
+                  >
+                    {browsingKey === key ? 'Browsing...' : 'Browse'}
+                  </button>
+                </div>
                 <span className="help">{help}</span>
               </div>
             </div>
           ))}
         </div>
 
+        {error && <div className="settings-inline-error">{error}</div>}
         <div className="path-status-bar">
           <div style={{
             fontFamily: 'var(--font-mono)', fontSize: 10.5,
@@ -103,7 +165,7 @@ export default function PathsPage() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn" onClick={revert} disabled={!dirty}>Revert</button>
-            <button className="btn primary" onClick={save} disabled={!dirty}>
+            <button className="btn primary" onClick={() => void save()} disabled={!dirty || browsingKey !== null}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
               </svg>

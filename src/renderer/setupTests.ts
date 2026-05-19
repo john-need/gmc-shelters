@@ -1,7 +1,18 @@
 import '@testing-library/jest-dom';
-import type { ElectronAPI } from '../shared/ipc-types';
+import type { AppPathValidation, ElectronAPI, HistoryReadResult } from '../shared/ipc-types';
 
 const noop = jest.fn().mockResolvedValue(undefined);
+const defaultPathValidation: AppPathValidation = {
+  input: '',
+  resolvedPath: '/tmp',
+  exists: true,
+  isFile: true,
+  isDirectory: false,
+};
+const defaultHistoryRead: HistoryReadResult = {
+  content: '',
+  missing: false,
+};
 
 const mockApi: ElectronAPI = {
   categories: {
@@ -31,7 +42,7 @@ const mockApi: ElectronAPI = {
     upload: noop,
   },
   history: {
-    read: jest.fn().mockResolvedValue(''),
+    read: jest.fn().mockResolvedValue(defaultHistoryRead),
     write: noop,
   },
   sources: {
@@ -50,6 +61,9 @@ const mockApi: ElectronAPI = {
   app: {
     getVersion: jest.fn().mockResolvedValue('0.1.0'),
     getRepoRoot: jest.fn().mockResolvedValue('/tmp'),
+    browseForDatabasePath: jest.fn().mockResolvedValue(null),
+    browseForDirectoryPath: jest.fn().mockResolvedValue(null),
+    validatePath: jest.fn().mockResolvedValue(defaultPathValidation),
     closeWindow: noop,
     minimizeWindow: noop,
     toggleFullscreen: noop,
