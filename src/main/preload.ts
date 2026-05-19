@@ -1,8 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
+  architectures: {
+    getAll: () => ipcRenderer.invoke(CHANNELS.ARCHITECTURES_GET_ALL),
+    create: (input) => ipcRenderer.invoke(CHANNELS.ARCHITECTURES_CREATE, input),
+    update: (arch: Architecture) => ipcRenderer.invoke(CHANNELS.ARCHITECTURES_UPDATE, arch),
+    delete: (id: number, reassignTo?: string) =>
+      ipcRenderer.invoke(CHANNELS.ARCHITECTURES_DELETE, { id, reassignTo }),
+  },
   shelters: {
     getAll: () => ipcRenderer.invoke(CHANNELS.SHELTERS_GET_ALL),
     getById: (id: number) => ipcRenderer.invoke(CHANNELS.SHELTERS_GET_BY_ID, { id }),

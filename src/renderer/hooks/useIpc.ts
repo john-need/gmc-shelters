@@ -7,10 +7,12 @@ import { showToast } from '../store/uiSlice';
 const noop = () => Promise.resolve(undefined as never);
 
 const noopApi: ElectronAPI = {
+  architectures: { getAll: noop, create: noop, update: noop, delete: noop },
   shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop },
   photos: { getByShelter: noop, update: noop, delete: noop, setDefault: noop, upload: noop },
   history: { read: noop, write: noop },
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },
+  mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   shell: { openExternal: noop },
   app: { getVersion: noop, getRepoRoot: noop },
 };

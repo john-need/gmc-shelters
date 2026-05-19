@@ -17,7 +17,7 @@ describe('preload contextBridge', () => {
     await import('./preload');
     const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, unknown>];
     const keys = Object.keys(api).sort();
-    expect(keys).toEqual(['app', 'history', 'mapMarkers', 'photos', 'shell', 'shelters', 'sources']);
+    expect(keys).toEqual(['app', 'architectures', 'history', 'mapMarkers', 'photos', 'shell', 'shelters', 'sources']);
   });
 
   it('shelters.getAll is a function', async () => {

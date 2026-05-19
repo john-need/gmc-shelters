@@ -1,5 +1,9 @@
 // IPC channel name constants
 export const CHANNELS = {
+  ARCHITECTURES_GET_ALL: 'architectures:getAll',
+  ARCHITECTURES_CREATE: 'architectures:create',
+  ARCHITECTURES_UPDATE: 'architectures:update',
+  ARCHITECTURES_DELETE: 'architectures:delete',
   SHELTERS_GET_ALL: 'shelters:getAll',
   SHELTERS_GET_BY_ID: 'shelters:getById',
   SHELTERS_CREATE: 'shelters:create',
@@ -24,6 +28,19 @@ export const CHANNELS = {
   APP_GET_VERSION: 'app:getVersion',
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
 } as const;
+
+export interface Architecture {
+  id: number;
+  name: string;
+  description: string;
+  created: string;
+  updated: string;
+}
+
+export type ArchitectureInput = {
+  name: string;
+  description: string;
+};
 
 export const CHANGE_TYPES = ['Original', 'Relocated', 'Rebuilt', 'Destroyed', 'Removed'] as const;
 export type ChangeType = (typeof CHANGE_TYPES)[number] | `Other: ${string}`;
@@ -161,6 +178,12 @@ export interface PhotoUploadInput {
 }
 
 export interface ElectronAPI {
+  architectures: {
+    getAll: () => Promise<Architecture[]>;
+    create: (input: ArchitectureInput) => Promise<Architecture>;
+    update: (arch: Architecture) => Promise<Architecture>;
+    delete: (id: number, reassignTo?: string) => Promise<void>;
+  };
   shelters: {
     getAll: () => Promise<Shelter[]>;
     getById: (id: number) => Promise<Shelter | null>;

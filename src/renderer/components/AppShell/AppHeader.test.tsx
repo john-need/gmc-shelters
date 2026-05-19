@@ -30,27 +30,27 @@ describe('AppHeader', () => {
   it('renders the New shelter button', () => {
     const store = makeStore();
     const onNew = jest.fn();
-    render(<Provider store={store}><AppHeader onNewShelter={onNew} /></Provider>);
+    render(<Provider store={store}><AppHeader onNewShelter={onNew} onOpenSettings={jest.fn()} /></Provider>);
     expect(screen.getByText('New shelter')).toBeInTheDocument();
   });
 
   it('calls onNewShelter when New shelter is clicked', () => {
     const store = makeStore();
     const onNew = jest.fn();
-    render(<Provider store={store}><AppHeader onNewShelter={onNew} /></Provider>);
+    render(<Provider store={store}><AppHeader onNewShelter={onNew} onOpenSettings={jest.fn()} /></Provider>);
     fireEvent.click(screen.getByText('New shelter'));
     expect(onNew).toHaveBeenCalledTimes(1);
   });
 
   it('shows record count from store', () => {
     const store = makeStore(5);
-    render(<Provider store={store}><AppHeader onNewShelter={jest.fn()} /></Provider>);
+    render(<Provider store={store}><AppHeader onNewShelter={jest.fn()} onOpenSettings={jest.fn()} /></Provider>);
     expect(screen.getByText(/5 records/)).toBeInTheDocument();
   });
 
   it('dispatches toast when Publish to web is clicked', () => {
     const store = makeStore();
-    render(<Provider store={store}><AppHeader onNewShelter={jest.fn()} /></Provider>);
+    render(<Provider store={store}><AppHeader onNewShelter={jest.fn()} onOpenSettings={jest.fn()} /></Provider>);
     fireEvent.click(screen.getByText('Publish to web'));
     expect(store.getState().ui.toast).not.toBeNull();
     expect(store.getState().ui.toast?.message).toMatch(/publish/i);

@@ -5,19 +5,6 @@ import { showToast } from '../../../store/uiSlice';
 import type { Shelter } from '../../../../shared/ipc-types';
 
 const CATEGORIES = ['Lodge', 'Cabin', 'Shelter', 'Lean-to', 'Camp', 'Privy', 'Other'];
-const ARCH_TYPES = [
-  'Log cabin (square notch)',
-  'Log cabin (dovetail notch)',
-  'Adirondack lean-to',
-  'A-frame, plywood skin',
-  'Frame, board & batten',
-  'Timber frame, mortise & tenon',
-  'Hewn log',
-  'Half-enclosed, cedar siding',
-  'Post-and-beam, glass eaves',
-  'Stick-frame, metal roof',
-  'Other',
-];
 
 function FlagCheck({
   on,
@@ -56,6 +43,8 @@ export default function ShelterTab() {
     s ? (state.photos.byShelter[s.id] ?? []) : [],
   );
 
+  const archList = useSelector((state: RootState) => state.architectures.list);
+
   if (!s) return null;
 
   const f =
@@ -72,9 +61,6 @@ export default function ShelterTab() {
             : target.value;
       dispatch(setEditBuffer({ ...s, [key]: value }));
     };
-
-  const latPct = Math.max(0, Math.min(100, ((s.latitude ?? 44) - 42.8) / (45 - 42.8) * 100));
-  const lngPct = Math.max(0, Math.min(100, (((s.longitude ?? -72.8) - -73.5) / (-72 - -73.5)) * 100));
 
   const handleSave = async () => {
     const result = await dispatch(saveShelter(s));
@@ -158,10 +144,12 @@ export default function ShelterTab() {
         <div className="field">
           <label className="label">Architecture</label>
           <select className="select" value={s.architecture} onChange={f('architecture')}>
-            {ARCH_TYPES.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
+            {/* Current value not in list: show it as first option so it's not silently dropped */}
+            {s.architecture && !archList.some((a) => a.name === s.architecture) && (
+              <option value={s.architecture}>{s.architecture}</option>
+            )}
+            {archList.map((a) => (
+              <option key={a.id} value={a.name}>{a.name}</option>
             ))}
           </select>
         </div>
@@ -179,50 +167,9 @@ export default function ShelterTab() {
         </div>
       </div>
 
-      {/* Location */}
-      <div className="section-head">
-        <span className="section-num">§ 03</span>
-        <span className="section-title">Location</span>
-        <span className="section-hint">WGS-84 decimal degrees</span>
-      </div>
-
-      <div className="field-grid">
-        <div className="coord-card">
-          <div className="field">
-            <label className="label">Latitude</label>
-            <div className="input-row">
-              <input
-                className="input mono"
-                type="number"
-                step="0.0001"
-                value={s.latitude || ''}
-                onChange={f('latitude')}
-              />
-              <span className="input-suffix">° N</span>
-            </div>
-          </div>
-          <div className="field">
-            <label className="label">Longitude</label>
-            <div className="input-row">
-              <input
-                className="input mono"
-                type="number"
-                step="0.0001"
-                value={s.longitude || ''}
-                onChange={f('longitude')}
-              />
-              <span className="input-suffix">° W</span>
-            </div>
-          </div>
-          <div className="coord-map">
-            <div className="coord-pin" style={{ left: `${lngPct}%`, top: `${100 - latPct}%` }} />
-          </div>
-        </div>
-      </div>
-
       {/* Flags */}
       <div className="section-head">
-        <span className="section-num">§ 04</span>
+        <span className="section-num">§ 03</span>
         <span className="section-title">Flags <em>& visibility</em></span>
       </div>
 
@@ -249,7 +196,7 @@ export default function ShelterTab() {
 
       {/* System */}
       <div className="section-head" style={{ marginTop: 28 }}>
-        <span className="section-num">§ 05</span>
+        <span className="section-num">§ 04</span>
         <span className="section-title">System</span>
         <span className="section-hint">read-only</span>
       </div>

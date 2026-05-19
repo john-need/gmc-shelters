@@ -4,6 +4,7 @@ import photosReducer from './photosSlice';
 import sourcesReducer from './sourcesSlice';
 import mapMarkersReducer from './mapMarkersSlice';
 import uiReducer from './uiSlice';
+import architecturesReducer from './architecturesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     sources: sourcesReducer,
     mapMarkers: mapMarkersReducer,
     ui: uiReducer,
+    architectures: architecturesReducer,
   },
 });
 
