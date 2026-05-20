@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setEditBuffer, revertEditBuffer, saveShelter } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
-import type { Photo, Shelter } from '../../../../shared/ipc-types';
+import { loadStoredPaths } from '../../../pathSettings';
+import { buildPhotoUrl } from '../../../utils/paths';
+import type { Shelter } from '../../../../shared/ipc-types';
 
 function FlagCheck({
   on,
@@ -33,16 +35,6 @@ function FlagCheck({
   );
 }
 
-function formatPhotoDate(photo: Photo | null): string {
-  if (!photo?.date_taken) return 'Date unknown';
-  return photo.date_taken;
-}
-
-function buildPhotoUrl(repoRoot: string, slug: string, fileName: string): string {
-  const normalizedRoot = repoRoot.replace(/\\/g, '/').replace(/\/$/, '');
-  return encodeURI(`file://${normalizedRoot}/shelters/${slug}/photos/${fileName}`);
-}
-
 export default function ShelterTab() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer) as Shelter;
@@ -57,6 +49,8 @@ export default function ShelterTab() {
 
   const [repoRoot, setRepoRoot] = useState('');
   const [isPhotoModalOpen, setPhotoModalOpen] = useState(false);
+  const [dppIndex, setDppIndex] = useState(0);
+  const [dppImgError, setDppImgError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,6 +70,10 @@ export default function ShelterTab() {
       cancelled = true;
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    setDppImgError(false);
+  }, [dppIndex]);
 
   useEffect(() => {
     if (!isPhotoModalOpen) return undefined;
@@ -112,15 +110,50 @@ export default function ShelterTab() {
     }
   };
 
+  const handleOpenDpp = () => {
+    const idx = photos.findIndex((p) => p.id === s.default_photo_id);
+    setDppIndex(idx >= 0 ? idx : 0);
+    setDppImgError(false);
+    setPhotoModalOpen(true);
+  };
+
+  const handleSetDefault = async (photoId: number) => {
+    try {
+      if (typeof window !== 'undefined' && window.api) {
+        await window.api.photos.setDefault(s.id, photoId);
+      }
+      dispatch(setEditBuffer({ ...s, default_photo_id: photoId }));
+      dispatch(showToast({ id: Date.now().toString(), message: 'Default photo updated.' }));
+      setPhotoModalOpen(false);
+    } catch {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Could not set default.' }));
+    }
+  };
+
+  const dppBackground = (idx: number) => {
+    const grads = [
+      'linear-gradient(135deg, #c9a36b 0%, #8a5b32 100%)',
+      'linear-gradient(135deg, #8a9e9d 0%, #4f6464 100%)',
+      'linear-gradient(135deg, #a89b80 0%, #6a5d44 100%)',
+    ];
+    return `repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0 2px, transparent 2px 14px), ${grads[idx % 3]}`;
+  };
+
   const defaultPhoto = s.default_photo_id
     ? photos.find((photo) => photo.id === s.default_photo_id) ?? null
     : null;
+
+  const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
   const defaultPhotoUrl = repoRoot && defaultPhoto
-    ? buildPhotoUrl(repoRoot, s.slug, defaultPhoto.file_name)
+    ? buildPhotoUrl(repoRoot, sheltersRoot, defaultPhoto.file_name)
     : '';
   const photoCount = photos.length || s.photo_count || 0;
   const photoSummary = defaultPhoto ? (defaultPhoto.title || defaultPhoto.file_name) : 'No default photo selected';
-  const photoCaption = defaultPhoto?.caption || defaultPhoto?.description || 'Managed from the Photos tab.';
+
+  const dppPhoto = photos.length > 0 ? photos[dppIndex] : null;
+  const dppPhotoUrl = repoRoot && dppPhoto
+    ? buildPhotoUrl(repoRoot, sheltersRoot, dppPhoto.file_name)
+    : '';
 
   return (
     <div className="form-wrap shelter-tab">
@@ -191,16 +224,16 @@ export default function ShelterTab() {
         <button
           type="button"
           className={`shelter-media-card shelter-identity-media ${defaultPhoto ? 'has-photo' : ''}`}
-          onClick={() => defaultPhoto && setPhotoModalOpen(true)}
-          disabled={!defaultPhoto}
-          aria-label={defaultPhoto ? 'Open default photo preview' : 'No default photo selected'}
+          onClick={handleOpenDpp}
+          disabled={photos.length === 0}
+          aria-label={photos.length > 0 ? 'Choose default photo' : 'No photographs available'}
         >
           <div className="shelter-media-frame">
             {defaultPhotoUrl ? (
               <img
                 className="shelter-media-image"
                 src={defaultPhotoUrl}
-                alt={defaultPhoto.alt_text || defaultPhoto.title || `${s.name} default photograph`}
+                alt={defaultPhoto?.alt_text || defaultPhoto?.title || `${s.name} default photograph`}
               />
             ) : (
               <div className="shelter-media-placeholder" aria-hidden="true">
@@ -216,7 +249,11 @@ export default function ShelterTab() {
           <div className="shelter-media-meta">
             <div className="shelter-media-title">{photoSummary}</div>
             <div className="shelter-media-sub">
-              {defaultPhoto ? `Photo ID ${defaultPhoto.id}` : 'Pick a lead image in the Photos tab to feature it here.'}
+              {defaultPhoto
+                ? `Photo ID ${defaultPhoto.id}`
+                : photos.length > 0
+                  ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} available — click to choose default`
+                  : 'Pick a lead image in the Photos tab to feature it here.'}
             </div>
           </div>
         </button>
@@ -345,46 +382,127 @@ export default function ShelterTab() {
         </div>
       </div>
 
-      {isPhotoModalOpen && defaultPhoto && (
-        <div className="shelter-photo-modal-backdrop" onClick={() => setPhotoModalOpen(false)}>
+      {isPhotoModalOpen && photos.length > 0 && (
+        <div className="modal-bg" onClick={() => setPhotoModalOpen(false)}>
           <div
-            className="shelter-photo-modal"
+            className="modal wide"
             role="dialog"
             aria-modal="true"
-            aria-label="Default photo preview"
-            onClick={(event) => event.stopPropagation()}
+            aria-label="Choose Default Photo"
+            onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              className="shelter-photo-modal-close"
-              onClick={() => setPhotoModalOpen(false)}
-              aria-label="Close default photo preview"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <path d="M18 6 6 18M6 6l12 12"/>
-              </svg>
-            </button>
-
-            <div className="shelter-photo-modal-frame">
-              {defaultPhotoUrl ? (
-                <img
-                  className="shelter-photo-modal-image"
-                  src={defaultPhotoUrl}
-                  alt={defaultPhoto.alt_text || defaultPhoto.title || `${s.name} default photograph`}
-                />
-              ) : (
-                <div className="shelter-photo-modal-placeholder" aria-hidden="true">
-                  <span>{s.name.charAt(0).toUpperCase()}</span>
-                </div>
-              )}
+            <div className="modal-head">
+              <h2>Choose default <em>photo</em></h2>
+              <div className="sub">{s.name} · {photos.length} photograph{photos.length !== 1 ? 's' : ''}</div>
             </div>
 
-            <div className="shelter-photo-modal-meta">
-              <div className="shelter-photo-modal-title">{photoSummary}</div>
-              <div className="shelter-photo-modal-sub">
-                {defaultPhoto.photographer || 'Unknown photographer'} · {formatPhotoDate(defaultPhoto)}
+            <div className="dpp-body">
+              <button
+                type="button"
+                className="dpp-nav"
+                aria-label="Previous photo"
+                disabled={photos.length <= 1}
+                onClick={() => setDppIndex((i) => (i - 1 + photos.length) % photos.length)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+
+              <div className="dpp-stage">
+                <div className="dpp-frame" style={{ background: dppBackground(dppIndex) }}>
+                  {dppPhotoUrl && !dppImgError ? (
+                    <img
+                      key={dppPhotoUrl}
+                      src={dppPhotoUrl}
+                      alt={dppPhoto?.alt_text || dppPhoto?.title || s.name}
+                      onError={() => setDppImgError(true)}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <span className="dpp-glyph">{s.name.charAt(0).toUpperCase()}</span>
+                  )}
+                  {dppPhoto && s.default_photo_id === dppPhoto.id && (
+                    <div className="dpp-current-badge">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      Current default
+                    </div>
+                  )}
+                  <div className="dpp-counter">{dppIndex + 1} / {photos.length}</div>
+                </div>
+
+                {dppPhoto && (
+                  <div className="dpp-meta">
+                    <div className="dpp-title">{dppPhoto.title || 'Untitled'}</div>
+                    <div className="dpp-sub">
+                      {dppPhoto.photographer && <span><strong>By</strong>{dppPhoto.photographer}</span>}
+                      {dppPhoto.date_taken && <span><strong>Date</strong>{dppPhoto.date_taken}</span>}
+                      <span><strong>ID</strong>photo_{dppPhoto.id}</span>
+                    </div>
+                    {dppPhoto.caption && <div className="dpp-caption">{dppPhoto.caption}</div>}
+                  </div>
+                )}
               </div>
-              <p>{photoCaption}</p>
+
+              <button
+                type="button"
+                className="dpp-nav"
+                aria-label="Next photo"
+                disabled={photos.length <= 1}
+                onClick={() => setDppIndex((i) => (i + 1) % photos.length)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="dpp-strip">
+              {photos.map((p, i) => {
+                const thumbUrl = repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : '';
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`dpp-thumb ${i === dppIndex ? 'active' : ''}`}
+                    onClick={() => setDppIndex(i)}
+                    aria-label={p.title || p.file_name}
+                    style={{ background: dppBackground(i) }}
+                  >
+                    {thumbUrl && (
+                      <img
+                        src={thumbUrl}
+                        alt=""
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    )}
+                    {s.default_photo_id === p.id && (
+                      <div className="dpp-thumb-star">
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="none">
+                          <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="modal-foot">
+              <button type="button" className="btn" onClick={() => setPhotoModalOpen(false)}>Cancel</button>
+              <button
+                type="button"
+                className="btn primary"
+                disabled={!dppPhoto || s.default_photo_id === dppPhoto.id}
+                onClick={() => dppPhoto && handleSetDefault(dppPhoto.id)}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                {' '}Set as Default
+              </button>
             </div>
           </div>
         </div>

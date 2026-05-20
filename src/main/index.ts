@@ -1,4 +1,5 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, protocol } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { log } from './logger';
 import { registerShelterHandlers } from './ipc/shelters';
@@ -9,6 +10,10 @@ import { registerShellHandlers } from './ipc/shell';
 import { registerMapMarkerHandlers } from './ipc/map-markers';
 import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
+
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'shelter', privileges: { secure: true, standard: true, supportFetchAPI: true } },
+]);
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -97,6 +102,44 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.on('ready', () => {
+    const MIME: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+      '.tiff': 'image/tiff',
+      '.gif': 'image/gif',
+    };
+    protocol.handle('shelter', (request) => {
+      const url = new URL(request.url);
+      let filePath = decodeURIComponent(url.pathname);
+      
+      // If there's a host (e.g. shelter://C:/...), prepend it to pathname
+      if (url.host && url.host !== 'localhost') {
+        filePath = url.host + filePath;
+      }
+
+      // On Windows, pathname often starts with /C:/
+      if (process.platform === 'win32' && filePath.startsWith('/')) {
+        filePath = filePath.slice(1);
+      }
+      
+      // On macOS/Linux, if it's missing the leading slash
+      if (process.platform !== 'win32' && !filePath.startsWith('/')) {
+        filePath = '/' + filePath;
+      }
+
+      log.info(`[shelter] url=${request.url} → path=${filePath}`);
+      try {
+        const data = fs.readFileSync(filePath);
+        const contentType = MIME[path.extname(filePath).toLowerCase()] ?? 'application/octet-stream';
+        return new Response(data, { headers: { 'Content-Type': contentType } });
+      } catch (err) {
+        log.error(`[shelter] 404: ${filePath}`, err);
+        return new Response('Not found', { status: 404 });
+      }
+    });
+
     registerShelterHandlers();
     registerPhotoHandlers();
     registerSourceHandlers();

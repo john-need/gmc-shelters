@@ -27,11 +27,14 @@ const api: ElectronAPI = {
   photos: {
     getByShelter: (shelterId: number) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_GET_BY_SHELTER, { shelterId }),
-    update: (input: PhotoUpdateInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPDATE, input),
-    delete: (id: number) => ipcRenderer.invoke(CHANNELS.PHOTOS_DELETE, { id }),
+    update: (input: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_UPDATE, input),
+    delete: (id: number, sheltersRoot: string) => ipcRenderer.invoke(CHANNELS.PHOTOS_DELETE, { id, sheltersRoot }),
     setDefault: (shelterId: number, photoId: number) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_SET_DEFAULT, { shelterId, photoId }),
     upload: (input: PhotoUploadInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPLOAD, input),
+    readMetadata: (slug: string, fileName: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_READ_METADATA, { slug, fileName, sheltersRoot }),
   },
   history: {
     read: (slug: string, sheltersRoot: string) =>

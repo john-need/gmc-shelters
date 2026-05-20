@@ -3,12 +3,14 @@ import type { Photo, PhotoUpdateInput } from '../../shared/ipc-types';
 
 export interface PhotosState {
   byShelter: Record<number, Photo[]>;
+  originals: Record<number, Photo>;
   loading: boolean;
   uploading: boolean;
 }
 
 const initialState: PhotosState = {
   byShelter: {},
+  originals: {},
   loading: false,
   uploading: false,
 };
@@ -26,9 +28,9 @@ export const loadPhotos = createAsyncThunk(
 
 export const uploadPhoto = createAsyncThunk(
   'photos/upload',
-  async ({ shelterId, sourcePath, title }: { shelterId: number; sourcePath: string; title?: string }) => {
+  async ({ shelterId, sourcePath, sheltersRoot, title }: { shelterId: number; sourcePath: string; sheltersRoot: string; title?: string }) => {
     if (typeof window !== 'undefined' && window.api) {
-      const photo = await window.api.photos.upload({ shelterId, sourcePath, title });
+      const photo = await window.api.photos.upload({ shelterId, sourcePath, sheltersRoot, title });
       return { shelterId, photo };
     }
     throw new Error('API not available');
@@ -37,7 +39,7 @@ export const uploadPhoto = createAsyncThunk(
 
 export const savePhotoMetadata = createAsyncThunk(
   'photos/saveMetadata',
-  async (photo: PhotoUpdateInput & { id: number; shelter_id: number }) => {
+  async (photo: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) => {
     if (typeof window !== 'undefined' && window.api) {
       const updated = await window.api.photos.update(photo);
       return { shelterId: photo.shelter_id, photo: updated };
@@ -63,6 +65,7 @@ const photosSlice = createSlice({
       if (state.byShelter[shelterId]) {
         state.byShelter[shelterId] = state.byShelter[shelterId].filter((p) => p.id !== photoId);
       }
+      delete state.originals[photoId];
     },
   },
   extraReducers: (builder) => {
@@ -73,6 +76,9 @@ const photosSlice = createSlice({
       .addCase(loadPhotos.fulfilled, (state, action) => {
         state.loading = false;
         state.byShelter[action.payload.shelterId] = action.payload.photos;
+        action.payload.photos.forEach((p) => {
+          state.originals[p.id] = p;
+        });
       })
       .addCase(loadPhotos.rejected, (state) => {
         state.loading = false;
@@ -85,6 +91,7 @@ const photosSlice = createSlice({
         const { shelterId, photo } = action.payload;
         if (!state.byShelter[shelterId]) state.byShelter[shelterId] = [];
         state.byShelter[shelterId].push(photo);
+        state.originals[photo.id] = photo;
       })
       .addCase(uploadPhoto.rejected, (state) => {
         state.uploading = false;
@@ -96,6 +103,7 @@ const photosSlice = createSlice({
           const idx = list.findIndex((p) => p.id === photo.id);
           if (idx >= 0) list[idx] = photo as Photo;
         }
+        state.originals[photo.id] = photo as Photo;
       });
   },
 });

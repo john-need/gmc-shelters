@@ -1,10 +1,27 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Photo } from '../../../../shared/ipc-types';
 import { uploadPhoto, savePhotoMetadata, updatePhotoLocal, removePhotoLocal } from '../../../store/photosSlice';
 import { setEditBuffer } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
+import { loadStoredPaths } from '../../../pathSettings';
+import { buildPhotoUrl } from '../../../utils/paths';
+
+function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: string; fallback: string; onLoad?: (img: HTMLImageElement) => void }) {
+  const [imgError, setImgError] = useState(false);
+  return imgError ? (
+    <span className="glyph">{fallback}</span>
+  ) : (
+    <img
+      src={src}
+      alt={alt}
+      onLoad={(e) => onLoad?.(e.currentTarget)}
+      onError={() => setImgError(true)}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+    />
+  );
+}
 
 const TONE_GRADS: Record<string, string> = {
   warm: 'linear-gradient(135deg, #c9a36b 0%, #8a5b32 100%)',
@@ -25,18 +42,29 @@ interface PhotoCardProps {
   isDefault: boolean;
   isSelected: boolean;
   onClick: () => void;
+  photoUrl: string;
 }
 
-function PhotoCard({ p, idx, isDefault, isSelected, onClick }: PhotoCardProps) {
+function PhotoCard({ p, idx, isDefault, isSelected, onClick, photoUrl }: PhotoCardProps) {
+  const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
     <div className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`} onClick={onClick}>
-      <div className="photo-thumb" style={{ background: photoBackground(idx) }}>
+      <div className="photo-thumb" style={{ background: photoBackground(idx), position: 'relative', overflow: 'hidden' }}>
         <div className="photo-badges">
           {isDefault && <span className="photo-badge default">★ Default</span>}
           {p.include_in_post && <span className="photo-badge published">Published</span>}
         </div>
-        <span className="placeholder-glyph" style={{ color: 'rgba(255,247,225,0.7)' }}>{initial}</span>
+        {photoUrl && !imgError ? (
+          <img
+            src={photoUrl}
+            alt={p.alt_text || p.title || p.file_name}
+            onError={() => setImgError(true)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <span className="placeholder-glyph" style={{ color: 'rgba(255,247,225,0.7)' }}>{initial}</span>
+        )}
       </div>
       <div className="photo-info">
         <span className="photo-title">{p.title || 'Untitled'}</span>
@@ -54,9 +82,11 @@ interface ListRowProps {
   isDefault: boolean;
   isSelected: boolean;
   onSelect: () => void;
+  photoUrl: string;
 }
 
-function ListRow({ p, idx, isDefault, isSelected, onSelect }: ListRowProps) {
+function ListRow({ p, idx, isDefault, isSelected, onSelect, photoUrl }: ListRowProps) {
+  const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
     <div
@@ -78,7 +108,17 @@ function ListRow({ p, idx, isDefault, isSelected, onSelect }: ListRowProps) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 12,
         color: 'rgba(255,247,225,0.7)',
-      }}>{initial}</div>
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {photoUrl && !imgError ? (
+          <img
+            src={photoUrl}
+            alt=""
+            onError={() => setImgError(true)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : initial}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {isDefault && (
           <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -104,18 +144,40 @@ export default function PhotosTab() {
     s ? (state.photos.byShelter[s.id] ?? []) : [],
   );
   const uploading = useSelector((state: RootState) => state.photos.uploading);
+  const originals = useSelector((state: RootState) => state.photos.originals);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [flipped, setFlipped] = useState(false);
   const [cropping, setCropping] = useState(false);
+  const [crop, setCrop] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [cropRect, setCropRect] = useState({ x: 12, y: 14, w: 70, h: 68 });
+  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [frameSize, setFrameSize] = useState<{ w: number; h: number } | null>(null);
+  const [version, setVersion] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [repoRoot, setRepoRoot] = useState('');
+  const [detailWidth, setDetailWidth] = useState(380);
+  const [resizing, setResizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const cropOverlayRef = useRef<HTMLDivElement>(null);
+  const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
 
   useEffect(() => {
-    setRotation(0); setZoom(1); setFlipped(false); setCropping(false);
+    let cancelled = false;
+    if (typeof window === 'undefined' || !window.api) return undefined;
+    window.api.app.getRepoRoot()
+      .then((root) => { if (!cancelled) setRepoRoot(root); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    setRotation(0); setZoom(1); setFlipped(false); setCropping(false); setCrop(null);
+    setNaturalSize(null); setFrameSize(null); setCropRect({ x: 12, y: 14, w: 70, h: 68 });
   }, [selectedId]);
 
   useEffect(() => {
@@ -125,10 +187,115 @@ export default function PhotosTab() {
     if (photos.length === 0) setSelectedId(null);
   }, [photos]);
 
+  const renderedImageRect = naturalSize && frameSize ? (() => {
+    const scale = Math.min(frameSize.w / naturalSize.w, frameSize.h / naturalSize.h);
+    const iw = naturalSize.w * scale;
+    const ih = naturalSize.h * scale;
+    return { left: (frameSize.w - iw) / 2, top: (frameSize.h - ih) / 2, width: iw, height: ih };
+  })() : null;
+
+  const startCropDrag = useCallback((
+    type: 'move' | 'tl' | 'tr' | 'bl' | 'br',
+    e: React.MouseEvent<HTMLElement>,
+  ) => {
+    e.stopPropagation();
+    const overlay = cropOverlayRef.current;
+    if (!overlay) return;
+    const r = overlay.getBoundingClientRect();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startRect = { ...cropRect };
+    const MIN = 5;
+
+    const onMove = (me: MouseEvent) => {
+      const dx = ((me.clientX - startX) / r.width) * 100;
+      const dy = ((me.clientY - startY) / r.height) * 100;
+      let { x, y, w, h } = startRect;
+      if (type === 'move') {
+        x = Math.max(0, Math.min(100 - startRect.w, startRect.x + dx));
+        y = Math.max(0, Math.min(100 - startRect.h, startRect.y + dy));
+      } else if (type === 'tl') {
+        const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
+        const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
+        w = startRect.w - (nx - startRect.x); h = startRect.h - (ny - startRect.y); x = nx; y = ny;
+      } else if (type === 'tr') {
+        const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
+        h = startRect.h - (ny - startRect.y); y = ny;
+        w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
+      } else if (type === 'bl') {
+        const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
+        w = startRect.w - (nx - startRect.x); x = nx;
+        h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
+      } else {
+        w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
+        h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
+      }
+      setCropRect({ x, y, w, h });
+    };
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [cropRect]);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = detailWidth;
+    setResizing(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = (me: MouseEvent) => {
+      setDetailWidth(Math.min(600, Math.max(220, startWidth + startX - me.clientX)));
+    };
+    const onUp = () => {
+      setResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
   if (!s) return null;
 
   const selected = photos.find((p) => p.id === selectedId) ?? null;
+  const original = selected ? originals[selected.id] : null;
+
+  const isMetadataDirty = !!(selected && original && (
+    (selected.title || '') !== (original.title || '') ||
+    (selected.photographer || '') !== (original.photographer || '') ||
+    (selected.date_taken || '') !== (original.date_taken || '') ||
+    (selected.caption || '') !== (original.caption || '') ||
+    (selected.alt_text || '') !== (original.alt_text || '') ||
+    (selected.description || '') !== (original.description || '') ||
+    (selected.notes || '') !== (original.notes || '') ||
+    selected.include_in_post !== original.include_in_post
+  ));
+
+  const isEditDirty = rotation !== 0 || flipped !== false || crop !== null;
+
+  const cropPreviewStyle: React.CSSProperties | null = (crop && !cropping && naturalSize && frameSize) ? (() => {
+    const { w: fw, h: fh } = frameSize;
+    const fitScale = Math.min(fw / crop.width, fh / crop.height);
+    const totalW = naturalSize.w * fitScale;
+    const totalH = naturalSize.h * fitScale;
+    const left = (fw - crop.width * fitScale) / 2 - crop.x * fitScale;
+    const top = (fh - crop.height * fitScale) / 2 - crop.y * fitScale;
+    return { position: 'absolute' as const, left, top, width: totalW, height: totalH };
+  })() : null;
+
   const selectedIdx = photos.findIndex((p) => p.id === selectedId);
+  const selectedPhotoUrl = repoRoot && selected
+    ? `${buildPhotoUrl(repoRoot, sheltersRoot, selected.file_name)}?v=${version}`
+    : '';
 
   const updatePhoto = (id: number, patch: Partial<Photo>) => {
     dispatch(updatePhotoLocal({ shelterId: s.id, photo: { id, ...patch } }));
@@ -141,7 +308,12 @@ export default function PhotosTab() {
       return;
     }
     try {
-      const result = await dispatch(uploadPhoto({ shelterId: s.id, sourcePath: filePath, title: file.name.replace(/\.[^.]+$/, '') }));
+      const result = await dispatch(uploadPhoto({
+        shelterId: s.id,
+        sourcePath: filePath,
+        sheltersRoot,
+        title: file.name.replace(/\.[^.]+$/, ''),
+      }));
       if (uploadPhoto.fulfilled.match(result)) {
         setSelectedId(result.payload.photo.id);
         dispatch(showToast({ id: Date.now().toString(), message: `Uploaded · ${file.name}` }));
@@ -165,12 +337,13 @@ export default function PhotosTab() {
   };
 
   const handleDeletePhoto = async (id: number) => {
-    if (!confirm('Delete this photo?')) return;
+    if (!confirm('Are you sure you want to permanently delete this photograph? This will also remove the file from your computer.')) return;
     try {
       if (typeof window !== 'undefined' && window.api) {
-        await window.api.photos.delete(id);
+        await window.api.photos.delete(id, sheltersRoot);
       }
       dispatch(removePhotoLocal({ shelterId: s.id, photoId: id }));
+      dispatch(showToast({ id: Date.now().toString(), message: 'Photo deleted from database and disk.' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Delete failed.' }));
     }
@@ -187,11 +360,12 @@ export default function PhotosTab() {
     }
   };
 
-  const handleSaveMetadata = async () => {
+  const handleSaveEdits = async () => {
     if (!selected) return;
     const result = await dispatch(savePhotoMetadata({
       id: selected.id,
       shelter_id: selected.shelter_id,
+      sheltersRoot,
       title: selected.title,
       photographer: selected.photographer,
       caption: selected.caption,
@@ -201,9 +375,69 @@ export default function PhotosTab() {
       include_in_post: selected.include_in_post,
       date_taken: selected.date_taken,
       updated: new Date().toISOString().slice(0, 10),
+      rotation: rotation % 360,
+      flipped,
+      crop,
     }));
     if (savePhotoMetadata.fulfilled.match(result)) {
-      dispatch(showToast({ id: Date.now().toString(), message: 'Photo metadata saved.' }));
+      setRotation(0);
+      setFlipped(false);
+      setCrop(null);
+      setCropping(false);
+      setVersion((v) => v + 1);
+      dispatch(showToast({ id: Date.now().toString(), message: 'Photo saved.' }));
+    }
+  };
+
+  const handleSaveMetadata = async () => {
+    if (!selected) return;
+    const result = await dispatch(savePhotoMetadata({
+      id: selected.id,
+      shelter_id: selected.shelter_id,
+      sheltersRoot,
+      title: selected.title,
+      photographer: selected.photographer,
+      caption: selected.caption,
+      alt_text: selected.alt_text,
+      description: selected.description,
+      notes: selected.notes,
+      include_in_post: selected.include_in_post,
+      date_taken: selected.date_taken,
+      updated: new Date().toISOString().slice(0, 10),
+      rotation: 0,
+      flipped: false,
+      crop: null,
+    }));
+    if (savePhotoMetadata.fulfilled.match(result)) {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Metadata saved.' }));
+    }
+  };
+
+  const handleImportMetadata = async () => {
+    if (!selected || !s) return;
+    try {
+      if (typeof window !== 'undefined' && window.api) {
+        const metadata = await window.api.photos.readMetadata(s.slug, selected.file_name, sheltersRoot);
+
+        let dateTaken = metadata.date_taken || '';
+        // Convert "YYYY:MM:DD HH:MM:SS" (exif) to "YYYY-MM-DD" (HTML5 date)
+        if (dateTaken.match(/^\d{4}:\d{2}:\d{2}/)) {
+          dateTaken = dateTaken.substring(0, 10).replace(/:/g, '-');
+        }
+
+        dispatch(updatePhotoLocal({
+          shelterId: s.id,
+          photo: {
+            id: selected.id,
+            ...metadata,
+            date_taken: dateTaken,
+          },
+        }));
+        dispatch(showToast({ id: Date.now().toString(), message: 'Metadata imported from file.' }));
+      }
+    } catch (err) {
+      console.error('Import failed', err);
+      dispatch(showToast({ id: Date.now().toString(), message: 'Failed to import metadata.', type: 'error' }));
     }
   };
 
@@ -297,6 +531,7 @@ export default function PhotosTab() {
                 isDefault={s.default_photo_id === p.id}
                 isSelected={p.id === selectedId}
                 onClick={() => setSelectedId(p.id)}
+                photoUrl={repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : ''}
               />
             ))}
           </div>
@@ -322,6 +557,7 @@ export default function PhotosTab() {
                 isDefault={s.default_photo_id === p.id}
                 isSelected={p.id === selectedId}
                 onSelect={() => setSelectedId(p.id)}
+                photoUrl={repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : ''}
               />
             ))}
           </div>
@@ -329,7 +565,12 @@ export default function PhotosTab() {
       </div>
 
       {selected && (
-        <div className="photo-detail">
+        <>
+          <div
+            className={`photos-resize-handle${resizing ? ' dragging' : ''}`}
+            onMouseDown={startResize}
+          />
+          <div className="photo-detail" style={{ width: detailWidth }}>
           <div className="photo-detail-head">
             <div>
               <div className="photo-detail-title">{selected.title || 'Untitled'}</div>
@@ -359,28 +600,82 @@ export default function PhotosTab() {
 
           <div className="photo-preview">
             <div
+              ref={frameRef}
               className="photo-preview-frame"
               style={{
                 transform: `rotate(${rotation}deg) scale(${zoom}) scaleX(${flipped ? -1 : 1})`,
                 background: photoBackground(selectedIdx),
+                position: 'relative', overflow: cropping ? 'visible' : 'hidden',
               }}
             >
-              <span className="glyph">
-                {selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            {cropping && (
-              <div className="crop-overlay">
-                <div className="crop-rect" style={{ left: '12%', top: '14%', width: '70%', height: '68%' }}>
+              {selectedPhotoUrl ? (
+                cropPreviewStyle ? (
+                  <img
+                    key={`${selectedPhotoUrl}-crop`}
+                    src={selectedPhotoUrl}
+                    alt={selected.alt_text || selected.title || selected.file_name}
+                    style={cropPreviewStyle}
+                  />
+                ) : (
+                  <PhotoPreviewImage
+                    key={selectedPhotoUrl}
+                    src={selectedPhotoUrl}
+                    alt={selected.alt_text || selected.title || selected.file_name}
+                    fallback={selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
+                    onLoad={(img) => {
+                      setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+                      if (frameRef.current) {
+                        const fr = frameRef.current.getBoundingClientRect();
+                        setFrameSize({ w: fr.width, h: fr.height });
+                      }
+                    }}
+                  />
+                )
+              ) : (
+                <span className="glyph">
+                  {selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
+                </span>
+              )}
+            {cropping && renderedImageRect && (
+              <div
+                ref={cropOverlayRef}
+                style={{
+                  position: 'absolute',
+                  left: renderedImageRect.left,
+                  top: renderedImageRect.top,
+                  width: renderedImageRect.width,
+                  height: renderedImageRect.height,
+                }}
+              >
+                <div
+                  className="crop-rect"
+                  style={{
+                    position: 'absolute',
+                    left: `${cropRect.x}%`,
+                    top: `${cropRect.y}%`,
+                    width: `${cropRect.w}%`,
+                    height: `${cropRect.h}%`,
+                    cursor: 'move',
+                  }}
+                  onMouseDown={(e) => startCropDrag('move', e)}
+                >
                   {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
-                    <div key={c} className="crop-handle" style={{
-                      [c.includes('t') ? 'top' : 'bottom']: -5,
-                      [c.includes('l') ? 'left' : 'right']: -5,
-                    }} />
+                    <div
+                      key={c}
+                      className="crop-handle"
+                      style={{
+                        position: 'absolute',
+                        [c.includes('t') ? 'top' : 'bottom']: -5,
+                        [c.includes('l') ? 'left' : 'right']: -5,
+                        cursor: c === 'tl' || c === 'br' ? 'nwse-resize' : 'nesw-resize',
+                      }}
+                      onMouseDown={(e) => startCropDrag(c, e)}
+                    />
                   ))}
                 </div>
               </div>
             )}
+            </div>
             {s.default_photo_id === selected.id && (
               <div style={{
                 position: 'absolute', top: 8, left: 8,
@@ -411,11 +706,37 @@ export default function PhotosTab() {
               </button>
             </div>
             <div className="group">
-              <button className={`btn sm ${cropping ? 'primary' : ''}`} onClick={() => setCropping((c) => !c)}>
+              <button className={`btn sm ${cropping ? 'primary' : ''}`} onClick={() => {
+                if (cropping) {
+                  if (naturalSize) {
+                    setCrop({
+                      x: Math.round(naturalSize.w * cropRect.x / 100),
+                      y: Math.round(naturalSize.h * cropRect.y / 100),
+                      width: Math.round(naturalSize.w * cropRect.w / 100),
+                      height: Math.round(naturalSize.h * cropRect.h / 100),
+                    });
+                  }
+                  setCropping(false);
+                } else {
+                  setCropRect({ x: 12, y: 14, w: 70, h: 68 });
+                  setCrop(null);
+                  setCropping(true);
+                }
+              }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
                 </svg>
                 {' '}{cropping ? 'Done' : 'Crop'}
+              </button>
+              <button
+                className={`btn sm ${isEditDirty ? 'primary' : ''}`}
+                disabled={!isEditDirty || cropping}
+                onClick={handleSaveEdits}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
+                </svg>
+                {' '}Save
               </button>
             </div>
             <div className="group" style={{ marginLeft: 'auto' }}>
@@ -495,14 +816,31 @@ export default function PhotosTab() {
               <span>shelter_id: {s.id}</span>
             </div>
 
-            <button className="btn primary" style={{ marginTop: 8 }} onClick={handleSaveMetadata}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
-              </svg>
-              {' '}Save metadata
-            </button>
+            <div className="row-2" style={{ marginTop: 8 }}>
+              <button
+                className={`btn ${isMetadataDirty ? 'primary' : ''}`}
+                onClick={handleSaveMetadata}
+                disabled={!isMetadataDirty}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
+                </svg>
+                {' '}Save Metadata
+              </button>
+              <button
+                className="btn ghost sm"
+                title="Import from File"
+                onClick={handleImportMetadata}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>
+                </svg>
+                {' '}Import from File
+              </button>
+            </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );
