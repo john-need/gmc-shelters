@@ -5,27 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/7db003c3-a19f-4c88-badc-1ea1ede0ca47.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/7db003c3-a19f-4c88-badc-1ea1ede0ca47.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CONTEXT.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTEXT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/photosSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/photosSlice.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vite.main.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/vite.main.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +43,7 @@
             <option name="modeId" value="Agent" />
             <option name="modelType" value="builtin_family" />
             <option name="modelValue" value="claude-sonnet-4.6" />
-            <option name="status" value="Completed" />
+            <option name="status" value="Stopped" />
             <option name="targetType" value="LOCAL" />
           </session>
         </option>
