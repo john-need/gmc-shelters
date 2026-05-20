@@ -159,6 +159,8 @@ export default function PhotosTab() {
   const [dragOver, setDragOver] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [repoRoot, setRepoRoot] = useState('');
+  const [detailWidth, setDetailWidth] = useState(380);
+  const [resizing, setResizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const cropOverlayRef = useRef<HTMLDivElement>(null);
@@ -239,6 +241,28 @@ export default function PhotosTab() {
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   }, [cropRect]);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = detailWidth;
+    setResizing(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = (me: MouseEvent) => {
+      setDetailWidth(Math.min(600, Math.max(220, startWidth + startX - me.clientX)));
+    };
+    const onUp = () => {
+      setResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   if (!s) return null;
 
@@ -541,7 +565,12 @@ export default function PhotosTab() {
       </div>
 
       {selected && (
-        <div className="photo-detail">
+        <>
+          <div
+            className={`photos-resize-handle${resizing ? ' dragging' : ''}`}
+            onMouseDown={startResize}
+          />
+          <div className="photo-detail" style={{ width: detailWidth }}>
           <div className="photo-detail-head">
             <div>
               <div className="photo-detail-title">{selected.title || 'Untitled'}</div>
@@ -811,6 +840,7 @@ export default function PhotosTab() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

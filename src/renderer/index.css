@@ -1620,14 +1620,27 @@ html, body {
 }
 
 /* Photo detail pane */
-.photo-detail {
-  width: 380px;
+.photos-resize-handle {
+  width: 5px;
+  cursor: col-resize;
   flex-shrink: 0;
+  background: transparent;
   border-left: 1px solid var(--line-2);
+  transition: border-color 0.12s, background 0.12s;
+}
+.photos-resize-handle:hover,
+.photos-resize-handle.dragging {
+  background: var(--hover);
+  border-color: var(--forest);
+}
+
+.photo-detail {
+  flex-shrink: 0;
   background: var(--surface);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 .photo-detail-head {
   padding: 14px 18px;
@@ -2389,6 +2402,99 @@ html, body {
 }
 .mm-marker-row:hover .mm-row-actions,
 .mm-marker-row.selected .mm-row-actions { opacity: 1; }
+
+/* ── Read-only detail panel (idle selection) ── */
+
+.markers-detail {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line-2);
+  background: var(--surface);
+  max-height: 46%;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+}
+
+.markers-detail.empty {
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-3);
+  padding: 18px 16px;
+  font-size: 13px;
+}
+
+.markers-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.markers-detail-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.markers-detail-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.markers-detail-id {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.markers-detail-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.markers-detail-fields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 10px;
+}
+
+.markers-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.markers-detail-field.span4 {
+  grid-column: span 4;
+}
+
+.markers-detail-field-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.markers-detail-field-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-1);
+}
+
+.markers-detail-field-value.display {
+  font-family: var(--font-display);
+}
 
 /* ── Detail panel (pinned to bottom of list pane) ── */
 

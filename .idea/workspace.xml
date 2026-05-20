@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
     </list>

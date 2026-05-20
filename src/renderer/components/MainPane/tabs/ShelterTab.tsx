@@ -233,7 +233,7 @@ export default function ShelterTab() {
               <img
                 className="shelter-media-image"
                 src={defaultPhotoUrl}
-                alt={defaultPhoto.alt_text || defaultPhoto.title || `${s.name} default photograph`}
+                alt={defaultPhoto?.alt_text || defaultPhoto?.title || `${s.name} default photograph`}
               />
             ) : (
               <div className="shelter-media-placeholder" aria-hidden="true">
