@@ -123,6 +123,13 @@ describe('ShelterTab', () => {
     });
 
     expect(screen.getByText('Default View')).toBeInTheDocument();
+    
+    // Check photo URL - legacy path
+    const img = screen.getByAltText('Birch Glen Lodge seen from the trail') as HTMLImageElement;
+    // base = /tmp/repo root/shelters (since default sheltersRoot is 'shelters/')
+    // fileName = default view.jpg
+    // finalUrl = shelter:///tmp/repo%20root/shelters/default%20view.jpg
+    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/default%20view.jpg');
     expect(screen.getByText(/photo id 11/i)).toBeInTheDocument();
     expect(screen.queryByText(/1 photos · 1 published/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/1932–present/i)).not.toBeInTheDocument();
@@ -137,6 +144,28 @@ describe('ShelterTab', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: /default photo preview/i })).not.toBeInTheDocument();
     });
+  });
+
+  it('strips redundant shelters/ prefix from legacy filenames', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto({ 
+        file_name: 'shelters/birch-glen-lodge/legacy-photo.png',
+        alt_text: 'Legacy photo'
+    });
+    const store = makeStore(shelter, [photo]);
+
+    render(
+      <Provider store={store}>
+        <ShelterTab />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByAltText(/legacy photo/i)).toBeInTheDocument();
+    });
+
+    const img = screen.getByAltText('Legacy photo') as HTMLImageElement;
+    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/birch-glen-lodge/legacy-photo.png');
   });
 
   it('shows the empty default-photo message when none is selected', async () => {

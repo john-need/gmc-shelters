@@ -11,6 +11,8 @@ export default defineConfig({
         'electron',
         'better-sqlite3',
         'electron-log',
+        'sharp',
+        'exiftool-vendored',
         ...builtinModules,
         ...builtinModules.map((m) => `node:${m}`),
       ],

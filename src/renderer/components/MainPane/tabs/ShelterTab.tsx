@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setEditBuffer, revertEditBuffer, saveShelter } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
+import { loadStoredPaths } from '../../../pathSettings';
+import { buildPhotoUrl } from '../../../utils/paths';
 import type { Photo, Shelter } from '../../../../shared/ipc-types';
 
 function FlagCheck({
@@ -36,11 +38,6 @@ function FlagCheck({
 function formatPhotoDate(photo: Photo | null): string {
   if (!photo?.date_taken) return 'Date unknown';
   return photo.date_taken;
-}
-
-function buildPhotoUrl(repoRoot: string, slug: string, fileName: string): string {
-  const normalizedRoot = repoRoot.replace(/\\/g, '/').replace(/\/$/, '');
-  return encodeURI(`file://${normalizedRoot}/shelters/${slug}/photos/${fileName}`);
 }
 
 export default function ShelterTab() {
@@ -115,8 +112,10 @@ export default function ShelterTab() {
   const defaultPhoto = s.default_photo_id
     ? photos.find((photo) => photo.id === s.default_photo_id) ?? null
     : null;
+
+  const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
   const defaultPhotoUrl = repoRoot && defaultPhoto
-    ? buildPhotoUrl(repoRoot, s.slug, defaultPhoto.file_name)
+    ? buildPhotoUrl(repoRoot, sheltersRoot, defaultPhoto.file_name)
     : '';
   const photoCount = photos.length || s.photo_count || 0;
   const photoSummary = defaultPhoto ? (defaultPhoto.title || defaultPhoto.file_name) : 'No default photo selected';

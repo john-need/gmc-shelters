@@ -44,3 +44,10 @@ The relationship between a Source and a Shelter, carried by the `shelter_sources
 
 An image associated with exactly one Shelter. A Shelter designates one Photo as its `default_photo`. A Map Marker may reference a Photo to show representative imagery for that historical location.
 
+## Photo Metadata
+
+Attributes of a Photo stored in both the database (for application logic) and the image file's XMP packet (for persistence and portability).
+- **Metadata Fields**: `title`, `photographer`, `date_taken`, `caption`, `alt_text`, `description`, `notes`.
+- **GMC XMP Namespace**: Custom fields (`photo_id`, `notes`, `description` as `longDescription`) are stored under the `gmc:` namespace to avoid collision with standard schemas.
+- **Exclusions**: UI-only flags like `include_in_post` are not persisted to file metadata.
+

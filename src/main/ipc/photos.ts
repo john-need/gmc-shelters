@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto } from '../db/photos';
 import { getShelterById } from '../db/shelters';
-import { copyPhotoToShelter, deletePhotoFile } from '../fs/photos';
+import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp } from '../fs/photos';
 import type { PhotoUpdateInput, PhotoUploadInput } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
@@ -11,12 +11,30 @@ export function registerPhotoHandlers(): void {
     (_e, { shelterId }: { shelterId: number }) => getPhotosByShelter(shelterId),
   );
 
-  ipcMain.handle(CHANNELS.PHOTOS_UPDATE, (_e, input: PhotoUpdateInput & { id: number; shelter_id: number }) =>
-    updatePhoto(input),
+  ipcMain.handle(CHANNELS.PHOTOS_UPDATE, async (_e, input: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) => {
+    const photo = updatePhoto(input);
+    const shelter = getShelterById(photo.shelter_id);
+    if (shelter) {
+      if (input.rotation || input.flipped || input.crop) {
+        const filePath = photoFilePath(shelter.slug, photo.file_name, input.sheltersRoot);
+        await transformPhoto(filePath, {
+          rotation: input.rotation,
+          flipped: input.flipped,
+          crop: input.crop,
+        });
+      }
+      await writePhotoXmp(photo, input.sheltersRoot, shelter.slug);
+    }
+    return photo;
+  });
+
+  ipcMain.handle(
+    CHANNELS.PHOTOS_READ_METADATA,
+    (_e, { slug, fileName, sheltersRoot }: { slug: string; fileName: string; sheltersRoot: string }) =>
+      readPhotoXmp(slug, fileName, sheltersRoot),
   );
 
-  ipcMain.handle(CHANNELS.PHOTOS_DELETE, async (_e, { id }: { id: number }) => {
-    const photos = getPhotosByShelter(0); // we need shelter_id from the photo record
+  ipcMain.handle(CHANNELS.PHOTOS_DELETE, async (_e, { id, sheltersRoot }: { id: number; sheltersRoot: string }) => {
     // fetch the photo to get its file_name and shelter_id before deleting
     const { getDb } = await import('../db/connection');
     const db = getDb();
@@ -27,10 +45,9 @@ export function registerPhotoHandlers(): void {
     if (photo) {
       const shelter = getShelterById(photo.shelter_id);
       if (shelter) {
-        await deletePhotoFile(shelter.slug, photo.file_name);
+        await deletePhotoFile(shelter.slug, photo.file_name, sheltersRoot);
       }
     }
-    void photos;
     deletePhoto(id);
   });
 
@@ -44,7 +61,9 @@ export function registerPhotoHandlers(): void {
     const shelter = getShelterById(input.shelterId);
     if (!shelter) throw new Error(`Shelter ${input.shelterId} not found`);
 
-    const fileName = await copyPhotoToShelter(input.sourcePath, shelter.slug);
-    return insertPhoto(input.shelterId, fileName, input.title);
+    const fileName = await copyPhotoToShelter(input.sourcePath, shelter.slug, input.sheltersRoot);
+    // Path should be relative to SHELTERS_ROOT: <slug>/photos/<fileName>
+    const relativePath = `${shelter.slug}/photos/${fileName}`;
+    return insertPhoto(input.shelterId, relativePath, input.title);
   });
 }
