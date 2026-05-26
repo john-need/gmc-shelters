@@ -151,6 +151,35 @@ export async function transformPhoto(
   }
 }
 
+const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp', '.gif', '.bmp']);
+
+export async function listPhotosDir(slug: string, sheltersRoot: string): Promise<string[]> {
+  const dir = photosDirForSlug(slug, sheltersRoot);
+  try {
+    const entries = await fs.readdir(dir);
+    return entries.filter((f) => IMAGE_EXTENSIONS.has(path.extname(f).toLowerCase()));
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+}
+
+export async function listShelterRootImages(slug: string, sheltersRoot: string): Promise<string[]> {
+  const resolvedRoot = path.isAbsolute(sheltersRoot)
+    ? sheltersRoot
+    : path.resolve(app.getAppPath(), sheltersRoot);
+  const dir = path.join(resolvedRoot, slug);
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isFile() && IMAGE_EXTENSIONS.has(path.extname(e.name).toLowerCase()))
+      .map((e) => e.name);
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+}
+
 export async function ensureShelterDir(slug: string, sheltersRoot: string): Promise<void> {
   const resolvedRoot = path.isAbsolute(sheltersRoot)
     ? sheltersRoot

@@ -1,12 +1,14 @@
+import { configureStore } from '@reduxjs/toolkit';
 import photosReducer, {
   updatePhotoLocal,
   removePhotoLocal,
   loadPhotos,
   uploadPhoto,
   savePhotoMetadata,
+  reconcileApply,
   PhotosState,
 } from './photosSlice';
-import type { Photo } from '@shared/ipc-types';
+import type { Photo, ReconcileApplyInput } from '@shared/ipc-types';
 
 const photo = (overrides: Partial<Photo> = {}): Photo => ({
   id: 1,
@@ -129,6 +131,45 @@ describe('photosSlice extraReducers', () => {
         savePhotoMetadata.fulfilled({ shelterId: 10, photo: updated }, '', input),
       );
       expect(next.byShelter[10][0].title).toBe('New');
+    });
+  });
+
+  describe('reconcileApply', () => {
+    const mockReconcileApply = jest.fn();
+
+    beforeEach(() => {
+      (window as any).api = { photos: { reconcileApply: mockReconcileApply } };
+    });
+
+    afterEach(() => {
+      (window as any).api = undefined;
+    });
+
+    it('calls window.api.photos.reconcileApply with correct input', async () => {
+      const mockResult = { added: 2, deleted: 1, failed: 0, failures: [] };
+      mockReconcileApply.mockResolvedValue(mockResult);
+
+      const store = configureStore({ reducer: { photos: photosReducer } });
+      const input: ReconcileApplyInput = {
+        shelterId: 1,
+        sheltersRoot: '/shelters',
+        filesToAdd: ['new.jpg', 'another.jpg'],
+        recordIdsToDelete: [10],
+      };
+
+      const action = await store.dispatch(reconcileApply(input));
+      expect(mockReconcileApply).toHaveBeenCalledWith(input);
+      expect(action.payload).toEqual(mockResult);
+    });
+
+    it('rejects when api not available', async () => {
+      (window as any).api = undefined;
+      const store = configureStore({ reducer: { photos: photosReducer } });
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters', filesToAdd: [], recordIdsToDelete: [],
+      };
+      const action = await store.dispatch(reconcileApply(input));
+      expect(action.type).toBe('photos/reconcileApply/rejected');
     });
   });
 });

@@ -80,6 +80,11 @@ export function setDefaultPhoto(shelterId: number, photoId: number): void {
   db.prepare('UPDATE shelters SET default_photo_id = ? WHERE id = ?').run(photoId, shelterId);
 }
 
+export function clearDefaultPhoto(shelterId: number, photoId: number): void {
+  const db = getDb();
+  db.prepare('UPDATE shelters SET default_photo_id = NULL WHERE id = ? AND default_photo_id = ?').run(shelterId, photoId);
+}
+
 export function insertPhoto(
   shelterId: number,
   fileName: string,
