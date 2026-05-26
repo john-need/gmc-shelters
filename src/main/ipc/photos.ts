@@ -4,7 +4,7 @@ import { ipcMain, app } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto } from '../db/photos';
 import { getShelterById } from '../db/shelters';
-import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, listPhotosDir, listShelterRootImages } from '../fs/photos';
+import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
 import type { PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
@@ -34,6 +34,18 @@ export function registerPhotoHandlers(): void {
     CHANNELS.PHOTOS_READ_METADATA,
     (_e, { slug, fileName, sheltersRoot }: { slug: string; fileName: string; sheltersRoot: string }) =>
       readPhotoXmp(slug, fileName, sheltersRoot),
+  );
+
+  ipcMain.handle(
+    CHANNELS.PHOTOS_READ_FILE_METADATA,
+    (_e, { slug, fileName, sheltersRoot }: { slug: string; fileName: string; sheltersRoot: string }) =>
+      readPhotoFileMetadata(slug, fileName, sheltersRoot),
+  );
+
+  ipcMain.handle(
+    CHANNELS.PHOTOS_WRITE_FILE_METADATA,
+    (_e, { slug, fileName, sheltersRoot, tags }: { slug: string; fileName: string; sheltersRoot: string; tags: Record<string, string> }) =>
+      writePhotoFileMetadata(slug, fileName, sheltersRoot, tags),
   );
 
   ipcMain.handle(CHANNELS.PHOTOS_DELETE, async (_e, { id, sheltersRoot }: { id: number; sheltersRoot: string }) => {

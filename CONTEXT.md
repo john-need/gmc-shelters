@@ -50,8 +50,17 @@ A freeform Markdown document associated with exactly one Shelter, stored at `{SH
 
 ## Photo Metadata
 
-Attributes of a Photo stored in both the database (for application logic) and the image file's XMP packet (for persistence and portability).
-- **Metadata Fields**: `title`, `photographer`, `date_taken`, `caption`, `alt_text`, `description`, `notes`.
-- **GMC XMP Namespace**: Custom fields (`photo_id`, `notes`, `description` as `longDescription`) are stored under the `gmc:` namespace to avoid collision with standard schemas.
-- **Exclusions**: UI-only flags like `include_in_post` are not persisted to file metadata.
+Attributes associated with a Photo. Metadata exists in two independent layers that are intentionally not kept in sync automatically.
+
+## File Layer
+
+The metadata embedded directly in the photo file (EXIF, IPTC, XMP packets). The authoritative source for camera/capture data (exposure, focal length, GPS) and user-supplied annotations stored at the file level (title, creator, description, etc.). The File Layer is modified only by explicit user action from the Metadata Dialog's save path.
+
+## Editorial Layer
+
+Metadata stored in the SQLite `photos` table. The authoritative source for application logic, publishing flags (`include_in_post`), and operator-curated values surfaced in the right column. The Editorial Layer is modified by the right-column editor and by the "Sync from File" action.
+
+## Sync from File
+
+The explicit user action (button in the right column, formerly labelled "Import from File") that copies editorial field values from the File Layer into the Editorial Layer. The only mechanism for propagating file-level metadata changes into the database. It does not affect camera/exposure tags that have no Editorial Layer counterpart.
 

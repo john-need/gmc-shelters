@@ -1,4 +1,12 @@
 // IPC channel name constants
+export interface FileMetadataTag {
+  group: string;
+  key: string;
+  label: string;
+  value: string | null;
+  writable: boolean;
+}
+
 export const CHANNELS = {
   ARCHITECTURES_GET_ALL: 'architectures:getAll',
   ARCHITECTURES_CREATE: 'architectures:create',
@@ -19,6 +27,8 @@ export const CHANNELS = {
   PHOTOS_SET_DEFAULT: 'photos:setDefault',
   PHOTOS_UPLOAD: 'photos:upload',
   PHOTOS_READ_METADATA: 'photos:readMetadata',
+  PHOTOS_READ_FILE_METADATA: 'photos:readFileMetadata',
+  PHOTOS_WRITE_FILE_METADATA: 'photos:writeFileMetadata',
   PHOTOS_RECONCILE_SCAN: 'photos:reconcileScan',
   PHOTOS_RECONCILE_APPLY: 'photos:reconcileApply',
   HISTORY_READ: 'history:read',
@@ -285,6 +295,8 @@ export interface ElectronAPI {
     setDefault: (shelterId: number, photoId: number) => Promise<void>;
     upload: (input: PhotoUploadInput) => Promise<Photo>;
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<Partial<Photo>>;
+    readFileMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<FileMetadataTag[]>;
+    writeFileMetadata: (slug: string, fileName: string, sheltersRoot: string, tags: Record<string, string>) => Promise<void>;
     reconcileScan: (shelterId: number, sheltersRoot: string) => Promise<ReconcileScanResult>;
     reconcileApply: (input: ReconcileApplyInput) => Promise<ReconcileApplyResult>;
   };
