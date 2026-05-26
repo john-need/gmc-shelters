@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
 import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput } from '../shared/ipc-types';
 
@@ -73,6 +73,7 @@ const api: ElectronAPI = {
     minimizeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_MINIMIZE),
     toggleFullscreen: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_TOGGLE_FULLSCREEN),
     isFullscreen: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_IS_FULLSCREEN),
+    getFilePath: (file: File) => webUtils.getPathForFile(file),
   },
 };
 

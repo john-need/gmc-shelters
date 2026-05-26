@@ -7,6 +7,8 @@ import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
 import type { Shelter } from '../../../../shared/ipc-types';
 
+const EMPTY: never[] = [];
+
 function FlagCheck({
   on,
   onClick,
@@ -41,7 +43,7 @@ export default function ShelterTab() {
   const dirty = useSelector((state: RootState) => state.shelters.dirty);
   const saving = useSelector((state: RootState) => state.shelters.saving);
   const photos = useSelector((state: RootState) =>
-    s ? (state.photos.byShelter[s.id] ?? []) : [],
+    s ? (state.photos.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
 
   const archList = useSelector((state: RootState) => state.architectures.list);

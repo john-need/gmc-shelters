@@ -279,6 +279,7 @@ export interface ElectronAPI {
     minimizeWindow: () => Promise<void>;
     toggleFullscreen: () => Promise<void>;
     isFullscreen: () => Promise<boolean>;
+    getFilePath: (file: File) => string;
   };
 }
 

@@ -12,6 +12,8 @@ import PhotosTab from './tabs/PhotosTab';
 import SourcesTab from './tabs/SourcesTab';
 import MapMarkersTab from './tabs/MapMarkersTab';
 
+const EMPTY: never[] = [];
+
 export default function MainPane() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer);
@@ -19,13 +21,13 @@ export default function MainPane() {
   const activeTab = useSelector((state: RootState) => state.ui.activeTab);
   const historyContent = useSelector((state: RootState) => state.shelters.historyContent);
   const photos = useSelector((state: RootState) =>
-    s ? (state.photos.byShelter[s.id] ?? []) : [],
+    s ? (state.photos.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
   const sources = useSelector((state: RootState) =>
-    s ? (state.sources.byShelter[s.id] ?? []) : [],
+    s ? (state.sources.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
   const markers = useSelector((state: RootState) =>
-    s ? (state.mapMarkers.byShelter[s.id] ?? []) : [],
+    s ? (state.mapMarkers.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
 
   useEffect(() => {
