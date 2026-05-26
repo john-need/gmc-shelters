@@ -120,6 +120,26 @@ describe('ipc/photos', () => {
     expect(result).toBe(metadata);
   });
 
+  it('PHOTOS_READ_FILE_METADATA calls readPhotoFileMetadata and returns result', async () => {
+    const tags = [{ group: 'EXIF', key: 'Title', label: 'Title', value: 'Hall', writable: true }];
+    (fsPhotos.readPhotoFileMetadata as jest.Mock).mockResolvedValue(tags);
+
+    const handler = getHandler(CHANNELS.PHOTOS_READ_FILE_METADATA);
+    const result = await handler(null, { slug: 'my-shelter', fileName: 'shot.jpg', sheltersRoot: '/base' });
+
+    expect(fsPhotos.readPhotoFileMetadata).toHaveBeenCalledWith('my-shelter', 'shot.jpg', '/base');
+    expect(result).toBe(tags);
+  });
+
+  it('PHOTOS_WRITE_FILE_METADATA calls writePhotoFileMetadata and resolves', async () => {
+    (fsPhotos.writePhotoFileMetadata as jest.Mock).mockResolvedValue(undefined);
+
+    const handler = getHandler(CHANNELS.PHOTOS_WRITE_FILE_METADATA);
+    await handler(null, { slug: 'my-shelter', fileName: 'shot.jpg', sheltersRoot: '/base', tags: { Title: 'New' } });
+
+    expect(fsPhotos.writePhotoFileMetadata).toHaveBeenCalledWith('my-shelter', 'shot.jpg', '/base', { Title: 'New' });
+  });
+
   describe('PHOTOS_RECONCILE_SCAN', () => {
     it('registers the scan channel', () => {
       const registered = (ipcMain.handle as jest.Mock).mock.calls.map(([ch]) => ch);

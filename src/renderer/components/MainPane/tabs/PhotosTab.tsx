@@ -8,6 +8,7 @@ import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
 import PhotoEditorDialog from './PhotoEditorDialog';
+import PhotoMetadataDialog from './PhotoMetadataDialog';
 
 function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: string; fallback: string; onLoad?: (img: HTMLImageElement) => void }) {
   const [imgError, setImgError] = useState(false);
@@ -58,10 +59,6 @@ function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, phot
       onDoubleClick={onDoubleClick}
     >
       <div className="photo-thumb" style={{ background: photoBackground(idx), position: 'relative', overflow: 'hidden' }}>
-        <div className="photo-badges">
-          {isDefault && <span className="photo-badge default">★ Default</span>}
-          {p.include_in_post && <span className="photo-badge published">Published</span>}
-        </div>
         {photoUrl && !imgError ? (
           <img
             src={photoUrl}
@@ -75,9 +72,24 @@ function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, phot
       </div>
       <div className="photo-info">
         <span className="photo-title">{p.title || 'Untitled'}</span>
-        <span className="photo-meta">
-          {p.date_taken || '—'} · {p.photographer || 'Unknown'}
-        </span>
+        <div className="photo-meta">
+          {isDefault && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              default
+            </span>
+          )}
+          {p.include_in_post && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <svg width="8" height="8" viewBox="0 0 8 8">
+                <circle cx="4" cy="4" r="4" fill="var(--rust)"/>
+              </svg>
+              pub
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -343,6 +355,7 @@ export default function PhotosTab() {
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [metadataOpen, setMetadataOpen] = useState(false);
   const [version, setVersion] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -683,6 +696,11 @@ export default function PhotosTab() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
+              <button className="btn icon sm" aria-label="View photo metadata" title="View photo metadata" onClick={() => setMetadataOpen(true)}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                </svg>
+              </button>
               <button className="btn icon sm" title="Set as default photo" onClick={() => handleSetDefault(selected.id)}>
                 {s.default_photo_id === selected.id ? (
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -818,13 +836,13 @@ export default function PhotosTab() {
               </button>
               <button
                 className="btn ghost sm"
-                title="Import from File"
+                title="Copy file metadata values into the editorial record"
                 onClick={handleImportMetadata}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>
                 </svg>
-                {' '}Import from File
+                {' '}Sync from File
               </button>
             </div>
           </div>
@@ -838,6 +856,15 @@ export default function PhotosTab() {
             isDefault={s.default_photo_id === selected.id}
             onSave={() => { setEditorOpen(false); setVersion((v) => v + 1); }}
             onCancel={() => setEditorOpen(false)}
+          />
+        )}
+        {metadataOpen && (
+          <PhotoMetadataDialog
+            photo={selected}
+            shelterId={s.id}
+            slug={s.slug}
+            sheltersRoot={sheltersRoot}
+            onClose={() => setMetadataOpen(false)}
           />
         )}
         </>

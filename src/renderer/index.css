@@ -1558,7 +1558,6 @@ html, body {
 }
 .photo-card:hover { border-color: var(--line-strong); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .photo-card.selected { border-color: var(--rust); box-shadow: 0 0 0 2px rgba(181,77,44,0.2); }
-.photo-card.default { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(45,74,50,0.18); }
 
 .photo-thumb {
   aspect-ratio: 4/3;
@@ -1583,25 +1582,6 @@ html, body {
   color: var(--ink-3);
   opacity: 0.5;
 }
-.photo-badges {
-  position: absolute;
-  top: 6px; left: 6px; right: 6px;
-  display: flex; justify-content: space-between; gap: 4px;
-  pointer-events: none;
-}
-.photo-badge {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  background: rgba(28,23,13,0.78);
-  color: var(--surface);
-  padding: 2px 6px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-.photo-badge.default { background: var(--forest); color: var(--surface); }
-.photo-badge.published { background: var(--rust); }
 
 .photo-info {
   padding: 8px 10px;

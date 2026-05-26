@@ -4,7 +4,7 @@ import { app } from 'electron';
 import { ExifTool } from 'exiftool-vendored';
 import sharp from 'sharp';
 import { log } from '../logger';
-import type { Photo, PhotoTransformInput } from '../../shared/ipc-types';
+import type { Photo, PhotoTransformInput, FileMetadataTag } from '../../shared/ipc-types';
 
 const exiftool = new ExifTool({ taskTimeoutMillis: 5000 });
 
@@ -90,19 +90,19 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
   }
 }
 
+function getString(val: any): string | null {
+  if (!val) return null;
+  if (Array.isArray(val)) return val.join(', ');
+  if (typeof val === 'object' && val.rawValue) return val.rawValue;
+  return val.toString();
+}
+
 export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot: string): Promise<Partial<Photo>> {
   const filePath = photoFilePath(slug, fileName, sheltersRoot);
   log.info(`Reading XMP from ${filePath}`);
 
   try {
     const tags = await exiftool.read(filePath);
-
-    const getString = (val: any) => {
-      if (!val) return null;
-      if (Array.isArray(val)) return val.join(', ');
-      if (typeof val === 'object' && val.rawValue) return val.rawValue;
-      return val.toString();
-    };
 
     return {
       title: getString(tags.Title),
@@ -115,6 +115,62 @@ export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot:
     };
   } catch (err) {
     log.error(`Failed to read XMP from ${filePath}`, err);
+    throw err;
+  }
+}
+
+const FILE_INTRINSIC_KEYS = new Set([
+  'FileSize', 'ImageWidth', 'ImageHeight', 'FileType', 'FileTypeExtension',
+  'MIMEType', 'ExifToolVersion', 'FileName', 'Directory',
+  'FileModifyDate', 'FileAccessDate', 'FileInodeChangeDate', 'FilePermissions',
+  'EncodingProcess', 'BitsPerSample', 'ColorComponents', 'YCbCrSubSampling',
+]);
+
+function inferGroup(key: string): string {
+  if (key.startsWith('GPS')) return 'GPS';
+  if (key.startsWith('XMP') || key.startsWith('xmp')) return 'XMP';
+  if (key.startsWith('IPTC')) return 'IPTC';
+  if (key.startsWith('Composite')) return 'Composite';
+  if (FILE_INTRINSIC_KEYS.has(key) || key.startsWith('File')) return 'File';
+  return 'EXIF';
+}
+
+function humanizeKey(key: string): string {
+  return key.replace(/([A-Z0-9]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+)/g, (m) => m + ' ').trim();
+}
+
+export async function readPhotoFileMetadata(slug: string, fileName: string, sheltersRoot: string): Promise<FileMetadataTag[]> {
+  const filePath = photoFilePath(slug, fileName, sheltersRoot);
+  log.info(`Reading file metadata from ${filePath}`);
+  try {
+    const tags = await exiftool.read(filePath);
+    const result: FileMetadataTag[] = [];
+    for (const key of Object.keys(tags)) {
+      if (key === 'errors' || key === 'warnings' || key === 'SourceFile') continue;
+      const raw = (tags as Record<string, unknown>)[key];
+      if (raw === null || raw === undefined) continue;
+      const value = getString(raw);
+      if (value === null) continue;
+      const writable = !FILE_INTRINSIC_KEYS.has(key) && key !== 'Identifier';
+      result.push({ group: inferGroup(key), key, label: humanizeKey(key), value, writable });
+    }
+    result.sort((a, b) => a.group.localeCompare(b.group) || a.key.localeCompare(b.key));
+    log.info(`File metadata read: ${result.length} tags from ${filePath}`);
+    return result;
+  } catch (err) {
+    log.error(`Failed to read file metadata from ${filePath}`, err);
+    throw err;
+  }
+}
+
+export async function writePhotoFileMetadata(slug: string, fileName: string, sheltersRoot: string, tags: Record<string, string>): Promise<void> {
+  const filePath = photoFilePath(slug, fileName, sheltersRoot);
+  log.info(`Writing file metadata to ${filePath}`);
+  try {
+    await exiftool.write(filePath, tags as any);
+    log.info(`File metadata written successfully to ${filePath}`);
+  } catch (err) {
+    log.error(`Failed to write file metadata to ${filePath}`, err);
     throw err;
   }
 }

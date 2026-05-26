@@ -63,6 +63,9 @@ beforeEach(() => {
     photos: {
       reconcileScan: mockReconcileScan,
       reconcileApply: mockReconcileApply,
+      readFileMetadata: jest.fn().mockReturnValue(new Promise(() => {})),
+      writeFileMetadata: jest.fn().mockResolvedValue(undefined),
+      readMetadata: jest.fn().mockResolvedValue({}),
     },
   };
 });
@@ -316,5 +319,71 @@ describe('US4 — Editing tools removed from right-aside panel', () => {
     });
 
     expect(screen.getByTestId('photo-preview')).toHaveClass('photo-preview-clickable');
+  });
+});
+
+// ─── US1: Metadata Icon Button ───────────────────────────────────────────────
+
+describe('US1 — Metadata icon button', () => {
+  it('T003a: metadata icon button is absent when no photo is selected', () => {
+    const store = makeStore(makeShelter(), []);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    expect(screen.queryByRole('button', { name: /view photo metadata/i })).not.toBeInTheDocument();
+  });
+
+  it('T003b: metadata icon button is present in photo-detail-head when a photo is selected', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+    });
+  });
+
+  it('T003c: clicking the metadata icon button opens the metadata dialog', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto({ title: 'Test Photo' });
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('T010d: clicking the button calls readFileMetadata with the shelter slug', async () => {
+    const shelter = makeShelter({ slug: 'test-shelter' });
+    const photo = makePhoto({ file_name: 'shot.jpg' });
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
+    expect((window as any).api.photos.readFileMetadata).toHaveBeenCalledWith('test-shelter', 'shot.jpg', expect.any(String));
+  });
+});
+
+describe('US1 — Sync from File button', () => {
+  it('T014a: "Sync from File" button is present when a photo is selected', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Copy file metadata values into the editorial record')).toBeInTheDocument();
+    });
+  });
+
+  it('T014b: "Import from File" label is absent', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.queryByText('Import from File')).not.toBeInTheDocument();
+    });
   });
 });

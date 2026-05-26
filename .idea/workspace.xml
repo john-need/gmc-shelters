@@ -5,14 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CONTEXT.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTEXT.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/specs/006-photo-editor-dialog/tasks.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/006-photo-editor-dialog/tasks.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/specs/007-photo-metadata-dialog/spec.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/007-photo-metadata-dialog/spec.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/specs/007-photo-metadata-dialog/tasks.md" beforeDir="false" afterPath="$PROJECT_DIR$/specs/007-photo-metadata-dialog/tasks.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,7 +151,7 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "006-photo-editor-dialog",
+    "git-widget-placeholder": "007-photo-metadata-dialog",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Projects/gmc-shelters/shelters/deers-leap-lodge",

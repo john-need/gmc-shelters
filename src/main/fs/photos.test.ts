@@ -29,8 +29,11 @@ import {
   ensureShelterDir,
   writePhotoXmp,
   readPhotoXmp,
+  readPhotoFileMetadata,
+  writePhotoFileMetadata,
   transformPhoto,
 } from './photos';
+import type { FileMetadataTag } from '../../shared/ipc-types';
 import type { Photo } from '../../shared/ipc-types';
 
 import sharp from 'sharp';
@@ -223,6 +226,82 @@ describe('readPhotoXmp', () => {
       description: 'Tag1, Tag2',
       notes: 'Read Notes',
     });
+  });
+});
+
+describe('readPhotoFileMetadata', () => {
+  it('calls exiftool.read with resolved file path', async () => {
+    mockExifToolInstance.read.mockResolvedValue({ Title: 'Hall', Make: 'Canon' });
+    await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
+    expect(mockExifToolInstance.read).toHaveBeenCalledWith('/abs/shelters/shot.jpg');
+  });
+
+  it('returns FileMetadataTag[] with group, key, label, value, writable', async () => {
+    mockExifToolInstance.read.mockResolvedValue({ Title: 'Hall' });
+    const result = await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
+    expect(Array.isArray(result)).toBe(true);
+    const tag = result.find((t: FileMetadataTag) => t.key === 'Title');
+    expect(tag).toBeDefined();
+    expect(tag).toMatchObject({ key: 'Title', value: 'Hall', writable: true });
+    expect(typeof tag!.group).toBe('string');
+    expect(typeof tag!.label).toBe('string');
+  });
+
+  it('marks File-system intrinsic tags as writable: false', async () => {
+    mockExifToolInstance.read.mockResolvedValue({
+      FileSize: '1234 kB',
+      ImageWidth: 3024,
+      Title: 'Hall',
+    });
+    const result = await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
+    const fileSize = result.find((t: FileMetadataTag) => t.key === 'FileSize');
+    const imgWidth = result.find((t: FileMetadataTag) => t.key === 'ImageWidth');
+    const title = result.find((t: FileMetadataTag) => t.key === 'Title');
+    expect(fileSize!.writable).toBe(false);
+    expect(imgWidth!.writable).toBe(false);
+    expect(title!.writable).toBe(true);
+  });
+
+  it('marks Identifier tag as writable: false', async () => {
+    mockExifToolInstance.read.mockResolvedValue({ Identifier: '42', Title: 'Hall' });
+    const result = await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
+    const id = result.find((t: FileMetadataTag) => t.key === 'Identifier');
+    expect(id!.writable).toBe(false);
+  });
+
+  it('excludes tags with null or undefined values', async () => {
+    mockExifToolInstance.read.mockResolvedValue({ Title: 'Hall', Description: null, Notes: undefined });
+    const result = await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
+    const keys = result.map((t: FileMetadataTag) => t.key);
+    expect(keys).toContain('Title');
+    expect(keys).not.toContain('Description');
+    expect(keys).not.toContain('Notes');
+  });
+
+  it('throws when exiftool.read rejects', async () => {
+    mockExifToolInstance.read.mockRejectedValue(new Error('file not found'));
+    await expect(readPhotoFileMetadata('my-shelter', 'missing.jpg', '/abs/shelters')).rejects.toThrow('file not found');
+  });
+});
+
+describe('writePhotoFileMetadata', () => {
+  it('calls exiftool.write with resolved file path and tag map', async () => {
+    mockExifToolInstance.write.mockResolvedValue({});
+    await writePhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters', { Title: 'New Title' });
+    expect(mockExifToolInstance.write).toHaveBeenCalledWith('/abs/shelters/shot.jpg', { Title: 'New Title' });
+  });
+
+  it('resolves void on success', async () => {
+    mockExifToolInstance.write.mockResolvedValue({});
+    const result = await writePhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters', { Title: 'X' });
+    expect(result).toBeUndefined();
+  });
+
+  it('throws and logs on write error', async () => {
+    const { log } = require('../logger');
+    mockExifToolInstance.write.mockRejectedValue(new Error('write failed'));
+    await expect(writePhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters', { Title: 'X' })).rejects.toThrow('write failed');
+    expect(log.error).toHaveBeenCalled();
   });
 });
 
