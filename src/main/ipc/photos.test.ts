@@ -3,14 +3,17 @@ jest.mock('../db/photos');
 jest.mock('../db/shelters');
 jest.mock('../fs/photos');
 jest.mock('../db/connection');
+jest.mock('fs/promises');
 
 import { ipcMain } from 'electron';
+import * as fsp from 'fs/promises';
 import * as dbPhotos from '../db/photos';
 import * as dbShelters from '../db/shelters';
 import * as fsPhotos from '../fs/photos';
 import { getDb } from '../db/connection';
 import { registerPhotoHandlers } from './photos';
 import { CHANNELS } from '@shared/ipc-types';
+import type { ReconcileApplyInput } from '@shared/ipc-types';
 
 function getHandler(channel: string) {
   const call = (ipcMain.handle as jest.Mock).mock.calls.find(([ch]) => ch === channel);
@@ -115,5 +118,215 @@ describe('ipc/photos', () => {
 
     expect(fsPhotos.readPhotoXmp).toHaveBeenCalledWith('my-shelter', 'shot.jpg', '/base');
     expect(result).toBe(metadata);
+  });
+
+  describe('PHOTOS_RECONCILE_SCAN', () => {
+    it('registers the scan channel', () => {
+      const registered = (ipcMain.handle as jest.Mock).mock.calls.map(([ch]) => ch);
+      expect(registered).toContain(CHANNELS.PHOTOS_RECONCILE_SCAN);
+    });
+
+    it('returns untracked files (on disk, not in DB)', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue(['new-file.jpg', 'another.png']);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.untrackedFiles).toHaveLength(2);
+      expect(result.untrackedFiles[0].fileName).toBe('test-shelter/photos/new-file.jpg');
+      expect(result.orphanedRecords).toHaveLength(0);
+    });
+
+    it('returns untracked files from shelter root directory', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue(['root-photo.jpg']);
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.untrackedFiles).toHaveLength(1);
+      expect(result.untrackedFiles[0].fileName).toBe('test-shelter/root-photo.jpg');
+      expect(result.orphanedRecords).toHaveLength(0);
+    });
+
+    it('returns orphaned records (in DB, not on disk)', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 10, file_name: 'test-shelter/photos/missing.jpg', title: 'Gone Photo' },
+      ]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock).mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.orphanedRecords).toHaveLength(1);
+      expect(result.orphanedRecords[0].id).toBe(10);
+      expect(result.orphanedRecords[0].fileName).toBe('missing.jpg');
+      expect(result.untrackedFiles).toHaveLength(0);
+    });
+
+    it('returns empty lists when in sync', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 5, file_name: 'test-shelter/photos/synced.jpg', title: 'Synced' },
+      ]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue(['synced.jpg']);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock).mockResolvedValue(undefined);
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.untrackedFiles).toHaveLength(0);
+      expect(result.orphanedRecords).toHaveLength(0);
+    });
+
+    it('handles missing photos directory gracefully', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.untrackedFiles).toHaveLength(0);
+      expect(result.orphanedRecords).toHaveLength(0);
+    });
+
+    it('detects orphaned records stored without photos/ subdirectory (legacy paths)', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 20, file_name: 'test-shelter/present-directly.jpg', title: 'Direct' },
+        { id: 21, file_name: 'test-shelter/gone-directly.jpg', title: 'Gone Direct' },
+      ]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock)
+        .mockResolvedValueOnce(undefined)        // id 20 exists
+        .mockRejectedValueOnce(new Error('ENOENT')); // id 21 gone
+
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.orphanedRecords).toHaveLength(1);
+      expect(result.orphanedRecords[0].id).toBe(21);
+    });
+  });
+
+  describe('PHOTOS_RECONCILE_APPLY', () => {
+    it('registers the apply channel', () => {
+      const registered = (ipcMain.handle as jest.Mock).mock.calls.map(([ch]) => ch);
+      expect(registered).toContain(CHANNELS.PHOTOS_RECONCILE_APPLY);
+    });
+
+    it('inserts selected files with filename-as-title', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      const newPhoto = { id: 99, file_name: 'test-shelter/photos/new.jpg', shelter_id: 1 };
+      (dbPhotos.insertPhoto as jest.Mock).mockReturnValue(newPhoto);
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: ['test-shelter/photos/new.jpg'], recordIdsToDelete: [],
+      };
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input) as any;
+
+      expect(dbPhotos.insertPhoto).toHaveBeenCalledWith(1, 'test-shelter/photos/new.jpg', 'new');
+      expect(result.added).toBe(1);
+      expect(result.deleted).toBe(0);
+      expect(result.failed).toBe(0);
+    });
+
+    it('inserts root-level untracked files with correct relative path', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      const newPhoto = { id: 100, file_name: 'test-shelter/root-photo.jpg', shelter_id: 1 };
+      (dbPhotos.insertPhoto as jest.Mock).mockReturnValue(newPhoto);
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: ['test-shelter/root-photo.jpg'], recordIdsToDelete: [],
+      };
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input) as any;
+
+      expect(dbPhotos.insertPhoto).toHaveBeenCalledWith(1, 'test-shelter/root-photo.jpg', 'root-photo');
+      expect(result.added).toBe(1);
+    });
+
+    it('deletes selected orphaned records', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.clearDefaultPhoto as jest.Mock).mockReturnValue(undefined);
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: [], recordIdsToDelete: [10, 11],
+      };
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input) as any;
+
+      expect(dbPhotos.clearDefaultPhoto).toHaveBeenCalledWith(1, 10);
+      expect(dbPhotos.clearDefaultPhoto).toHaveBeenCalledWith(1, 11);
+      expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(10);
+      expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(11);
+      expect(result.deleted).toBe(2);
+      expect(result.added).toBe(0);
+      expect(result.failed).toBe(0);
+    });
+
+    it('collects failures best-effort without throwing', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.insertPhoto as jest.Mock)
+        .mockReturnValueOnce({ id: 1 })
+        .mockRejectedValueOnce(new Error('DB error'));
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: ['test-shelter/photos/ok.jpg', 'test-shelter/photos/bad.jpg'], recordIdsToDelete: [],
+      };
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input) as any;
+
+      expect(result.added).toBe(1);
+      expect(result.failed).toBe(1);
+      expect(result.failures[0].item).toBe('test-shelter/photos/bad.jpg');
+      expect(() => handler(null, input)).not.toThrow();
+    });
+
+    it('never throws even on total failure', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue(null);
+
+      const input: ReconcileApplyInput = {
+        shelterId: 99, sheltersRoot: '/shelters',
+        filesToAdd: ['shelter-99/photos/x.jpg'], recordIdsToDelete: [],
+      };
+      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      await expect(handler(null, input)).resolves.toBeDefined();
+    });
+  });
+
+  describe('PHOTOS_RECONCILE_SCAN rerun safety', () => {
+    it('does not list previously registered files after apply', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue(['registered.jpg']);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock).mockResolvedValue(undefined);
+
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValueOnce([
+        { id: 5, file_name: 'test-shelter/photos/registered.jpg', title: 'Registered' },
+      ]);
+
+      const scanHandler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await scanHandler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+
+      expect(result.untrackedFiles).toHaveLength(0);
+    });
   });
 });

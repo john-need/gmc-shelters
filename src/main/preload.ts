@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -36,6 +36,10 @@ const api: ElectronAPI = {
     upload: (input: PhotoUploadInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPLOAD, input),
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_READ_METADATA, { slug, fileName, sheltersRoot }),
+    reconcileScan: (shelterId: number, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_RECONCILE_SCAN, { shelterId, sheltersRoot }),
+    reconcileApply: (input: ReconcileApplyInput) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_RECONCILE_APPLY, input),
   },
   history: {
     read: (slug: string, sheltersRoot: string) =>

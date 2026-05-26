@@ -164,7 +164,7 @@ const sheltersSlice = createSlice({
         state.dirty = false;
       }
     },
-    setDefaultPhotoLocal(state, action: PayloadAction<{ shelterId: number; photoId: number; fileName: string }>) {
+    setDefaultPhotoLocal(state, action: PayloadAction<{ shelterId: number; photoId: number | null; fileName: string }>) {
       const { shelterId, photoId, fileName } = action.payload;
       const idx = state.list.findIndex((s) => s.id === shelterId);
       if (idx >= 0) {

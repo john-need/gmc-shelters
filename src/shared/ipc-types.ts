@@ -19,6 +19,8 @@ export const CHANNELS = {
   PHOTOS_SET_DEFAULT: 'photos:setDefault',
   PHOTOS_UPLOAD: 'photos:upload',
   PHOTOS_READ_METADATA: 'photos:readMetadata',
+  PHOTOS_RECONCILE_SCAN: 'photos:reconcileScan',
+  PHOTOS_RECONCILE_APPLY: 'photos:reconcileApply',
   HISTORY_READ: 'history:read',
   HISTORY_WRITE: 'history:write',
   SOURCES_GET_BY_SHELTER: 'sources:getByShelter',
@@ -202,6 +204,40 @@ export interface PhotoTransformInput {
 
 export type PhotoUpdateInput = Omit<Photo, 'id' | 'shelter_id' | 'created' | 'file_name' | 'file_path'> & PhotoTransformInput;
 
+export interface UntrackedFile {
+  fileName: string;
+}
+
+export interface OrphanedRecord {
+  id: number;
+  fileName: string;
+  title: string;
+}
+
+export interface ReconcileScanResult {
+  untrackedFiles: UntrackedFile[];
+  orphanedRecords: OrphanedRecord[];
+}
+
+export interface ReconcileApplyInput {
+  shelterId: number;
+  sheltersRoot: string;
+  filesToAdd: string[];
+  recordIdsToDelete: number[];
+}
+
+export interface ReconcileItemOutcome {
+  item: string;
+  reason: string;
+}
+
+export interface ReconcileApplyResult {
+  added: number;
+  deleted: number;
+  failed: number;
+  failures: ReconcileItemOutcome[];
+}
+
 export interface PhotoUploadInput {
   shelterId: number;
   sourcePath: string;
@@ -249,6 +285,8 @@ export interface ElectronAPI {
     setDefault: (shelterId: number, photoId: number) => Promise<void>;
     upload: (input: PhotoUploadInput) => Promise<Photo>;
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<Partial<Photo>>;
+    reconcileScan: (shelterId: number, sheltersRoot: string) => Promise<ReconcileScanResult>;
+    reconcileApply: (input: ReconcileApplyInput) => Promise<ReconcileApplyResult>;
   };
   history: {
     read: (slug: string, sheltersRoot: string) => Promise<HistoryReadResult>;

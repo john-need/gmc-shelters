@@ -42,6 +42,81 @@ beforeEach(() => {
   (app.getAppPath as jest.Mock).mockReturnValue('/base');
 });
 
+describe('listPhotosDir', () => {
+  it('returns bare image filenames from the photos directory', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue(['a.jpg', 'b.PNG', 'c.tiff', 'd.txt', '.DS_Store']);
+    const { listPhotosDir } = await import('./photos');
+    const result = await listPhotosDir('test-shelter', '/abs/shelters');
+    expect(result).toEqual(['a.jpg', 'b.PNG', 'c.tiff']);
+    expect(fsp.readdir).toHaveBeenCalledWith('/abs/shelters/test-shelter/photos');
+  });
+
+  it('is case-insensitive on extension', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue(['img.JPG', 'photo.WebP', 'file.TIF']);
+    const { listPhotosDir } = await import('./photos');
+    const result = await listPhotosDir('slug', '/root');
+    expect(result).toHaveLength(3);
+  });
+
+  it('returns empty array when directory does not exist', async () => {
+    const err = Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    (fsp.readdir as jest.Mock).mockRejectedValue(err);
+    const { listPhotosDir } = await import('./photos');
+    const result = await listPhotosDir('missing-shelter', '/root');
+    expect(result).toEqual([]);
+  });
+
+  it('filters out non-image files', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue(['readme.md', 'video.mp4', 'photo.jpeg']);
+    const { listPhotosDir } = await import('./photos');
+    const result = await listPhotosDir('slug', '/root');
+    expect(result).toEqual(['photo.jpeg']);
+  });
+});
+
+describe('listShelterRootImages', () => {
+  it('returns image filenames from the shelter root (files only)', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue([
+      { name: 'old-photo.jpg', isFile: () => true },
+      { name: 'photos', isFile: () => false },
+      { name: 'readme.txt', isFile: () => true },
+    ]);
+    const { listShelterRootImages } = await import('./photos');
+    const result = await listShelterRootImages('test-shelter', '/abs/shelters');
+    expect(result).toEqual(['old-photo.jpg']);
+    expect(fsp.readdir).toHaveBeenCalledWith('/abs/shelters/test-shelter', { withFileTypes: true });
+  });
+
+  it('excludes directories like the photos/ subdir', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue([
+      { name: 'photos', isFile: () => false },
+      { name: 'data', isFile: () => false },
+    ]);
+    const { listShelterRootImages } = await import('./photos');
+    const result = await listShelterRootImages('slug', '/root');
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array when directory does not exist', async () => {
+    const err = Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    (fsp.readdir as jest.Mock).mockRejectedValue(err);
+    const { listShelterRootImages } = await import('./photos');
+    const result = await listShelterRootImages('missing-shelter', '/root');
+    expect(result).toEqual([]);
+  });
+
+  it('is case-insensitive on extension', async () => {
+    (fsp.readdir as jest.Mock).mockResolvedValue([
+      { name: 'img.JPG', isFile: () => true },
+      { name: 'scan.TIF', isFile: () => true },
+      { name: 'note.PDF', isFile: () => true },
+    ]);
+    const { listShelterRootImages } = await import('./photos');
+    const result = await listShelterRootImages('slug', '/root');
+    expect(result).toEqual(['img.JPG', 'scan.TIF']);
+  });
+});
+
 describe('fs/photos', () => {
   describe('photosDirForSlug', () => {
     it('returns path under absolute sheltersRoot', () => {

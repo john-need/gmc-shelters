@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { Photo, PhotoUpdateInput } from '../../shared/ipc-types';
+import type { Photo, PhotoUpdateInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export interface PhotosState {
   byShelter: Record<number, Photo[]>;
@@ -32,6 +32,16 @@ export const uploadPhoto = createAsyncThunk(
     if (typeof window !== 'undefined' && window.api) {
       const photo = await window.api.photos.upload({ shelterId, sourcePath, sheltersRoot, title });
       return { shelterId, photo };
+    }
+    throw new Error('API not available');
+  },
+);
+
+export const reconcileApply = createAsyncThunk<ReconcileApplyResult, ReconcileApplyInput>(
+  'photos/reconcileApply',
+  async (input) => {
+    if (typeof window !== 'undefined' && window.api) {
+      return window.api.photos.reconcileApply(input);
     }
     throw new Error('API not available');
   },

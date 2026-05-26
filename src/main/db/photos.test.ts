@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto } from './photos';
+import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto } from './photos';
 
 jest.mock('./connection');
 import { getDb } from './connection';
@@ -84,5 +84,29 @@ describe('db/photos', () => {
     setDefaultPhoto(shelterId, photo.id);
     const row = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number };
     expect(row.default_photo_id).toBe(photo.id);
+  });
+
+  describe('clearDefaultPhoto', () => {
+    it('clears default_photo_id when it matches the given photoId', () => {
+      const photo = insertPhoto(shelterId, 'clear-me.jpg');
+      setDefaultPhoto(shelterId, photo.id);
+      clearDefaultPhoto(shelterId, photo.id);
+      const row = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+      expect(row.default_photo_id).toBeNull();
+    });
+
+    it('does not clear default_photo_id when photoId does not match', () => {
+      const photo = insertPhoto(shelterId, 'keep-default.jpg');
+      setDefaultPhoto(shelterId, photo.id);
+      clearDefaultPhoto(shelterId, photo.id + 999);
+      const row = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+      expect(row.default_photo_id).toBe(photo.id);
+    });
+
+    it('is a no-op when default_photo_id is already null', () => {
+      clearDefaultPhoto(shelterId, 42);
+      const row = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+      expect(row.default_photo_id).toBeNull();
+    });
   });
 });
