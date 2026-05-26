@@ -17,6 +17,7 @@ const shelter: Shelter = {
   is_gmc: false,
   show_on_web: false,
   default_photo_id: null,
+  default_photo_file_name: null,
   created: '2020-01-01',
   updated: '2020-01-01',
   photo_count: 0,
@@ -77,5 +78,23 @@ describe('ShelterRow', () => {
       <ShelterRow shelter={theShelter} selected={false} onSelect={jest.fn()} collapsed={false} />,
     );
     expect(container.querySelector('.shelter-item-thumb')?.textContent).toBe('B');
+  });
+
+  it('shows initial when no default photo is set', () => {
+    const { container } = render(
+      <ShelterRow shelter={shelter} selected={false} onSelect={jest.fn()} collapsed={false} repoRoot="/repo" sheltersRoot="shelters/" />,
+    );
+    expect(container.querySelector('.shelter-item-thumb img')).toBeNull();
+    expect(container.querySelector('.shelter-item-thumb')?.textContent).toBe('B');
+  });
+
+  it('shows thumbnail img when default photo file name is set', () => {
+    const withPhoto = { ...shelter, default_photo_id: 7, default_photo_file_name: 'shelters/bear-notch-shelter/photo.jpg' };
+    const { container } = render(
+      <ShelterRow shelter={withPhoto} selected={false} onSelect={jest.fn()} collapsed={false} repoRoot="/repo" sheltersRoot="shelters/" />,
+    );
+    const img = container.querySelector('.shelter-item-thumb img');
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute('src')).toContain('bear-notch-shelter');
   });
 });

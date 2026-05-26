@@ -91,7 +91,7 @@ export default function Titlebar() {
         </button>
       </div>
       <div className="titlebar-title">
-        gmc-shelters <em>— Archive Manager</em>
+        GMC Shelters <em>— Archive Manager</em>
       </div>
     </div>
   );

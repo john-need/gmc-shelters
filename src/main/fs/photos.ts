@@ -55,6 +55,19 @@ export async function deletePhotoFile(slug: string, fileName: string, sheltersRo
   }
 }
 
+export async function deleteShelterDir(slug: string, sheltersRoot: string): Promise<void> {
+  const resolvedRoot = path.isAbsolute(sheltersRoot)
+    ? sheltersRoot
+    : path.resolve(app.getAppPath(), sheltersRoot);
+  const dir = path.join(resolvedRoot, slug);
+  try {
+    await fs.rm(dir, { recursive: true, force: true });
+    log.info(`Shelter dir deleted: ${dir}`);
+  } catch (err) {
+    log.warn(`Could not delete shelter dir: ${dir}`, err);
+  }
+}
+
 export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: string): Promise<void> {
   const filePath = photoFilePath(slug, photo.file_name, sheltersRoot);
   log.info(`Writing XMP to ${filePath}`);

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Photo } from '../../../../shared/ipc-types';
 import { uploadPhoto, savePhotoMetadata, updatePhotoLocal, removePhotoLocal } from '../../../store/photosSlice';
-import { setEditBuffer } from '../../../store/sheltersSlice';
+import { setDefaultPhotoLocal } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
@@ -354,7 +354,8 @@ export default function PhotosTab() {
       if (typeof window !== 'undefined' && window.api) {
         await window.api.photos.setDefault(s.id, photoId);
       }
-      dispatch(setEditBuffer({ ...s, default_photo_id: photoId }));
+      const photo = photos.find((p) => p.id === photoId);
+      dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId, fileName: photo?.file_name ?? '' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Could not set default.' }));
     }

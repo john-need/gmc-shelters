@@ -7,33 +7,8 @@ import sheltersReducer from '../../../store/sheltersSlice';
 import uiReducer from '../../../store/uiSlice';
 import MapMarkersTab from './MapMarkersTab';
 import type { MapMarker, Shelter } from '../../../../shared/ipc-types';
-
-// Mock Leaflet 2.0 — jsdom has no real layout engine.
-// Leaflet 2.0 uses constructors (new L.Map, new L.Marker, etc.) not factory fns.
-jest.mock('leaflet', () => {
-  const mockMarker = {
-    addTo: jest.fn().mockReturnThis(),
-    on: jest.fn().mockReturnThis(),
-    remove: jest.fn(),
-    setIcon: jest.fn(),
-    getLatLng: jest.fn(() => ({ lat: 44.1, lng: -71.5 })),
-  };
-  const mapStub = {
-    on: jest.fn(),
-    off: jest.fn(),
-    remove: jest.fn(),
-    getContainer: jest.fn(() => ({ style: {} as CSSStyleDeclaration })),
-  };
-  return {
-    __esModule: true,
-    default: {
-      Map: jest.fn(() => mapStub),
-      TileLayer: jest.fn(() => ({ addTo: jest.fn() })),
-      DivIcon: jest.fn(() => ({})),
-      Marker: jest.fn(() => ({ ...mockMarker })),
-    },
-  };
-});
+// Jest resolves both this path and 'leaflet' to the same module instance via moduleNameMapper
+import { mapStub } from '../../../__mocks__/leaflet';
 
 function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
@@ -72,6 +47,166 @@ function makeStore(markers: MapMarker[] = [], shelterId = 10) {
 
 const shelter = makeShelter();
 const defaultProps = { shelterId: 10, shelter };
+
+describe('map auto-fit (fitMapToBounds)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calls flyTo with default centre at zoom 8 when there are 0 markers', () => {
+    const store = makeStore([]);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    expect(mapStub.flyTo).toHaveBeenCalledWith([44.0, -71.5], 8);
+  });
+
+  it('calls flyTo with marker coords at zoom 15 when there is 1 marker', () => {
+    const store = makeStore([makeMarker({ latitude: 44.1, longitude: -71.6 })]);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    expect(mapStub.flyTo).toHaveBeenCalledWith([44.1, -71.6], 15);
+  });
+
+  it('calls flyToBounds with maxZoom 15 for 2 markers at distinct coords', () => {
+    const markers = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2 }),
+    ];
+    const store = makeStore(markers);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    expect(mapStub.flyToBounds).toHaveBeenCalledTimes(1);
+    const options = mapStub.flyToBounds.mock.calls[0][1];
+    expect(options.maxZoom).toBe(15);
+    expect(mapStub.fitBounds).toHaveBeenCalledTimes(0);
+  });
+
+  it('calls flyToBounds even when 2 markers share identical coords', () => {
+    const markers = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.1, longitude: -71.6 }),
+    ];
+    const store = makeStore(markers);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    expect(mapStub.flyToBounds).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-calls flyToBounds when a marker is added to the store', () => {
+    const initial = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2 }),
+    ];
+    const store = makeStore(initial);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    const countBefore = mapStub.flyToBounds.mock.calls.length;
+
+    const third = makeMarker({ id: 3, latitude: 43.8, longitude: -72.0 });
+    act(() => {
+      store.dispatch(createMarker.fulfilled(
+        { shelterId: 10, markers: [...initial, third] },
+        '',
+        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 2000, change_type: 'Moved', notes: '' },
+      ));
+    });
+    expect(mapStub.flyToBounds.mock.calls.length).toBeGreaterThan(countBefore);
+  });
+});
+
+describe('list-to-map pan (FR-009)', () => {
+  it('calls flyTo exactly once with marker coords when a list row is clicked', () => {
+    const markers = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2 }),
+    ];
+    const store = makeStore(markers);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    jest.clearAllMocks();
+    const rows = screen.getAllByTestId('marker-row');
+    fireEvent.click(rows[0]);
+    expect(mapStub.flyTo).toHaveBeenCalledTimes(1);
+    expect(mapStub.flyTo).toHaveBeenCalledWith([44.1, -71.6], expect.any(Number));
+    expect(mapStub.flyTo.mock.calls[0][1]).toBeGreaterThanOrEqual(15);
+  });
+
+  it('does not call flyTo again when the same row is clicked again (deselect)', () => {
+    const markers = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2 }),
+    ];
+    const store = makeStore(markers);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    jest.clearAllMocks();
+    const rows = screen.getAllByTestId('marker-row');
+    fireEvent.click(rows[0]);
+    fireEvent.click(rows[0]);
+    expect(mapStub.flyTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls flyTo exactly once for a single-marker list row click', () => {
+    const store = makeStore([makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 })]);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    jest.clearAllMocks();
+    fireEvent.click(screen.getByTestId('marker-row'));
+    expect(mapStub.flyTo).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('map re-fit after marker changes (US2)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('re-fits with flyToBounds after a third marker is added', () => {
+    const initial = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2 }),
+    ];
+    const store = makeStore(initial);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    const countBefore = mapStub.flyToBounds.mock.calls.length;
+
+    const third = makeMarker({ id: 3, latitude: 43.8, longitude: -72.0, start_year: 1990 });
+    act(() => {
+      store.dispatch(createMarker.fulfilled(
+        { shelterId: 10, markers: [...initial, third] },
+        '',
+        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 1990, change_type: 'Moved', notes: '' },
+      ));
+    });
+    expect(mapStub.flyToBounds.mock.calls.length).toBeGreaterThan(countBefore);
+  });
+
+  it('re-fits with flyTo after deleting one of two markers', () => {
+    const markers = [
+      makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 }),
+      makeMarker({ id: 2, latitude: 44.5, longitude: -71.2, start_year: 1975 }),
+    ];
+    const store = makeStore(markers);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    jest.clearAllMocks();
+
+    act(() => {
+      store.dispatch(deleteMarker.fulfilled(
+        { shelterId: 10, markers: [makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 })] },
+        '',
+        { id: 2, shelterId: 10 },
+      ));
+    });
+    expect(mapStub.flyTo).toHaveBeenCalledWith([44.1, -71.6], 15);
+  });
+
+  it('re-fits with default view after deleting the last marker', () => {
+    const store = makeStore([makeMarker({ id: 1, latitude: 44.1, longitude: -71.6 })]);
+    render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+    jest.clearAllMocks();
+
+    act(() => {
+      store.dispatch(deleteMarker.fulfilled(
+        { shelterId: 10, markers: [] },
+        '',
+        { id: 1, shelterId: 10 },
+      ));
+    });
+    expect(mapStub.flyTo).toHaveBeenCalledWith([44.0, -71.5], 8);
+  });
+});
 
 describe('MapMarkersTab', () => {
   describe('empty state', () => {

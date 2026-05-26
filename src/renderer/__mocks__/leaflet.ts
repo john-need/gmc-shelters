@@ -17,6 +17,10 @@ const mapStub = {
   off: jest.fn(),
   remove: jest.fn(),
   getContainer: jest.fn(() => ({ style: {} as CSSStyleDeclaration })),
+  flyToBounds: jest.fn().mockReturnThis(),
+  flyTo: jest.fn().mockReturnThis(),
+  fitBounds: jest.fn().mockReturnThis(),
+  getZoom: jest.fn(() => 13),
 };
 
 const L = {
@@ -24,7 +28,9 @@ const L = {
   TileLayer: jest.fn(() => ({ addTo: jest.fn() })),
   DivIcon: jest.fn(() => ({})),
   Marker: jest.fn(() => makeMarkerStub()),
+  LatLngBounds: jest.fn(() => ({ extend: jest.fn().mockReturnThis() })),
 };
 
 export default L;
 export const { Map, TileLayer, DivIcon, Marker } = L;
+export { mapStub };

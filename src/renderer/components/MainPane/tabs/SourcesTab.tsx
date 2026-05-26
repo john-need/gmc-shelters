@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Source, SourceInput, SourceType } from '../../../../shared/ipc-types';
@@ -37,7 +37,7 @@ const BLANK_SOURCE: Omit<Source, 'id' | 'shelter_id' | 'created' | 'updated'> = 
   edition: '', volume: '', issue: '', pages: '',
   publisher: '', place: '', year: null, date: '',
   url: '', access_date: '', archive: '', archive_location: '',
-  annotation: '', notes: '',
+  annotation: '', notes: '', quote: '',
 };
 
 interface SourceCardProps {
@@ -46,6 +46,35 @@ interface SourceCardProps {
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
+}
+
+function SourceQuote({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || expanded) return;
+    const measure = () => setOverflows(el.scrollHeight > el.clientHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text, expanded]);
+
+  return (
+    <div className="source-quote-wrap" onClick={(e) => e.stopPropagation()}>
+      <div ref={ref} className={`source-quote${expanded ? ' expanded' : ''}`}>
+        &ldquo;{text}&rdquo;
+      </div>
+      {overflows && (
+        <button className="source-quote-toggle" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? 'show less' : 'show more'}
+        </button>
+      )}
+    </div>
+  );
 }
 
 function SourceCard({ s, selected, onClick, onEdit, onDelete }: SourceCardProps) {
@@ -83,6 +112,8 @@ function SourceCard({ s, selected, onClick, onEdit, onDelete }: SourceCardProps)
           )}
           <span style={{ marginLeft: 'auto', opacity: 0.7 }}>updated {s.updated}</span>
         </div>
+
+        {s.quote && <SourceQuote text={s.quote} />}
 
         {s.annotation && selected && (
           <div className="source-annotation">{s.annotation}</div>
@@ -290,6 +321,11 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
                 <input className="input mono" type="date" value={s.access_date ?? ''} onChange={set('access_date')} />
               </div>
             )}
+
+            <div className="field col-span-2">
+              <label className="label">Verbatim quote <span className="hint">exact words from the source</span></label>
+              <textarea className="textarea" rows={3} value={s.quote ?? ''} onChange={set('quote')} />
+            </div>
 
             <div className="field col-span-2">
               <label className="label">Annotation <span className="hint">summary / why this matters</span></label>

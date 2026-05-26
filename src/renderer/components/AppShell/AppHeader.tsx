@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import gmcLogo from '../../../../assets/gmc-btv-logo.png';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { showToast } from '../../store/uiSlice';
@@ -46,7 +47,7 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
   return (
     <header className="app-header">
       <div className="app-brand">
-        <div className="app-logo">G</div>
+        <div className="app-logo"><img src={gmcLogo} alt="GMC logo" /></div>
         <div className="app-brand-text">
           <div className="app-brand-name">GMC Shelters</div>
           <div className="app-brand-sub">Archive · v1.4.0</div>
@@ -54,14 +55,6 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
       </div>
 
       <div className="header-divider" />
-
-      <div className="header-search">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
-        </svg>
-        <input placeholder="Search records, photographers, slugs…" readOnly />
-        <kbd>⌘K</kbd>
-      </div>
 
       <div className="header-spacer" />
 

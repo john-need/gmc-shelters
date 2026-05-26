@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getAllShelters, getShelterById, createShelter, updateShelter, deleteShelter } from '../db/shelters';
 import { syncMarkersFromShelter } from '../db/map-markers';
-import { ensureShelterDir } from '../fs/photos';
+import { ensureShelterDir, deleteShelterDir } from '../fs/photos';
 import { writeHistory } from '../fs/history';
 import { log } from '../logger';
 import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
@@ -37,7 +37,11 @@ export function registerShelterHandlers(): void {
     return updated;
   });
 
-  ipcMain.handle(CHANNELS.SHELTERS_DELETE, (_e, { id }: { id: number }) =>
-    deleteShelter(id),
+  ipcMain.handle(
+    CHANNELS.SHELTERS_DELETE,
+    async (_e, { id, slug, sheltersRoot }: { id: number; slug: string; sheltersRoot: string }) => {
+      deleteShelter(id);
+      await deleteShelterDir(slug, sheltersRoot);
+    },
   );
 }

@@ -124,6 +124,7 @@ export interface Shelter {
   category: string;
   show_on_web: boolean;
   photo_count?: number;
+  default_photo_file_name?: string | null;
 }
 
 export interface Category {
@@ -178,6 +179,7 @@ export interface Source {
   archive_location: string;
   annotation: string;
   notes: string;
+  quote: string;
   created: string;
   updated: string;
 }
@@ -237,7 +239,7 @@ export interface ElectronAPI {
     getById: (id: number) => Promise<Shelter | null>;
     create: (input: ShelterCreateInput) => Promise<Shelter>;
     update: (shelter: Shelter) => Promise<Shelter>;
-    delete: (id: number) => Promise<void>;
+    delete: (id: number, slug: string, sheltersRoot: string) => Promise<void>;
   };
   photos: {
     getByShelter: (shelterId: number) => Promise<Photo[]>;

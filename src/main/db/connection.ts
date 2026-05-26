@@ -73,4 +73,32 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 004-5nf-normalisation.sql');
     }
   }
+
+  // Apply 005-add-quote-to-shelter-sources.sql if quote column doesn't exist on shelter_sources
+  const quoteCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('shelter_sources') WHERE name='quote'")
+    .get() as { n: number };
+
+  if (quoteCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '005-add-quote-to-shelter-sources.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 005-add-quote-to-shelter-sources.sql');
+    }
+  }
+
+  // Apply 006-move-quote-to-shelter-sources.sql if sources.quote column still exists
+  const sourcesQuoteCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('sources') WHERE name='quote'")
+    .get() as { n: number };
+
+  if (sourcesQuoteCol.n > 0) {
+    const migrationPath = path.join(migrationsDir, '006-move-quote-to-shelter-sources.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 006-move-quote-to-shelter-sources.sql');
+    }
+  }
 }

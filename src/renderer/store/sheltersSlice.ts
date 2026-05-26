@@ -89,6 +89,16 @@ export const createShelter = createAsyncThunk(
   },
 );
 
+export const deleteShelterThunk = createAsyncThunk(
+  'shelters/delete',
+  async ({ id, slug, sheltersRoot }: { id: number; slug: string; sheltersRoot: string }) => {
+    if (typeof window !== 'undefined' && window.api) {
+      await window.api.shelters.delete(id, slug, sheltersRoot);
+    }
+    return id;
+  },
+);
+
 export const loadHistory = createAsyncThunk(
   'shelters/loadHistory',
   async (slug: string) => {
@@ -154,6 +164,16 @@ const sheltersSlice = createSlice({
         state.dirty = false;
       }
     },
+    setDefaultPhotoLocal(state, action: PayloadAction<{ shelterId: number; photoId: number; fileName: string }>) {
+      const { shelterId, photoId, fileName } = action.payload;
+      const idx = state.list.findIndex((s) => s.id === shelterId);
+      if (idx >= 0) {
+        state.list[idx] = { ...state.list[idx], default_photo_id: photoId, default_photo_file_name: fileName };
+      }
+      if (state.editBuffer && state.editBuffer.id === shelterId) {
+        state.editBuffer = { ...state.editBuffer, default_photo_id: photoId, default_photo_file_name: fileName };
+      }
+    },
     clearDirty(state) {
       state.dirty = false;
       state.historyDirty = false;
@@ -208,6 +228,20 @@ const sheltersSlice = createSlice({
         state.historyOriginal = action.payload;
         state.historyDirty = false;
         state.historyMissing = false;
+      })
+      .addCase(deleteShelterThunk.fulfilled, (state, action) => {
+        const deletedId = action.payload;
+        state.list = state.list.filter((s) => s.id !== deletedId);
+        if (state.selectedId === deletedId) {
+          const next = state.list[0] ?? null;
+          state.selectedId = next?.id ?? null;
+          state.editBuffer = next;
+          state.dirty = false;
+          state.historyContent = '';
+          state.historyOriginal = '';
+          state.historyDirty = false;
+          state.historyMissing = false;
+        }
       });
   },
 });
@@ -218,6 +252,7 @@ export const {
   revertEditBuffer,
   setHistoryContent,
   upsertShelter,
+  setDefaultPhotoLocal,
   clearDirty,
 } = sheltersSlice.actions;
 

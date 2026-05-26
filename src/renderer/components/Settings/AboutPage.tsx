@@ -29,7 +29,7 @@ export default function AboutPage() {
         <div>
           <div
             className="settings-page-title"
-            dangerouslySetInnerHTML={{ __html: 'About <em>· this archive</em>' }}
+            dangerouslySetInnerHTML={{ __html: 'About <em>· GMC Shelters</em>' }}
           />
           <div className="settings-page-sub">§ Settings / About</div>
         </div>

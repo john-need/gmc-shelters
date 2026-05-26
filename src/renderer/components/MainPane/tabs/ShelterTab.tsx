@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
-import { setEditBuffer, revertEditBuffer, saveShelter } from '../../../store/sheltersSlice';
+import { setEditBuffer, revertEditBuffer, saveShelter, deleteShelterThunk } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
@@ -49,6 +49,9 @@ export default function ShelterTab() {
 
   const [repoRoot, setRepoRoot] = useState('');
   const [isPhotoModalOpen, setPhotoModalOpen] = useState(false);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const [deleteSlug, setDeleteSlug] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [dppIndex, setDppIndex] = useState(0);
   const [dppImgError, setDppImgError] = useState(false);
 
@@ -110,6 +113,20 @@ export default function ShelterTab() {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (deleteSlug !== s.slug) return;
+    setIsDeleting(true);
+    try {
+      const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
+      await dispatch(deleteShelterThunk({ id: s.id, slug: s.slug, sheltersRoot }));
+      dispatch(showToast({ id: Date.now().toString(), message: `Deleted ${s.name}` }));
+    } finally {
+      setIsDeleting(false);
+      setDeleteOpen(false);
+      setDeleteSlug('');
+    }
+  };
+
   const handleOpenDpp = () => {
     const idx = photos.findIndex((p) => p.id === s.default_photo_id);
     setDppIndex(idx >= 0 ? idx : 0);
@@ -119,10 +136,9 @@ export default function ShelterTab() {
 
   const handleSetDefault = async (photoId: number) => {
     try {
-      if (typeof window !== 'undefined' && window.api) {
-        await window.api.photos.setDefault(s.id, photoId);
-      }
-      dispatch(setEditBuffer({ ...s, default_photo_id: photoId }));
+      const updated = { ...s, default_photo_id: photoId };
+      dispatch(setEditBuffer(updated));
+      await dispatch(saveShelter(updated));
       dispatch(showToast({ id: Date.now().toString(), message: 'Default photo updated.' }));
       setPhotoModalOpen(false);
     } catch {
@@ -156,13 +172,11 @@ export default function ShelterTab() {
     : '';
 
   return (
-    <div className="form-wrap shelter-tab">
+    <div className="shelter-tab-wrap">
+      <div className="form-wrap shelter-tab">
       <div className="section-head">
         <span className="section-num">§ 01</span>
         <span className="section-title">Identity <em>& classification</em></span>
-        <span className="section-hint">
-          Stored in <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>shelters.db</code>
-        </span>
       </div>
 
       <div className="shelter-identity-grid">
@@ -215,7 +229,7 @@ export default function ShelterTab() {
 
           <div className="field col-span-2">
             <label className="label">
-              Description <span className="hint">shown in public catalog</span>
+              Description
             </label>
             <textarea className="textarea" rows={4} value={s.description || ''} onChange={f('description')} />
           </div>
@@ -240,20 +254,13 @@ export default function ShelterTab() {
                 <span>{s.name.charAt(0).toUpperCase()}</span>
               </div>
             )}
-            {defaultPhoto && (
-              <div className="shelter-media-overlay">
-                <span className="shelter-media-badge">Default photo</span>
-              </div>
-            )}
           </div>
           <div className="shelter-media-meta">
             <div className="shelter-media-title">{photoSummary}</div>
             <div className="shelter-media-sub">
-              {defaultPhoto
-                ? `Photo ID ${defaultPhoto.id}`
-                : photos.length > 0
-                  ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} available — click to choose default`
-                  : 'Pick a lead image in the Photos tab to feature it here.'}
+              {!defaultPhoto && (photos.length > 0
+                ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} available — click to choose default`
+                : 'Pick a lead image in the Photos tab to feature it here.')}
             </div>
           </div>
         </button>
@@ -284,7 +291,7 @@ export default function ShelterTab() {
 
         <div className="field col-span-2">
           <label className="label">
-            Internal notes <span className="hint">not published</span>
+            Internal notes
           </label>
           <textarea className="textarea" rows={3} value={s.notes || ''} onChange={f('notes')} />
         </div>
@@ -349,7 +356,20 @@ export default function ShelterTab() {
         </div>
       </div>
 
-      <div className="save-bar">
+    </div>
+
+    <div className="save-bar">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          type="button"
+          className="btn danger icon"
+          title="Delete this shelter"
+          onClick={() => { setDeleteSlug(''); setDeleteOpen(true); }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
         <div className="save-bar-info">
           {dirty ? (
             <>
@@ -369,18 +389,19 @@ export default function ShelterTab() {
             </>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => dispatch(revertEditBuffer())} disabled={!dirty}>
-            Revert
-          </button>
-          <button className="btn primary" onClick={handleSave} disabled={!dirty || saving}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
-            </svg>
-            Save record
-          </button>
-        </div>
       </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn" onClick={() => dispatch(revertEditBuffer())} disabled={!dirty}>
+          Revert
+        </button>
+        <button className="btn primary" onClick={handleSave} disabled={!dirty || saving}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
+          </svg>
+          Save record
+        </button>
+      </div>
+    </div>
 
       {isPhotoModalOpen && photos.length > 0 && (
         <div className="modal-bg" onClick={() => setPhotoModalOpen(false)}>
@@ -507,6 +528,79 @@ export default function ShelterTab() {
           </div>
         </div>
       )}
+
+      {isDeleteOpen && (
+        <div className="modal-bg" onClick={() => !isDeleting && setDeleteOpen(false)}>
+          <div
+            className="modal delete-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete shelter"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-head">
+              <h2>Delete <em>shelter</em></h2>
+              <div className="sub">{s.name}</div>
+            </div>
+
+            <div className="delete-modal-body">
+              <div className="delete-warning">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>This action is <strong>permanent and cannot be undone.</strong></span>
+              </div>
+
+              <p className="delete-detail">Deleting <strong>{s.name}</strong> will permanently remove:</p>
+              <ul className="delete-list">
+                <li>The shelter record and all metadata from the database</li>
+                <li>All {photos.length > 0 ? `${photos.length} photograph file${photos.length !== 1 ? 's' : ''}` : 'photograph files'} and photo records</li>
+                <li>All map markers</li>
+                <li>All source citations</li>
+                <li>The history file and the <code>{s.slug}/</code> folder</li>
+              </ul>
+
+              <div className="delete-confirm-field">
+                <label className="label">
+                  Type <strong className="delete-slug-hint">{s.slug}</strong> to confirm
+                </label>
+                <input
+                  className="input"
+                  value={deleteSlug}
+                  onChange={(e) => setDeleteSlug(e.target.value)}
+                  placeholder={s.slug}
+                  autoComplete="off"
+                  spellCheck={false}
+                  disabled={isDeleting}
+                />
+              </div>
+            </div>
+
+            <div className="modal-foot">
+              <button
+                type="button"
+                className="btn"
+                onClick={() => { setDeleteOpen(false); setDeleteSlug(''); }}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                disabled={deleteSlug !== s.slug || isDeleting}
+                onClick={handleDeleteConfirm}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+                {isDeleting ? 'Deleting…' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
