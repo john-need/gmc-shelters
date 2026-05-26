@@ -119,6 +119,24 @@ export default function HistoryTab() {
     }
   };
 
+  const handleCreate = async () => {
+    const initial = `# ${s.name}\n`;
+    dispatch(setHistoryContent(initial));
+    const result = await dispatch(saveHistory({ slug: s.slug, content: initial }));
+    if (saveHistory.fulfilled.match(result)) {
+      dispatch(showToast({ id: Date.now().toString(), message: `Created · ${filePath}` }));
+    }
+  };
+
+  if (missing) {
+    return (
+      <div className="md-editor" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--text-muted)' }}>
+        <span>History file not found</span>
+        <button className="btn sm primary" onClick={handleCreate}>Create File</button>
+      </div>
+    );
+  }
+
   return (
     <div className="md-editor">
       <div className="md-toolbar">
@@ -183,13 +201,6 @@ export default function HistoryTab() {
         </span>
       </div>
 
-      {missing && (
-        <div className="settings-inline-error" style={{ margin: '0 12px 12px' }}>
-          History file missing at <code style={{ fontFamily: 'var(--font-mono)' }}>{filePath}</code>.
-          Save file to create it.
-        </div>
-      )}
-
       <div className="md-split">
         <div className="md-pane">
           <div className="md-pane-head">
@@ -230,7 +241,7 @@ export default function HistoryTab() {
         <span>{charCount.toLocaleString()} chars</span>
         <span style={{ marginLeft: 'auto' }}>UTF-8 · LF · markdown</span>
         <span>·</span>
-        <button className="btn sm primary" onClick={handleSave} disabled={!dirty}>
+        <button className="btn primary" onClick={handleSave} disabled={!dirty}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
           </svg>

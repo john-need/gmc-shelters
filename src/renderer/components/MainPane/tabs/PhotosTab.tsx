@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Photo } from '../../../../shared/ipc-types';
 import { uploadPhoto, savePhotoMetadata, updatePhotoLocal, removePhotoLocal } from '../../../store/photosSlice';
-import { setEditBuffer } from '../../../store/sheltersSlice';
+import { setDefaultPhotoLocal } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
@@ -302,7 +302,7 @@ export default function PhotosTab() {
   };
 
   const handleFileSelected = async (file: File) => {
-    const filePath = (file as File & { path?: string }).path;
+    const filePath = window.api?.app?.getFilePath?.(file) ?? '';
     if (!filePath) {
       dispatch(showToast({ id: Date.now().toString(), message: 'Could not get file path.' }));
       return;
@@ -354,7 +354,8 @@ export default function PhotosTab() {
       if (typeof window !== 'undefined' && window.api) {
         await window.api.photos.setDefault(s.id, photoId);
       }
-      dispatch(setEditBuffer({ ...s, default_photo_id: photoId }));
+      const photo = photos.find((p) => p.id === photoId);
+      dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId, fileName: photo?.file_name ?? '' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Could not set default.' }));
     }
@@ -463,12 +464,6 @@ export default function PhotosTab() {
                 <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
               </svg>
               {' '}List
-            </button>
-            <button className="btn sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>
-              </svg>
-              {' '}{uploading ? 'Uploading…' : 'Upload'}
             </button>
           </div>
         </div>

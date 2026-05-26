@@ -12,6 +12,8 @@ import PhotosTab from './tabs/PhotosTab';
 import SourcesTab from './tabs/SourcesTab';
 import MapMarkersTab from './tabs/MapMarkersTab';
 
+const EMPTY: never[] = [];
+
 export default function MainPane() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer);
@@ -19,13 +21,13 @@ export default function MainPane() {
   const activeTab = useSelector((state: RootState) => state.ui.activeTab);
   const historyContent = useSelector((state: RootState) => state.shelters.historyContent);
   const photos = useSelector((state: RootState) =>
-    s ? (state.photos.byShelter[s.id] ?? []) : [],
+    s ? (state.photos.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
   const sources = useSelector((state: RootState) =>
-    s ? (state.sources.byShelter[s.id] ?? []) : [],
+    s ? (state.sources.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
   const markers = useSelector((state: RootState) =>
-    s ? (state.mapMarkers.byShelter[s.id] ?? []) : [],
+    s ? (state.mapMarkers.byShelter[s.id] ?? EMPTY) : EMPTY,
   );
 
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function MainPane() {
         <div className="main-title-wrap">
           <div className="main-title">
             {s.name}{' '}
-            <em>· {s.start_year}{s.end_year ? `–${s.end_year}` : '–'}</em>
+            <em>· {s.start_year ?? '?'}{s.end_year ? ` – ${s.end_year}` : s.is_extant ? ' – Present' : ' – ?'}</em>
           </div>
           <div className="main-sub">
             <span className="id">#{String(s.id).padStart(6, '0')}</span>
@@ -127,20 +129,6 @@ export default function MainPane() {
                 : '—'}
             </span>
           </div>
-        </div>
-        <div className="main-head-actions">
-          <button className="btn ghost">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-            {' '}Preview public
-          </button>
-          <button className="btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            {' '}Open on map
-          </button>
         </div>
       </div>
 

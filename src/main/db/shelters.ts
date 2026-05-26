@@ -23,6 +23,7 @@ interface ShelterRow {
   architecture: string | null;
   category: string | null;
   built_by: string | null;
+  default_photo_file_name: string | null;
 }
 
 const SELECT_SHELTERS = `
@@ -30,12 +31,14 @@ const SELECT_SHELTERS = `
     a.name              AS architecture,
     c.category_name     AS category,
     b.name              AS built_by,
-    COUNT(p.id)         AS photo_count
+    COUNT(p.id)         AS photo_count,
+    dp.file_name        AS default_photo_file_name
   FROM shelters s
   LEFT JOIN architectures a ON a.id = s.architecture_id
   LEFT JOIN categories    c ON c.id = s.category_id
   LEFT JOIN builders      b ON b.id = s.builder_id
   LEFT JOIN photos        p ON p.shelter_id = s.id
+  LEFT JOIN photos        dp ON dp.id = s.default_photo_id
 `;
 
 function rowToShelter(row: ShelterRow): Shelter {
@@ -57,6 +60,7 @@ function rowToShelter(row: ShelterRow): Shelter {
     category: row.category ?? '',
     show_on_web: Boolean(row.show_on_web),
     photo_count: row.photo_count ?? 0,
+    default_photo_file_name: row.default_photo_file_name ?? null,
   };
 }
 
@@ -161,5 +165,19 @@ export function updateShelter(shelter: Shelter): Shelter {
 
 export function deleteShelter(id: number): void {
   const db = getDb();
-  db.prepare('DELETE FROM shelters WHERE id = ?').run(id);
+
+  const sourceIds = (
+    db.prepare('SELECT source_id FROM shelter_sources WHERE shelter_id = ?').all(id) as { source_id: number }[]
+  ).map((r) => r.source_id);
+
+  db.transaction(() => {
+    db.prepare('DELETE FROM photos WHERE shelter_id = ?').run(id);
+    db.prepare('DELETE FROM shelters WHERE id = ?').run(id);
+    if (sourceIds.length > 0) {
+      const ph = sourceIds.map(() => '?').join(',');
+      db.prepare(
+        `DELETE FROM sources WHERE id IN (${ph}) AND id NOT IN (SELECT source_id FROM shelter_sources)`,
+      ).run(...sourceIds);
+    }
+  })();
 }

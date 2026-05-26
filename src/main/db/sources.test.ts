@@ -1,18 +1,45 @@
 import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
 import { getSourcesByShelter, createSource, updateSource, deleteSource } from './sources';
 
 jest.mock('./connection');
 import { getDb } from './connection';
 
-const MIGRATION = path.join(__dirname, '../../../database/migrations/002-add-sources-table.sql');
-const SHELTERS_SCHEMA = `
+const NORMALIZED_SCHEMA = `
   CREATE TABLE shelters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT, slug TEXT NOT NULL,
     is_gmc INTEGER DEFAULT 0, is_extant INTEGER DEFAULT 1, show_on_web INTEGER DEFAULT 0,
     created TEXT, updated TEXT
+  );
+  CREATE TABLE sources (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    type             TEXT NOT NULL DEFAULT 'other',
+    author           TEXT NOT NULL DEFAULT '',
+    title            TEXT NOT NULL DEFAULT '',
+    container_title  TEXT NOT NULL DEFAULT '',
+    editor           TEXT NOT NULL DEFAULT '',
+    edition          TEXT NOT NULL DEFAULT '',
+    volume           TEXT NOT NULL DEFAULT '',
+    issue            TEXT NOT NULL DEFAULT '',
+    pages            TEXT NOT NULL DEFAULT '',
+    publisher        TEXT NOT NULL DEFAULT '',
+    place            TEXT NOT NULL DEFAULT '',
+    year             INTEGER,
+    date             TEXT NOT NULL DEFAULT '',
+    url              TEXT NOT NULL DEFAULT '',
+    access_date      TEXT NOT NULL DEFAULT '',
+    archive          TEXT NOT NULL DEFAULT '',
+    archive_location TEXT NOT NULL DEFAULT '',
+    created          TEXT NOT NULL DEFAULT (date('now')),
+    updated          TEXT NOT NULL DEFAULT (date('now'))
+  );
+  CREATE TABLE shelter_sources (
+    shelter_id  INTEGER NOT NULL REFERENCES shelters(id) ON DELETE CASCADE,
+    source_id   INTEGER NOT NULL REFERENCES sources(id)  ON DELETE CASCADE,
+    annotation  TEXT NOT NULL DEFAULT '',
+    notes       TEXT NOT NULL DEFAULT '',
+    quote       TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (shelter_id, source_id)
   );
 `;
 
@@ -22,8 +49,7 @@ describe('db/sources', () => {
 
   beforeEach(() => {
     db = new Database(':memory:');
-    db.exec(SHELTERS_SCHEMA);
-    db.exec(fs.readFileSync(MIGRATION, 'utf8'));
+    db.exec(NORMALIZED_SCHEMA);
     (getDb as jest.Mock).mockReturnValue(db);
     db.pragma('foreign_keys = OFF');
     db.exec(`INSERT INTO shelters (name, slug, created, updated) VALUES ('S', 's', '2020-01-01', '2020-01-01')`);
@@ -37,7 +63,7 @@ describe('db/sources', () => {
     author: '', title: '', container_title: '', editor: '', edition: '',
     volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '',
-    archive_location: '', annotation: '', notes: '',
+    archive_location: '', annotation: '', notes: '', quote: '',
   };
 
   it('getSourcesByShelter returns empty array when no sources', () => {

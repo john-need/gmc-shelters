@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { setSelectedId } from '../../store/sheltersSlice';
 import { setSidebarCollapsed, setQuery, setFilter, setAdvancedFilters } from '../../store/uiSlice';
 import type { AdvancedFilters } from '../../store/uiSlice';
 import type { Shelter } from '../../../shared/ipc-types';
+import { loadStoredPaths } from '../../pathSettings';
 import ShelterRow from './ShelterRow';
 
 export default function Sidebar() {
@@ -17,6 +18,14 @@ export default function Sidebar() {
   const adv = useSelector((s: RootState) => s.ui.advancedFilters);
 
   const [advOpen, setAdvOpen] = useState(false);
+  const [repoRoot, setRepoRoot] = useState('');
+  const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.api) {
+      window.api.app.getRepoRoot().then(setRepoRoot);
+    }
+  }, []);
 
   const advActiveCount = useMemo(() => {
     let n = 0;
@@ -99,6 +108,31 @@ export default function Sidebar() {
   const handleSelect = (id: number) => {
     dispatch(setSelectedId(id));
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA')) return;
+      if (selectedId === null) return;
+
+      const idx = sortedShelters.findIndex((s) => s.id === selectedId);
+      if (idx === -1) return;
+
+      e.preventDefault();
+
+      const nextIdx = e.key === 'ArrowDown' ? idx + 1 : idx - 1;
+      if (nextIdx < 0 || nextIdx >= sortedShelters.length) return;
+
+      dispatch(setSelectedId(sortedShelters[nextIdx].id));
+      requestAnimationFrame(() => {
+        document.querySelector('.shelter-item.selected')?.scrollIntoView({ block: 'nearest' });
+      });
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedId, sortedShelters, dispatch]);
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -270,6 +304,8 @@ export default function Sidebar() {
             selected={s.id === selectedId}
             onSelect={() => handleSelect(s.id)}
             collapsed={collapsed}
+            repoRoot={repoRoot}
+            sheltersRoot={sheltersRoot}
           />
         ))}
 

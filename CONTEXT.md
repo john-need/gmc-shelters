@@ -38,11 +38,15 @@ A bibliographic reference (book, article, website, archive, etc.) that documents
 
 ## Source–Shelter Association
 
-The relationship between a Source and a Shelter, carried by the `shelter_sources` join table. Per-citation `annotation` and `notes` live on this association, not on the Source itself.
+The relationship between a Source and a Shelter, carried by the `shelter_sources` join table. Per-citation `annotation`, `notes`, and `quote` live on this association, not on the Source itself. `quote` is a verbatim extract from the source relevant to the specific shelter being cited.
 
 ## Photo
 
 An image associated with exactly one Shelter. A Shelter designates one Photo as its `default_photo`. A Map Marker may reference a Photo to show representative imagery for that historical location.
+
+## Shelter History
+
+A freeform Markdown document associated with exactly one Shelter, stored at `{SHELTERS_ROOT}/{slug}/{slug}.md`. It is authored by the user and rendered in the History tab. A Shelter History may be absent (no file on disk), in which case the editor is replaced by a prompt to create it.
 
 ## Photo Metadata
 

@@ -4,6 +4,7 @@ import type { AppDispatch, RootState } from '../../store';
 import { historyFileName } from '../../../shared/history-file';
 import { createShelter } from '../../store/sheltersSlice';
 import { showToast, setActiveTab } from '../../store/uiSlice';
+import { loadStoredPaths } from '../../pathSettings';
 
 interface Props {
   onClose: () => void;
@@ -27,8 +28,9 @@ export default function NewShelterModal({ onClose }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
     const result = await dispatch(
-      createShelter({ name: name.trim(), start_year: +year, category, is_gmc: isGmc }),
+      createShelter({ name: name.trim(), start_year: +year, category, is_gmc: isGmc, sheltersRoot }),
     );
     if (createShelter.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Created "${name.trim()}"` }));

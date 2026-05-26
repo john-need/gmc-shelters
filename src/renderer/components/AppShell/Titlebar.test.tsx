@@ -16,7 +16,7 @@ describe('Titlebar', () => {
 
   it('renders the app title text', () => {
     render(<Titlebar />);
-    expect(screen.getByText(/gmc-shelters/i)).toBeInTheDocument();
+    expect(screen.getByText(/GMC Shelters/i)).toBeInTheDocument();
   });
 
   it('renders three traffic-light dots', () => {

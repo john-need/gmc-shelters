@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -45,6 +45,10 @@ function markerToForm(m: MapMarker): FormState {
   };
 }
 
+// ─── constants ────────────────────────────────────────────────────────────
+
+const EMPTY_MARKERS: MapMarker[] = [];
+
 // ─── icon factories ────────────────────────────────────────────────────────
 
 function makeNumberedIcon(num: number, selected: boolean, extant: boolean): L.DivIcon {
@@ -61,6 +65,27 @@ function makeShelterIcon(): L.DivIcon {
   return new L.DivIcon({ className: 'mm-shelter-pin', iconSize: [14, 14], iconAnchor: [7, 7] });
 }
 
+// ─── map viewport ─────────────────────────────────────────────────────────
+
+function fitMapToBounds(map: L.Map, markers: MapMarker[]): void {
+  if (markers.length === 0) {
+    map.flyTo([44.0, -71.5] as L.LatLngExpression, 8);
+    return;
+  }
+  if (markers.length === 1) {
+    map.flyTo([markers[0].latitude, markers[0].longitude] as L.LatLngExpression, 15);
+    return;
+  }
+  const bounds = markers.reduce<L.LatLngBounds>(
+    (b, m) => b.extend([m.latitude, m.longitude] as L.LatLngExpression),
+    new L.LatLngBounds(
+      [markers[0].latitude, markers[0].longitude] as L.LatLngExpression,
+      [markers[0].latitude, markers[0].longitude] as L.LatLngExpression,
+    ),
+  );
+  map.flyToBounds(bounds, { maxZoom: 15, padding: [30, 30] as unknown as L.PointExpression });
+}
+
 // ─── component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -70,8 +95,10 @@ interface Props {
 
 export default function MapMarkersTab({ shelterId, shelter }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const markers = useSelector((state: RootState) =>
-    [...(state.mapMarkers.byShelter[shelterId] ?? [])].sort((a, b) => a.start_year - b.start_year),
+  const rawMarkers = useSelector((state: RootState) => state.mapMarkers.byShelter[shelterId] ?? EMPTY_MARKERS);
+  const markers = useMemo(
+    () => [...rawMarkers].sort((a, b) => a.start_year - b.start_year),
+    [rawMarkers],
   );
 
   const [mode, setMode] = useState<'idle' | 'add' | 'edit'>('idle');
@@ -137,6 +164,13 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
       pinLayerRef.current.set(m.id, pin);
     });
   }, [markers, selectedId]);
+
+  // ── fit map to markers ────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    fitMapToBounds(map, markers);
+  }, [markers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── draft pin ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -283,7 +317,16 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
                 key={m.id}
                 className={`mm-marker-row${m.id === selectedId ? ' selected' : ''}`}
                 data-testid="marker-row"
-                onClick={() => setSelectedId((cur) => (cur === m.id ? null : m.id))}
+                onClick={() => {
+                  const isSelecting = selectedId !== m.id;
+                  setSelectedId((cur) => (cur === m.id ? null : m.id));
+                  if (isSelecting && mapRef.current) {
+                    mapRef.current.flyTo(
+                      [m.latitude, m.longitude] as L.LatLngExpression,
+                      Math.max(mapRef.current.getZoom() ?? 15, 15),
+                    );
+                  }
+                }}
               >
                 <div className={`mm-pin-num${!m.is_extant ? ' gone' : ''}`}>{idx + 1}</div>
                 <div className="mm-row-body">
@@ -507,7 +550,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
             </div>
 
             <div className="mm-detail-foot">
-              <button className="btn sm primary" onClick={handleSave} disabled={!canSave || saving}>
+              <button className="btn primary" onClick={handleSave} disabled={!canSave || saving}>
                 {saving ? 'Saving…' : 'Save'}
               </button>
             </div>

@@ -53,6 +53,7 @@ function makeSource(overrides: Partial<Source> = {}): Source {
     archive_location: '',
     annotation: '',
     notes: '',
+    quote: '',
     created: '2020-01-01',
     updated: '2020-01-02',
     ...overrides,
