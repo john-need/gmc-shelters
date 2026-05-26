@@ -1,0 +1,401 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../store';
+import type { Photo } from '../../../../shared/ipc-types';
+import { savePhotoMetadata } from '../../../store/photosSlice';
+import { showToast } from '../../../store/uiSlice';
+
+interface Props {
+  photo: Photo;
+  photoUrl: string;
+  shelterId: number;
+  sheltersRoot: string;
+  isDefault: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: string; fallback: string; onLoad?: (img: HTMLImageElement) => void }) {
+  const [imgError, setImgError] = useState(false);
+  return imgError ? (
+    <span className="glyph">{fallback}</span>
+  ) : (
+    <img
+      src={src}
+      alt={alt}
+      onLoad={(e) => onLoad?.(e.currentTarget)}
+      onError={() => setImgError(true)}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+    />
+  );
+}
+
+export default function PhotoEditorDialog({
+  photo, photoUrl, sheltersRoot, isDefault, onSave, onCancel,
+}: Props) {
+  const dispatch = useDispatch<AppDispatch>();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const cropOverlayRef = useRef<HTMLDivElement>(null);
+  const priorFocusRef = useRef<Element | null>(null);
+
+  const [rotation, setRotation] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [cropping, setCropping] = useState(false);
+  const [cropRect, setCropRect] = useState({ x: 12, y: 14, w: 70, h: 68 });
+  const [crop, setCrop] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [frameSize, setFrameSize] = useState<{ w: number; h: number } | null>(null);
+
+  // Capture prior focus for restoration when dialog closes
+  useEffect(() => {
+    priorFocusRef.current = document.activeElement;
+    return () => {
+      (priorFocusRef.current as HTMLElement | null)?.focus?.();
+    };
+  }, []);
+
+  // Single keydown listener: Tab focus trap + Escape → cancel (FR-006, FR-012)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onCancel]);
+
+  const renderedImageRect = naturalSize && frameSize
+    ? (() => {
+        const scale = Math.min(frameSize.w / naturalSize.w, frameSize.h / naturalSize.h);
+        const iw = naturalSize.w * scale;
+        const ih = naturalSize.h * scale;
+        return { left: (frameSize.w - iw) / 2, top: (frameSize.h - ih) / 2, width: iw, height: ih };
+      })()
+    : null;
+
+  const startCropDrag = useCallback(
+    (type: 'move' | 'tl' | 'tr' | 'bl' | 'br', e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation();
+      const overlay = cropOverlayRef.current;
+      if (!overlay) return;
+      const r = overlay.getBoundingClientRect();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startRect = { ...cropRect };
+      const MIN = 5;
+
+      const onMove = (me: MouseEvent) => {
+        const dx = ((me.clientX - startX) / r.width) * 100;
+        const dy = ((me.clientY - startY) / r.height) * 100;
+        let { x, y, w, h } = startRect;
+        if (type === 'move') {
+          x = Math.max(0, Math.min(100 - startRect.w, startRect.x + dx));
+          y = Math.max(0, Math.min(100 - startRect.h, startRect.y + dy));
+        } else if (type === 'tl') {
+          const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
+          const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
+          w = startRect.w - (nx - startRect.x); h = startRect.h - (ny - startRect.y); x = nx; y = ny;
+        } else if (type === 'tr') {
+          const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
+          h = startRect.h - (ny - startRect.y); y = ny;
+          w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
+        } else if (type === 'bl') {
+          const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
+          w = startRect.w - (nx - startRect.x); x = nx;
+          h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
+        } else {
+          w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
+          h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
+        }
+        setCropRect({ x, y, w, h });
+      };
+
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    },
+    [cropRect],
+  );
+
+  // FR-004: Save persists only image edits; zero-delta is a no-op close (FR-009)
+  const handleSave = async () => {
+    if (rotation === 0 && !flipped && crop === null) {
+      onSave();
+      return;
+    }
+    setSaving(true);
+    try {
+      const result = await dispatch(savePhotoMetadata({
+        id: photo.id,
+        shelter_id: photo.shelter_id,
+        sheltersRoot,
+        title: photo.title,
+        photographer: photo.photographer,
+        caption: photo.caption,
+        alt_text: photo.alt_text,
+        description: photo.description,
+        notes: photo.notes,
+        include_in_post: photo.include_in_post,
+        date_taken: photo.date_taken,
+        updated: new Date().toISOString().slice(0, 10),
+        rotation: rotation % 360,
+        flipped,
+        crop,
+      }));
+      if (savePhotoMetadata.fulfilled.match(result)) {
+        onSave();
+      } else {
+        dispatch(showToast({ id: Date.now().toString(), message: 'Save failed. Please try again.' }));
+        setSaving(false);
+      }
+    } catch {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Save failed. Please try again.' }));
+      setSaving(false);
+    }
+  };
+
+  const initial = photo.title ? photo.title.charAt(0) : photo.file_name.charAt(0).toUpperCase();
+
+  const cropPreviewStyle: React.CSSProperties | null = (crop && !cropping && naturalSize && frameSize)
+    ? (() => {
+        const { w: fw, h: fh } = frameSize;
+        const fitScale = Math.min(fw / crop.width, fh / crop.height);
+        const totalW = naturalSize.w * fitScale;
+        const totalH = naturalSize.h * fitScale;
+        const left = (fw - crop.width * fitScale) / 2 - crop.x * fitScale;
+        const top = (fh - crop.height * fitScale) / 2 - crop.y * fitScale;
+        return { position: 'absolute' as const, left, top, width: totalW, height: totalH };
+      })()
+    : null;
+
+  return (
+    <div
+      className="modal-bg"
+      onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+    >
+      <div
+        ref={dialogRef}
+        className="photo-editor-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Edit photo: ${photo.title || photo.file_name}`}
+      >
+        {/* Header */}
+        <div className="photo-editor-header">
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 16 }}>
+              {photo.title || 'Untitled'}
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.06em', marginTop: 2 }}>
+              {photo.file_name}
+            </div>
+          </div>
+          <button className="btn icon sm" aria-label="Close" onClick={onCancel}>✕</button>
+        </div>
+
+        {/* Body: large preview + tool sidebar */}
+        <div className="photo-editor-body">
+          <div className="photo-editor-preview">
+            <div
+              ref={frameRef}
+              className="photo-preview-frame"
+              style={{
+                width: '90%',
+                height: '90%',
+                transform: `rotate(${rotation}deg) scale(${zoom}) scaleX(${flipped ? -1 : 1})`,
+                position: 'relative',
+                overflow: cropping ? 'visible' : 'hidden',
+              }}
+            >
+              {photoUrl ? (
+                cropPreviewStyle ? (
+                  <img
+                    key={`${photoUrl}-crop`}
+                    src={photoUrl}
+                    alt={photo.alt_text || photo.title || photo.file_name}
+                    style={cropPreviewStyle}
+                  />
+                ) : (
+                  <PhotoPreviewImage
+                    key={photoUrl}
+                    src={photoUrl}
+                    alt={photo.alt_text || photo.title || photo.file_name}
+                    fallback={initial}
+                    onLoad={(img) => {
+                      setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+                      if (frameRef.current) {
+                        const fr = frameRef.current.getBoundingClientRect();
+                        setFrameSize({ w: fr.width, h: fr.height });
+                      }
+                    }}
+                  />
+                )
+              ) : (
+                <span className="glyph">{initial}</span>
+              )}
+              {cropping && renderedImageRect && (
+                <div
+                  ref={cropOverlayRef}
+                  style={{
+                    position: 'absolute',
+                    left: renderedImageRect.left,
+                    top: renderedImageRect.top,
+                    width: renderedImageRect.width,
+                    height: renderedImageRect.height,
+                  }}
+                >
+                  <div
+                    className="crop-rect"
+                    style={{
+                      position: 'absolute',
+                      left: `${cropRect.x}%`,
+                      top: `${cropRect.y}%`,
+                      width: `${cropRect.w}%`,
+                      height: `${cropRect.h}%`,
+                      cursor: 'move',
+                    }}
+                    onMouseDown={(e) => startCropDrag('move', e)}
+                  >
+                    {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+                      <div
+                        key={c}
+                        className="crop-handle"
+                        style={{
+                          position: 'absolute',
+                          [c.includes('t') ? 'top' : 'bottom']: -5,
+                          [c.includes('l') ? 'left' : 'right']: -5,
+                          cursor: c === 'tl' || c === 'br' ? 'nwse-resize' : 'nesw-resize',
+                        }}
+                        onMouseDown={(e) => startCropDrag(c, e)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {isDefault && (
+              <div style={{
+                position: 'absolute', top: 12, left: 12,
+                background: 'var(--forest)', color: 'var(--surface)',
+                fontFamily: 'var(--font-mono)', fontSize: 9,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                padding: '3px 8px', borderRadius: 2,
+              }}>★ Default</div>
+            )}
+          </div>
+
+          {/* Tool sidebar */}
+          <div className="photo-editor-sidebar">
+            <div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+                Transform
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button className="btn icon sm" title="Rotate 90° left" onClick={() => setRotation((r) => r - 90)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.5 2.6L3 8"/><path d="M3 3v5h5"/>
+                    </svg>
+                  </button>
+                  <button className="btn icon sm" title="Rotate 90° right" onClick={() => setRotation((r) => r + 90)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/>
+                    </svg>
+                  </button>
+                  <button
+                    className="btn icon sm"
+                    title="Flip horizontal"
+                    aria-pressed={flipped}
+                    onClick={() => setFlipped((x) => !x)}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3v18"/><path d="M16 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"/><path d="M8 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  className={`btn sm ${cropping ? 'primary' : ''}`}
+                  onClick={() => {
+                    if (cropping) {
+                      if (naturalSize) {
+                        setCrop({
+                          x: Math.round(naturalSize.w * cropRect.x / 100),
+                          y: Math.round(naturalSize.h * cropRect.y / 100),
+                          width: Math.round(naturalSize.w * cropRect.w / 100),
+                          height: Math.round(naturalSize.h * cropRect.h / 100),
+                        });
+                      }
+                      setCropping(false);
+                    } else {
+                      setCropRect({ x: 12, y: 14, w: 70, h: 68 });
+                      setCrop(null);
+                      setCropping(true);
+                    }
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                  </svg>
+                  {' '}{cropping ? 'Done' : 'Crop'}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+                Zoom
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button className="btn icon sm" onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}>−</button>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', minWidth: 36, textAlign: 'center' }}>
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button className="btn icon sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer: Save + Cancel (FR-004, FR-005, FR-010) */}
+        <div className="photo-editor-footer">
+          <button className="btn ghost" onClick={onCancel}>Cancel</button>
+          <button
+            className="btn primary"
+            disabled={saving || cropping}
+            onClick={handleSave}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

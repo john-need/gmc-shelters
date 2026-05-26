@@ -6,7 +6,7 @@ import sheltersReducer from '../../../store/sheltersSlice';
 import photosReducer from '../../../store/photosSlice';
 import uiReducer from '../../../store/uiSlice';
 import PhotosTab from './PhotosTab';
-import type { Shelter } from '../../../../shared/ipc-types';
+import type { Shelter, Photo } from '../../../../shared/ipc-types';
 
 function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
@@ -20,7 +20,7 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   };
 }
 
-function makeStore(shelter: Shelter) {
+function makeStore(shelter: Shelter, photos: Photo[] = []) {
   return configureStore({
     reducer: { shelters: sheltersReducer, photos: photosReducer, ui: uiReducer },
     preloadedState: {
@@ -34,13 +34,23 @@ function makeStore(shelter: Shelter) {
         historyContent: '',
       },
       photos: {
-        byShelter: { [shelter.id]: [] },
-        originals: {},
+        byShelter: { [shelter.id]: photos },
+        originals: photos.reduce((acc, p) => ({ ...acc, [p.id]: p }), {}),
         loading: false,
         uploading: false,
       },
     } as any,
   });
+}
+
+function makePhoto(overrides: Partial<Photo> = {}): Photo {
+  return {
+    id: 1, shelter_id: 10, file_name: 'test.jpg',
+    title: 'Test Photo', photographer: '', caption: '', alt_text: '',
+    description: '', notes: '', date_taken: '',
+    created: '2024-01-01', updated: '2024-01-01', include_in_post: false,
+    ...overrides,
+  };
 }
 
 const mockReconcileScan = jest.fn();
@@ -211,5 +221,100 @@ describe('ReconcileModal', () => {
     await waitFor(() => {
       expect(screen.getByText(/1 added/i)).toBeInTheDocument();
     });
+  });
+});
+
+// ─── T005–T007: US1 — dialog triggers from PhotosTab ────────────────────────
+
+describe('US1 — Photo editor dialog triggers', () => {
+  it('T005: clicking the right-aside photo preview opens the editor dialog', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    // Wait for selection to settle (selectedId auto-set to first photo)
+    await waitFor(() => {
+      expect(screen.getByTestId('photo-preview')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('photo-preview'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  it('T006: double-clicking a PhotoCard in grid view opens the editor dialog', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    // Grid view is default; find the photo card and double-click
+    await waitFor(() => {
+      expect(screen.getByTestId('photo-card-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('photo-card-1');
+    fireEvent.doubleClick(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  it('T007: double-clicking a ListRow in list view opens the editor dialog', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    // Switch to list view
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('list-row-1')).toBeInTheDocument();
+    });
+
+    fireEvent.doubleClick(screen.getByTestId('list-row-1'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+});
+
+// ─── T019–T020: US4 — Editing tools removed from right-aside ─────────────────
+
+describe('US4 — Editing tools removed from right-aside panel', () => {
+  it('T019: right-aside panel does not contain crop, rotate, or flip controls', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('photo-preview')).toBeInTheDocument();
+    });
+
+    // Editor dialog is closed — these controls must NOT exist in the tab
+    expect(screen.queryByTitle(/rotate 90° left/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/rotate 90° right/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/flip horizontal/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^crop$/i })).not.toBeInTheDocument();
+  });
+
+  it('T020: the right-aside photo preview has the photo-preview-clickable class', async () => {
+    const shelter = makeShelter();
+    const photo = makePhoto();
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('photo-preview')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('photo-preview')).toHaveClass('photo-preview-clickable');
   });
 });

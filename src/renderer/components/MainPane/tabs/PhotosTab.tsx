@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Photo, UntrackedFile, OrphanedRecord, ReconcileApplyResult } from '../../../../shared/ipc-types';
@@ -7,6 +7,7 @@ import { setDefaultPhotoLocal } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
+import PhotoEditorDialog from './PhotoEditorDialog';
 
 function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: string; fallback: string; onLoad?: (img: HTMLImageElement) => void }) {
   const [imgError, setImgError] = useState(false);
@@ -42,14 +43,20 @@ interface PhotoCardProps {
   isDefault: boolean;
   isSelected: boolean;
   onClick: () => void;
+  onDoubleClick?: () => void;
   photoUrl: string;
 }
 
-function PhotoCard({ p, idx, isDefault, isSelected, onClick, photoUrl }: PhotoCardProps) {
+function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, photoUrl }: PhotoCardProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
-    <div className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`} onClick={onClick}>
+    <div
+      data-testid={`photo-card-${p.id}`}
+      className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+    >
       <div className="photo-thumb" style={{ background: photoBackground(idx), position: 'relative', overflow: 'hidden' }}>
         <div className="photo-badges">
           {isDefault && <span className="photo-badge default">★ Default</span>}
@@ -82,15 +89,18 @@ interface ListRowProps {
   isDefault: boolean;
   isSelected: boolean;
   onSelect: () => void;
+  onDoubleClick?: () => void;
   photoUrl: string;
 }
 
-function ListRow({ p, idx, isDefault, isSelected, onSelect, photoUrl }: ListRowProps) {
+function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, photoUrl }: ListRowProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
     <div
+      data-testid={`list-row-${p.id}`}
       onClick={onSelect}
+      onDoubleClick={onDoubleClick}
       style={{
         display: 'grid',
         gridTemplateColumns: '40px 1.5fr 1fr 110px 80px 90px',
@@ -332,14 +342,7 @@ export default function PhotosTab() {
   const originals = useSelector((state: RootState) => state.photos.originals);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [rotation, setRotation] = useState(0);
-  const [zoom, setZoom] = useState(1);
-  const [flipped, setFlipped] = useState(false);
-  const [cropping, setCropping] = useState(false);
-  const [crop, setCrop] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const [cropRect, setCropRect] = useState({ x: 12, y: 14, w: 70, h: 68 });
-  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
-  const [frameSize, setFrameSize] = useState<{ w: number; h: number } | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [version, setVersion] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -348,8 +351,6 @@ export default function PhotosTab() {
   const [resizing, setResizing] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
-  const cropOverlayRef = useRef<HTMLDivElement>(null);
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
 
   useEffect(() => {
@@ -362,71 +363,11 @@ export default function PhotosTab() {
   }, []);
 
   useEffect(() => {
-    setRotation(0); setZoom(1); setFlipped(false); setCropping(false); setCrop(null);
-    setNaturalSize(null); setFrameSize(null); setCropRect({ x: 12, y: 14, w: 70, h: 68 });
-  }, [selectedId]);
-
-  useEffect(() => {
     if (photos.length > 0 && (selectedId === null || !photos.find((p) => p.id === selectedId))) {
       setSelectedId(photos[0].id);
     }
     if (photos.length === 0) setSelectedId(null);
   }, [photos]);
-
-  const renderedImageRect = naturalSize && frameSize ? (() => {
-    const scale = Math.min(frameSize.w / naturalSize.w, frameSize.h / naturalSize.h);
-    const iw = naturalSize.w * scale;
-    const ih = naturalSize.h * scale;
-    return { left: (frameSize.w - iw) / 2, top: (frameSize.h - ih) / 2, width: iw, height: ih };
-  })() : null;
-
-  const startCropDrag = useCallback((
-    type: 'move' | 'tl' | 'tr' | 'bl' | 'br',
-    e: React.MouseEvent<HTMLElement>,
-  ) => {
-    e.stopPropagation();
-    const overlay = cropOverlayRef.current;
-    if (!overlay) return;
-    const r = overlay.getBoundingClientRect();
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startRect = { ...cropRect };
-    const MIN = 5;
-
-    const onMove = (me: MouseEvent) => {
-      const dx = ((me.clientX - startX) / r.width) * 100;
-      const dy = ((me.clientY - startY) / r.height) * 100;
-      let { x, y, w, h } = startRect;
-      if (type === 'move') {
-        x = Math.max(0, Math.min(100 - startRect.w, startRect.x + dx));
-        y = Math.max(0, Math.min(100 - startRect.h, startRect.y + dy));
-      } else if (type === 'tl') {
-        const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
-        const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
-        w = startRect.w - (nx - startRect.x); h = startRect.h - (ny - startRect.y); x = nx; y = ny;
-      } else if (type === 'tr') {
-        const ny = Math.max(0, Math.min(startRect.y + startRect.h - MIN, startRect.y + dy));
-        h = startRect.h - (ny - startRect.y); y = ny;
-        w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
-      } else if (type === 'bl') {
-        const nx = Math.max(0, Math.min(startRect.x + startRect.w - MIN, startRect.x + dx));
-        w = startRect.w - (nx - startRect.x); x = nx;
-        h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
-      } else {
-        w = Math.max(MIN, Math.min(100 - startRect.x, startRect.w + dx));
-        h = Math.max(MIN, Math.min(100 - startRect.y, startRect.h + dy));
-      }
-      setCropRect({ x, y, w, h });
-    };
-
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    };
-
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, [cropRect]);
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -465,18 +406,6 @@ export default function PhotosTab() {
     (selected.notes || '') !== (original.notes || '') ||
     selected.include_in_post !== original.include_in_post
   ));
-
-  const isEditDirty = rotation !== 0 || flipped !== false || crop !== null;
-
-  const cropPreviewStyle: React.CSSProperties | null = (crop && !cropping && naturalSize && frameSize) ? (() => {
-    const { w: fw, h: fh } = frameSize;
-    const fitScale = Math.min(fw / crop.width, fh / crop.height);
-    const totalW = naturalSize.w * fitScale;
-    const totalH = naturalSize.h * fitScale;
-    const left = (fw - crop.width * fitScale) / 2 - crop.x * fitScale;
-    const top = (fh - crop.height * fitScale) / 2 - crop.y * fitScale;
-    return { position: 'absolute' as const, left, top, width: totalW, height: totalH };
-  })() : null;
 
   const selectedIdx = photos.findIndex((p) => p.id === selectedId);
   const selectedPhotoUrl = repoRoot && selected
@@ -544,35 +473,6 @@ export default function PhotosTab() {
       dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId, fileName: photo?.file_name ?? '' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Could not set default.' }));
-    }
-  };
-
-  const handleSaveEdits = async () => {
-    if (!selected) return;
-    const result = await dispatch(savePhotoMetadata({
-      id: selected.id,
-      shelter_id: selected.shelter_id,
-      sheltersRoot,
-      title: selected.title,
-      photographer: selected.photographer,
-      caption: selected.caption,
-      alt_text: selected.alt_text,
-      description: selected.description,
-      notes: selected.notes,
-      include_in_post: selected.include_in_post,
-      date_taken: selected.date_taken,
-      updated: new Date().toISOString().slice(0, 10),
-      rotation: rotation % 360,
-      flipped,
-      crop,
-    }));
-    if (savePhotoMetadata.fulfilled.match(result)) {
-      setRotation(0);
-      setFlipped(false);
-      setCrop(null);
-      setCropping(false);
-      setVersion((v) => v + 1);
-      dispatch(showToast({ id: Date.now().toString(), message: 'Photo saved.' }));
     }
   };
 
@@ -722,7 +622,8 @@ export default function PhotosTab() {
                 isDefault={s.default_photo_id === p.id}
                 isSelected={p.id === selectedId}
                 onClick={() => setSelectedId(p.id)}
-                photoUrl={repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : ''}
+                onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
+                photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
               />
             ))}
           </div>
@@ -748,7 +649,8 @@ export default function PhotosTab() {
                 isDefault={s.default_photo_id === p.id}
                 isSelected={p.id === selectedId}
                 onSelect={() => setSelectedId(p.id)}
-                photoUrl={repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : ''}
+                onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
+                photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
               />
             ))}
           </div>
@@ -800,83 +702,31 @@ export default function PhotosTab() {
             </div>
           </div>
 
-          <div className="photo-preview">
+          <div
+            data-testid="photo-preview"
+            className="photo-preview photo-preview-clickable"
+            onClick={() => setEditorOpen(true)}
+            style={{ position: 'relative' }}
+          >
             <div
-              ref={frameRef}
               className="photo-preview-frame"
               style={{
-                transform: `rotate(${rotation}deg) scale(${zoom}) scaleX(${flipped ? -1 : 1})`,
                 background: photoBackground(selectedIdx),
-                position: 'relative', overflow: cropping ? 'visible' : 'hidden',
+                position: 'relative', overflow: 'hidden',
               }}
             >
               {selectedPhotoUrl ? (
-                cropPreviewStyle ? (
-                  <img
-                    key={`${selectedPhotoUrl}-crop`}
-                    src={selectedPhotoUrl}
-                    alt={selected.alt_text || selected.title || selected.file_name}
-                    style={cropPreviewStyle}
-                  />
-                ) : (
-                  <PhotoPreviewImage
-                    key={selectedPhotoUrl}
-                    src={selectedPhotoUrl}
-                    alt={selected.alt_text || selected.title || selected.file_name}
-                    fallback={selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
-                    onLoad={(img) => {
-                      setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
-                      if (frameRef.current) {
-                        const fr = frameRef.current.getBoundingClientRect();
-                        setFrameSize({ w: fr.width, h: fr.height });
-                      }
-                    }}
-                  />
-                )
+                <PhotoPreviewImage
+                  key={selectedPhotoUrl}
+                  src={selectedPhotoUrl}
+                  alt={selected.alt_text || selected.title || selected.file_name}
+                  fallback={selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
+                />
               ) : (
                 <span className="glyph">
                   {selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
                 </span>
               )}
-            {cropping && renderedImageRect && (
-              <div
-                ref={cropOverlayRef}
-                style={{
-                  position: 'absolute',
-                  left: renderedImageRect.left,
-                  top: renderedImageRect.top,
-                  width: renderedImageRect.width,
-                  height: renderedImageRect.height,
-                }}
-              >
-                <div
-                  className="crop-rect"
-                  style={{
-                    position: 'absolute',
-                    left: `${cropRect.x}%`,
-                    top: `${cropRect.y}%`,
-                    width: `${cropRect.w}%`,
-                    height: `${cropRect.h}%`,
-                    cursor: 'move',
-                  }}
-                  onMouseDown={(e) => startCropDrag('move', e)}
-                >
-                  {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
-                    <div
-                      key={c}
-                      className="crop-handle"
-                      style={{
-                        position: 'absolute',
-                        [c.includes('t') ? 'top' : 'bottom']: -5,
-                        [c.includes('l') ? 'left' : 'right']: -5,
-                        cursor: c === 'tl' || c === 'br' ? 'nwse-resize' : 'nesw-resize',
-                      }}
-                      onMouseDown={(e) => startCropDrag(c, e)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
             </div>
             {s.default_photo_id === selected.id && (
               <div style={{
@@ -887,69 +737,6 @@ export default function PhotosTab() {
                 padding: '3px 8px', borderRadius: 2,
               }}>★ Default</div>
             )}
-          </div>
-
-          <div className="photo-tools">
-            <div className="group">
-              <button className="btn icon sm" title="Rotate 90° left" onClick={() => setRotation((r) => r - 90)}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.5 2.6L3 8"/><path d="M3 3v5h5"/>
-                </svg>
-              </button>
-              <button className="btn icon sm" title="Rotate 90° right" onClick={() => setRotation((r) => r + 90)}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/>
-                </svg>
-              </button>
-              <button className="btn icon sm" title="Flip horizontal" onClick={() => setFlipped((x) => !x)}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v18"/><path d="M16 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"/><path d="M8 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h3"/>
-                </svg>
-              </button>
-            </div>
-            <div className="group">
-              <button className={`btn sm ${cropping ? 'primary' : ''}`} onClick={() => {
-                if (cropping) {
-                  if (naturalSize) {
-                    setCrop({
-                      x: Math.round(naturalSize.w * cropRect.x / 100),
-                      y: Math.round(naturalSize.h * cropRect.y / 100),
-                      width: Math.round(naturalSize.w * cropRect.w / 100),
-                      height: Math.round(naturalSize.h * cropRect.h / 100),
-                    });
-                  }
-                  setCropping(false);
-                } else {
-                  setCropRect({ x: 12, y: 14, w: 70, h: 68 });
-                  setCrop(null);
-                  setCropping(true);
-                }
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
-                </svg>
-                {' '}{cropping ? 'Done' : 'Crop'}
-              </button>
-              <button
-                className={`btn sm ${isEditDirty ? 'primary' : ''}`}
-                disabled={!isEditDirty || cropping}
-                onClick={handleSaveEdits}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
-                </svg>
-                {' '}Save
-              </button>
-            </div>
-            <div className="group" style={{ marginLeft: 'auto' }}>
-              <button className="btn icon sm" onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}>−</button>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 10,
-                color: 'var(--ink-3)', padding: '0 6px',
-                display: 'flex', alignItems: 'center', minWidth: 36, justifyContent: 'center',
-              }}>{Math.round(zoom * 100)}%</span>
-              <button className="btn icon sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>+</button>
-            </div>
           </div>
 
           <div className="photo-fields">
@@ -1042,6 +829,17 @@ export default function PhotosTab() {
             </div>
           </div>
         </div>
+        {editorOpen && (
+          <PhotoEditorDialog
+            photo={selected}
+            photoUrl={selectedPhotoUrl}
+            shelterId={s.id}
+            sheltersRoot={sheltersRoot}
+            isDefault={s.default_photo_id === selected.id}
+            onSave={() => { setEditorOpen(false); setVersion((v) => v + 1); }}
+            onCancel={() => setEditorOpen(false)}
+          />
+        )}
         </>
       )}
     </div>
