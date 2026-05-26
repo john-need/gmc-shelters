@@ -191,6 +191,7 @@ export interface ShelterCreateInput {
   start_year: number;
   category: string;
   is_gmc: boolean;
+  sheltersRoot: string;
 }
 
 export interface PhotoTransformInput {

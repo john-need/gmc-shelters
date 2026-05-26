@@ -25,9 +25,9 @@ export function registerShelterHandlers(): void {
 
   ipcMain.handle(CHANNELS.SHELTERS_CREATE, async (_e, input: ShelterCreateInput) => {
     const shelter = createShelter(input);
-    await ensureShelterDir(shelter.slug);
+    await ensureShelterDir(shelter.slug, input.sheltersRoot);
     const initialHistory = `# ${shelter.name}\n\n*${shelter.start_year} – present*\n\n## History\n\n_Add the history of this shelter here._\n`;
-    await writeHistory(shelter.slug, initialHistory);
+    await writeHistory(shelter.slug, initialHistory, input.sheltersRoot);
     return shelter;
   });
 

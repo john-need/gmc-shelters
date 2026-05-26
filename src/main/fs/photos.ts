@@ -151,8 +151,11 @@ export async function transformPhoto(
   }
 }
 
-export async function ensureShelterDir(slug: string): Promise<void> {
-  const dir = path.join(app.getAppPath(), 'shelters', slug);
+export async function ensureShelterDir(slug: string, sheltersRoot: string): Promise<void> {
+  const resolvedRoot = path.isAbsolute(sheltersRoot)
+    ? sheltersRoot
+    : path.resolve(app.getAppPath(), sheltersRoot);
+  const dir = path.join(resolvedRoot, slug);
   await fs.mkdir(dir, { recursive: true });
   await fs.mkdir(path.join(dir, 'photos'), { recursive: true });
 }
