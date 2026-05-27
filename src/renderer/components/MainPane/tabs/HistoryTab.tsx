@@ -79,8 +79,7 @@ export default function HistoryTab() {
   const dirty = useSelector((state: RootState) => state.shelters.historyDirty);
   const missing = useSelector((state: RootState) => state.shelters.historyMissing);
   const ref = useRef<HTMLTextAreaElement>(null);
-  const [editingPath, setEditingPath] = useState(false);
-  const [pathDraft, setPathDraft] = useState('');
+  const [browsingPath, setBrowsingPath] = useState(false);
 
   if (!s) return null;
 
@@ -130,20 +129,20 @@ export default function HistoryTab() {
     }
   };
 
-  const handleEditPath = () => {
-    setPathDraft(historyRelPath);
-    setEditingPath(true);
-  };
-
-  const handleSavePath = async () => {
-    const trimmed = pathDraft.trim();
-    if (!trimmed || trimmed === historyRelPath) { setEditingPath(false); return; }
-    const result = await dispatch(setShelterHistoryThunk({ id: s.id, history: trimmed }));
-    if (setShelterHistoryThunk.fulfilled.match(result)) {
-      dispatch(loadHistory(trimmed));
-      dispatch(showToast({ id: Date.now().toString(), message: `History path updated` }));
+  const handleBrowsePath = async () => {
+    if (browsingPath) return;
+    setBrowsingPath(true);
+    try {
+      const selected = await window.api.app.browseForHistoryFile(loadStoredPaths().SHELTERS_ROOT);
+      if (!selected || selected === historyRelPath) return;
+      const result = await dispatch(setShelterHistoryThunk({ id: s.id, history: selected }));
+      if (setShelterHistoryThunk.fulfilled.match(result)) {
+        dispatch(loadHistory(selected));
+        dispatch(showToast({ id: Date.now().toString(), message: `History file updated` }));
+      }
+    } finally {
+      setBrowsingPath(false);
     }
-    setEditingPath(false);
   };
 
   if (missing) {
@@ -152,21 +151,10 @@ export default function HistoryTab() {
         <span>History file not found: <code>{historyRelPath}</code></span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn sm primary" onClick={handleCreate}>Create File</button>
-          <button className="btn sm" onClick={handleEditPath}>Edit Path</button>
+          <button className="btn sm" onClick={handleBrowsePath} disabled={browsingPath}>
+            {browsingPath ? 'Opening…' : 'Browse…'}
+          </button>
         </div>
-        {editingPath && (
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <input
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 12, padding: '3px 6px', width: 260 }}
-              value={pathDraft}
-              onChange={(e) => setPathDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleSavePath(); if (e.key === 'Escape') setEditingPath(false); }}
-              autoFocus
-            />
-            <button className="btn sm primary" onClick={handleSavePath}>Save</button>
-            <button className="btn sm" onClick={() => setEditingPath(false)}>Cancel</button>
-          </div>
-        )}
       </div>
     );
   }
@@ -240,25 +228,17 @@ export default function HistoryTab() {
           <div className="md-pane-head">
             <span>Source</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {editingPath ? (
-                <>
-                  <input
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: 11, padding: '2px 5px', width: 220 }}
-                    value={pathDraft}
-                    onChange={(e) => setPathDraft(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleSavePath(); if (e.key === 'Escape') setEditingPath(false); }}
-                    autoFocus
-                  />
-                  <button className="btn sm primary" style={{ fontSize: 11, padding: '2px 6px' }} onClick={handleSavePath}>Save</button>
-                  <button className="btn sm" style={{ fontSize: 11, padding: '2px 6px' }} onClick={() => setEditingPath(false)}>Cancel</button>
-                </>
-              ) : (
-                <>
-                  <span className="filename">{filePath}</span>
-                  <button className="btn sm" style={{ fontSize: 10, padding: '1px 5px', opacity: 0.7 }} onClick={handleEditPath} title="Edit history file path">Edit path</button>
-                  {dirty && <span className="dirty"> ·</span>}
-                </>
-              )}
+              <span className="filename">{filePath}</span>
+              <button
+                className="btn sm"
+                style={{ fontSize: 10, padding: '1px 5px', opacity: 0.7 }}
+                onClick={handleBrowsePath}
+                disabled={browsingPath}
+                title="Choose a different history file"
+              >
+                {browsingPath ? '…' : 'Browse…'}
+              </button>
+              {dirty && <span className="dirty"> ·</span>}
             </span>
           </div>
           <textarea

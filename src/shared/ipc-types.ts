@@ -47,6 +47,7 @@ export const CHANNELS = {
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
   APP_BROWSE_DATABASE_PATH: 'app:browseDatabasePath',
   APP_BROWSE_DIRECTORY_PATH: 'app:browseDirectoryPath',
+  APP_BROWSE_HISTORY_FILE: 'app:browseHistoryFile',
   APP_VALIDATE_PATH: 'app:validatePath',
   APP_WINDOW_CLOSE: 'app:windowClose',
   APP_WINDOW_MINIMIZE: 'app:windowMinimize',
@@ -339,6 +340,7 @@ export interface ElectronAPI {
     getRepoRoot: () => Promise<string>;
     browseForDatabasePath: (defaultPath?: string) => Promise<string | null>;
     browseForDirectoryPath: (defaultPath?: string) => Promise<string | null>;
+    browseForHistoryFile: (sheltersRoot: string) => Promise<string | null>;
     validatePath: (input: string) => Promise<AppPathValidation>;
     closeWindow: () => Promise<void>;
     minimizeWindow: () => Promise<void>;

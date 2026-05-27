@@ -64,6 +64,7 @@ const mockApi: ElectronAPI = {
     getRepoRoot: jest.fn().mockResolvedValue('/tmp'),
     browseForDatabasePath: jest.fn().mockResolvedValue(null),
     browseForDirectoryPath: jest.fn().mockResolvedValue(null),
+    browseForHistoryFile: jest.fn().mockResolvedValue(null),
     validatePath: jest.fn().mockResolvedValue(defaultPathValidation),
     closeWindow: noop,
     minimizeWindow: noop,

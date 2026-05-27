@@ -81,6 +81,8 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.APP_BROWSE_DATABASE_PATH, { defaultPath }),
     browseForDirectoryPath: (defaultPath?: string) =>
       ipcRenderer.invoke(CHANNELS.APP_BROWSE_DIRECTORY_PATH, { defaultPath }),
+    browseForHistoryFile: (sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.APP_BROWSE_HISTORY_FILE, { sheltersRoot }),
     validatePath: (input: string) => ipcRenderer.invoke(CHANNELS.APP_VALIDATE_PATH, { input }),
     closeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_CLOSE),
     minimizeWindow: () => ipcRenderer.invoke(CHANNELS.APP_WINDOW_MINIMIZE),

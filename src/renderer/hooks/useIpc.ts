@@ -19,6 +19,7 @@ const noopApi: ElectronAPI = {
   app: {
     getVersion: noop,
     getRepoRoot: noop,
+    browseForHistoryFile: noop,
     closeWindow: noop,
     minimizeWindow: noop,
     toggleFullscreen: noop,

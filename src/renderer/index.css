@@ -2692,6 +2692,7 @@ html, body {
 .mm-map-pane {
   flex: 1;
   position: relative;
+  z-index: 1;
   min-width: 0;
   background: var(--surface-3);
 }
