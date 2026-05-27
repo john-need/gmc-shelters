@@ -35,7 +35,8 @@ const SCHEMA = `
     notes TEXT, created TEXT, updated TEXT,
     is_extant INTEGER DEFAULT 1,
     category_id INTEGER REFERENCES categories(id),
-    show_on_web INTEGER DEFAULT 0
+    show_on_web INTEGER DEFAULT 0,
+    history TEXT
   );
   CREATE TABLE photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,6 +44,13 @@ const SCHEMA = `
     photographer TEXT, caption TEXT, date_taken TEXT,
     alt_text TEXT, description TEXT, notes TEXT,
     include_in_post INTEGER DEFAULT 1, created TEXT, updated TEXT
+  );
+  CREATE TABLE sources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT, author TEXT, title TEXT
+  );
+  CREATE TABLE shelter_sources (
+    shelter_id INTEGER, source_id INTEGER
   );
 `;
 

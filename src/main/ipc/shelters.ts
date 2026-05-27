@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
-import { getAllShelters, getShelterById, createShelter, updateShelter, deleteShelter } from '../db/shelters';
+import { getAllShelters, getShelterById, createShelter, updateShelter, deleteShelter, setShelterHistory } from '../db/shelters';
 import { syncMarkersFromShelter } from '../db/map-markers';
 import { ensureShelterDir, deleteShelterDir } from '../fs/photos';
 import { writeHistory } from '../fs/history';
@@ -26,8 +26,9 @@ export function registerShelterHandlers(): void {
   ipcMain.handle(CHANNELS.SHELTERS_CREATE, async (_e, input: ShelterCreateInput) => {
     const shelter = createShelter(input);
     await ensureShelterDir(shelter.slug, input.sheltersRoot);
+    const historyRelPath = shelter.history ?? `${shelter.slug}/${shelter.slug}.md`;
     const initialHistory = `# ${shelter.name}\n\n*${shelter.start_year} – present*\n\n## History\n\n_Add the history of this shelter here._\n`;
-    await writeHistory(shelter.slug, initialHistory, input.sheltersRoot);
+    await writeHistory(historyRelPath, initialHistory, input.sheltersRoot);
     return shelter;
   });
 
@@ -42,6 +43,13 @@ export function registerShelterHandlers(): void {
     async (_e, { id, slug, sheltersRoot }: { id: number; slug: string; sheltersRoot: string }) => {
       deleteShelter(id);
       await deleteShelterDir(slug, sheltersRoot);
+    },
+  );
+
+  ipcMain.handle(
+    CHANNELS.SHELTERS_SET_HISTORY,
+    (_e, { id, history }: { id: number; history: string }) => {
+      setShelterHistory(id, history);
     },
   );
 }

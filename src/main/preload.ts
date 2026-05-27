@@ -24,6 +24,8 @@ const api: ElectronAPI = {
     update: (shelter: Shelter) => ipcRenderer.invoke(CHANNELS.SHELTERS_UPDATE, shelter),
     delete: (id: number, slug: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.SHELTERS_DELETE, { id, slug, sheltersRoot }),
+    setHistory: (id: number, history: string) =>
+      ipcRenderer.invoke(CHANNELS.SHELTERS_SET_HISTORY, { id, history }),
   },
   photos: {
     getByShelter: (shelterId: number) =>
@@ -46,10 +48,10 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.PHOTOS_RECONCILE_APPLY, input),
   },
   history: {
-    read: (slug: string, sheltersRoot: string) =>
-      ipcRenderer.invoke(CHANNELS.HISTORY_READ, { slug, sheltersRoot }),
-    write: (slug: string, content: string, sheltersRoot: string) =>
-      ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { slug, content, sheltersRoot }),
+    read: (historyRelPath: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_READ, { historyRelPath, sheltersRoot }),
+    write: (historyRelPath: string, content: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { historyRelPath, content, sheltersRoot }),
   },
   sources: {
     getByShelter: (shelterId: number) =>
@@ -65,6 +67,9 @@ const api: ElectronAPI = {
     update: (id: number, input: MapMarkerUpdateInput) =>
       ipcRenderer.invoke(CHANNELS.MAP_MARKERS_UPDATE, { id, input }),
     delete: (id: number) => ipcRenderer.invoke(CHANNELS.MAP_MARKERS_DELETE, { id }),
+  },
+  export: {
+    build: () => ipcRenderer.invoke(CHANNELS.EXPORT_BUILD),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),

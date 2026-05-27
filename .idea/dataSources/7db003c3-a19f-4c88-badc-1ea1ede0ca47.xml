@@ -568,7 +568,7 @@
     </routine>
     <schema id="214" parent="1" name="main">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2026-05-20.23:55:46</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2026-05-27.13:21:34</LastIntrospectionLocalTimestamp>
     </schema>
     <argument id="215" parent="14">
       <ArgumentDirection>R</ArgumentDirection>
@@ -2188,151 +2188,151 @@ source_id</ColNames>
       <Position>16</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <foreign-key id="715" parent="633">
+    <column id="715" parent="633" name="history">
+      <Position>17</Position>
+      <StoredType>TEXT|0s</StoredType>
+    </column>
+    <foreign-key id="716" parent="633">
       <ColNames>architecture_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>architectures</RefTableName>
     </foreign-key>
-    <foreign-key id="716" parent="633">
+    <foreign-key id="717" parent="633">
       <ColNames>builder_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>builders</RefTableName>
     </foreign-key>
-    <foreign-key id="717" parent="633">
+    <foreign-key id="718" parent="633">
       <ColNames>category_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>categories</RefTableName>
     </foreign-key>
-    <index id="718" parent="633" name="shelters_slug_uindex">
+    <index id="719" parent="633" name="shelters_slug_uindex">
       <ColNames>slug</ColNames>
       <Unique>1</Unique>
     </index>
-    <index id="719" parent="633" name="shelters_name_index">
+    <index id="720" parent="633" name="shelters_name_index">
       <ColNames>name</ColNames>
     </index>
-    <key id="720" parent="633">
+    <key id="721" parent="633">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="721" parent="634" name="id">
+    <column id="722" parent="634" name="id">
       <AutoIncrement>1</AutoIncrement>
       <Position>1</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="722" parent="634" name="type">
+    <column id="723" parent="634" name="type">
       <DefaultExpression>&apos;other&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="723" parent="634" name="author">
+    <column id="724" parent="634" name="author">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="724" parent="634" name="title">
+    <column id="725" parent="634" name="title">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="725" parent="634" name="container_title">
+    <column id="726" parent="634" name="container_title">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="726" parent="634" name="editor">
+    <column id="727" parent="634" name="editor">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="727" parent="634" name="edition">
+    <column id="728" parent="634" name="edition">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="728" parent="634" name="volume">
+    <column id="729" parent="634" name="volume">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="729" parent="634" name="issue">
+    <column id="730" parent="634" name="issue">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>9</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="730" parent="634" name="pages">
+    <column id="731" parent="634" name="pages">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>10</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="731" parent="634" name="publisher">
+    <column id="732" parent="634" name="publisher">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>11</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="732" parent="634" name="place">
+    <column id="733" parent="634" name="place">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>12</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="733" parent="634" name="year">
+    <column id="734" parent="634" name="year">
       <Position>13</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="734" parent="634" name="date">
+    <column id="735" parent="634" name="date">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>14</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="735" parent="634" name="url">
+    <column id="736" parent="634" name="url">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>15</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="736" parent="634" name="access_date">
+    <column id="737" parent="634" name="access_date">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>16</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="737" parent="634" name="archive">
+    <column id="738" parent="634" name="archive">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>17</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="738" parent="634" name="archive_location">
+    <column id="739" parent="634" name="archive_location">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>18</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="739" parent="634" name="created">
+    <column id="740" parent="634" name="created">
       <DefaultExpression>(date(&apos;now&apos;))</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>19</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
-    <column id="740" parent="634" name="updated">
+    <column id="741" parent="634" name="updated">
       <DefaultExpression>(date(&apos;now&apos;))</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>20</Position>
-      <StoredType>TEXT|0s</StoredType>
-    </column>
-    <column id="741" parent="634" name="quote">
-      <Position>21</Position>
       <StoredType>TEXT|0s</StoredType>
     </column>
     <index id="742" parent="634" name="idx_sources_title">

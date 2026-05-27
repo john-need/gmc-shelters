@@ -18,6 +18,7 @@ interface ShelterRow {
   is_extant: number;
   category_id: number | null;
   show_on_web: number;
+  history: string | null;
   photo_count: number;
   // JOINed resolved names
   architecture: string | null;
@@ -59,6 +60,7 @@ function rowToShelter(row: ShelterRow): Shelter {
     is_extant: Boolean(row.is_extant),
     category: row.category ?? '',
     show_on_web: Boolean(row.show_on_web),
+    history: row.history ?? null,
     photo_count: row.photo_count ?? 0,
     default_photo_file_name: row.default_photo_file_name ?? null,
   };
@@ -115,14 +117,16 @@ export function createShelter(input: ShelterCreateInput): Shelter {
 
   const categoryId = resolveCategoryId(db, input.category);
 
+  const defaultHistory = `${slug}/${slug}.md`;
+
   const result = db
     .prepare(
       `INSERT INTO shelters
          (name, slug, start_year, category_id, is_gmc, is_extant, show_on_web,
-          architecture_id, builder_id, description, notes, created, updated)
-       VALUES (?, ?, ?, ?, ?, 1, 0, NULL, NULL, '', '', ?, ?)`,
+          architecture_id, builder_id, description, notes, history, created, updated)
+       VALUES (?, ?, ?, ?, ?, 1, 0, NULL, NULL, '', '', ?, ?, ?)`,
     )
-    .run(input.name, slug, input.start_year, categoryId, input.is_gmc ? 1 : 0, today, today);
+    .run(input.name, slug, input.start_year, categoryId, input.is_gmc ? 1 : 0, defaultHistory, today, today);
 
   return getShelterById(result.lastInsertRowid as number) as Shelter;
 }
@@ -161,6 +165,11 @@ export function updateShelter(shelter: Shelter): Shelter {
   );
 
   return getShelterById(shelter.id) as Shelter;
+}
+
+export function setShelterHistory(id: number, history: string): void {
+  const db = getDb();
+  db.prepare('UPDATE shelters SET history = ? WHERE id = ?').run(history, id);
 }
 
 export function deleteShelter(id: number): void {

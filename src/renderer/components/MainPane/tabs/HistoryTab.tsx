@@ -1,8 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
-import { historyFileName } from '../../../../shared/history-file';
-import { setHistoryContent, saveHistory } from '../../../store/sheltersSlice';
+import { setHistoryContent, saveHistory, setShelterHistoryThunk, loadHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
 
@@ -80,14 +79,17 @@ export default function HistoryTab() {
   const dirty = useSelector((state: RootState) => state.shelters.historyDirty);
   const missing = useSelector((state: RootState) => state.shelters.historyMissing);
   const ref = useRef<HTMLTextAreaElement>(null);
+  const [editingPath, setEditingPath] = useState(false);
+  const [pathDraft, setPathDraft] = useState('');
 
   if (!s) return null;
 
+  const historyRelPath = s.history ?? `${s.slug}/${s.slug}.md`;
   const wordCount = (value.match(/\S+/g) || []).length;
   const charCount = value.length;
   const lineCount = value.split('\n').length;
-  const fileName = historyFileName(s.slug);
-  const filePath = buildHistoryFileDisplayPath(loadStoredPaths().SHELTERS_ROOT, s.slug);
+  const fileName = historyRelPath.split('/').pop() ?? `${s.slug}.md`;
+  const filePath = buildHistoryFileDisplayPath(loadStoredPaths().SHELTERS_ROOT, historyRelPath);
 
   const onChange = (next: string) => dispatch(setHistoryContent(next));
 
@@ -113,7 +115,7 @@ export default function HistoryTab() {
   };
 
   const handleSave = async () => {
-    const result = await dispatch(saveHistory({ slug: s.slug, content: value }));
+    const result = await dispatch(saveHistory({ historyRelPath, content: value }));
     if (saveHistory.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Saved · ${filePath}` }));
     }
@@ -122,17 +124,49 @@ export default function HistoryTab() {
   const handleCreate = async () => {
     const initial = `# ${s.name}\n`;
     dispatch(setHistoryContent(initial));
-    const result = await dispatch(saveHistory({ slug: s.slug, content: initial }));
+    const result = await dispatch(saveHistory({ historyRelPath, content: initial }));
     if (saveHistory.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Created · ${filePath}` }));
     }
   };
 
+  const handleEditPath = () => {
+    setPathDraft(historyRelPath);
+    setEditingPath(true);
+  };
+
+  const handleSavePath = async () => {
+    const trimmed = pathDraft.trim();
+    if (!trimmed || trimmed === historyRelPath) { setEditingPath(false); return; }
+    const result = await dispatch(setShelterHistoryThunk({ id: s.id, history: trimmed }));
+    if (setShelterHistoryThunk.fulfilled.match(result)) {
+      dispatch(loadHistory(trimmed));
+      dispatch(showToast({ id: Date.now().toString(), message: `History path updated` }));
+    }
+    setEditingPath(false);
+  };
+
   if (missing) {
     return (
       <div className="md-editor" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--text-muted)' }}>
-        <span>History file not found</span>
-        <button className="btn sm primary" onClick={handleCreate}>Create File</button>
+        <span>History file not found: <code>{historyRelPath}</code></span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn sm primary" onClick={handleCreate}>Create File</button>
+          <button className="btn sm" onClick={handleEditPath}>Edit Path</button>
+        </div>
+        {editingPath && (
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <input
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 12, padding: '3px 6px', width: 260 }}
+              value={pathDraft}
+              onChange={(e) => setPathDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSavePath(); if (e.key === 'Escape') setEditingPath(false); }}
+              autoFocus
+            />
+            <button className="btn sm primary" onClick={handleSavePath}>Save</button>
+            <button className="btn sm" onClick={() => setEditingPath(false)}>Cancel</button>
+          </div>
+        )}
       </div>
     );
   }
@@ -205,9 +239,26 @@ export default function HistoryTab() {
         <div className="md-pane">
           <div className="md-pane-head">
             <span>Source</span>
-            <span>
-              <span className="filename">{filePath}</span>
-              {dirty && <span className="dirty"> ·</span>}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {editingPath ? (
+                <>
+                  <input
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: 11, padding: '2px 5px', width: 220 }}
+                    value={pathDraft}
+                    onChange={(e) => setPathDraft(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSavePath(); if (e.key === 'Escape') setEditingPath(false); }}
+                    autoFocus
+                  />
+                  <button className="btn sm primary" style={{ fontSize: 11, padding: '2px 6px' }} onClick={handleSavePath}>Save</button>
+                  <button className="btn sm" style={{ fontSize: 11, padding: '2px 6px' }} onClick={() => setEditingPath(false)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <span className="filename">{filePath}</span>
+                  <button className="btn sm" style={{ fontSize: 10, padding: '1px 5px', opacity: 0.7 }} onClick={handleEditPath} title="Edit history file path">Edit path</button>
+                  {dirty && <span className="dirty"> ·</span>}
+                </>
+              )}
             </span>
           </div>
           <textarea

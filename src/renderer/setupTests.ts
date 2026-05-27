@@ -33,6 +33,7 @@ const mockApi: ElectronAPI = {
     create: noop,
     update: noop,
     delete: noop,
+    setHistory: noop,
   },
   photos: {
     getByShelter: jest.fn().mockResolvedValue([]),

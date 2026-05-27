@@ -24,18 +24,18 @@ describe('ipc/history', () => {
     expect(registered).toContain(CHANNELS.HISTORY_WRITE);
   });
 
-  it('HISTORY_READ calls readHistory with slug', async () => {
+  it('HISTORY_READ calls readHistory with historyRelPath', async () => {
     (fsHistory.readHistory as jest.Mock).mockResolvedValue({ content: '# My Shelter', missing: false });
     const handler = getHandler(CHANNELS.HISTORY_READ);
-    const result = await handler(null, { slug: 'my-shelter', sheltersRoot: '/custom/shelters' });
-    expect(fsHistory.readHistory).toHaveBeenCalledWith('my-shelter', '/custom/shelters');
+    const result = await handler(null, { historyRelPath: 'my-shelter/my-shelter.md', sheltersRoot: '/custom/shelters' });
+    expect(fsHistory.readHistory).toHaveBeenCalledWith('my-shelter/my-shelter.md', '/custom/shelters');
     expect(result).toEqual({ content: '# My Shelter', missing: false });
   });
 
-  it('HISTORY_WRITE calls writeHistory with slug and content', async () => {
+  it('HISTORY_WRITE calls writeHistory with historyRelPath and content', async () => {
     (fsHistory.writeHistory as jest.Mock).mockResolvedValue(undefined);
     const handler = getHandler(CHANNELS.HISTORY_WRITE);
-    await handler(null, { slug: 'my-shelter', content: '# Updated', sheltersRoot: '/custom/shelters' });
-    expect(fsHistory.writeHistory).toHaveBeenCalledWith('my-shelter', '# Updated', '/custom/shelters');
+    await handler(null, { historyRelPath: 'my-shelter/my-shelter.md', content: '# Updated', sheltersRoot: '/custom/shelters' });
+    expect(fsHistory.writeHistory).toHaveBeenCalledWith('my-shelter/my-shelter.md', '# Updated', '/custom/shelters');
   });
 });

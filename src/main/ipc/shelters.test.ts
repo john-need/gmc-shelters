@@ -32,6 +32,7 @@ describe('ipc/shelters', () => {
     expect(registered).toContain(CHANNELS.SHELTERS_CREATE);
     expect(registered).toContain(CHANNELS.SHELTERS_UPDATE);
     expect(registered).toContain(CHANNELS.SHELTERS_DELETE);
+    expect(registered).toContain(CHANNELS.SHELTERS_SET_HISTORY);
   });
 
   it('SHELTERS_GET_ALL calls getAllShelters', () => {
@@ -53,17 +54,21 @@ describe('ipc/shelters', () => {
   });
 
   it('SHELTERS_CREATE creates shelter, ensures dir, and writes initial history', async () => {
-    const shelter = { id: 1, name: 'New Shelter', slug: 'new-shelter', start_year: 1970 };
+    const shelter = { id: 1, name: 'New Shelter', slug: 'new-shelter', start_year: 1970, history: 'new-shelter/new-shelter.md' };
     (dbShelters.createShelter as jest.Mock).mockReturnValue(shelter);
     (fsPhotos.ensureShelterDir as jest.Mock).mockResolvedValue(undefined);
     (fsHistory.writeHistory as jest.Mock).mockResolvedValue(undefined);
 
     const handler = getHandler(CHANNELS.SHELTERS_CREATE);
-    const result = await handler(null, { name: 'New Shelter', start_year: 1970, category: 'lean-to', is_gmc: false });
+    const result = await handler(null, { name: 'New Shelter', start_year: 1970, category: 'lean-to', is_gmc: false, sheltersRoot: '/shelters' });
 
     expect(dbShelters.createShelter).toHaveBeenCalled();
-    expect(fsPhotos.ensureShelterDir).toHaveBeenCalledWith('new-shelter');
-    expect(fsHistory.writeHistory).toHaveBeenCalledWith('new-shelter', expect.stringContaining('New Shelter'));
+    expect(fsPhotos.ensureShelterDir).toHaveBeenCalledWith('new-shelter', '/shelters');
+    expect(fsHistory.writeHistory).toHaveBeenCalledWith(
+      'new-shelter/new-shelter.md',
+      expect.stringContaining('New Shelter'),
+      '/shelters',
+    );
     expect(result).toBe(shelter);
   });
 
@@ -82,5 +87,12 @@ describe('ipc/shelters', () => {
     const handler = getHandler(CHANNELS.SHELTERS_DELETE);
     handler(null, { id: 3 });
     expect(dbShelters.deleteShelter).toHaveBeenCalledWith(3);
+  });
+
+  it('SHELTERS_SET_HISTORY calls setShelterHistory', () => {
+    (dbShelters.setShelterHistory as jest.Mock).mockReturnValue(undefined);
+    const handler = getHandler(CHANNELS.SHELTERS_SET_HISTORY);
+    handler(null, { id: 7, history: 'other-slug/other-slug.md' });
+    expect(dbShelters.setShelterHistory).toHaveBeenCalledWith(7, 'other-slug/other-slug.md');
   });
 });

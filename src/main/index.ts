@@ -10,6 +10,7 @@ import { registerShellHandlers } from './ipc/shell';
 import { registerMapMarkerHandlers } from './ipc/map-markers';
 import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
+import { registerExportHandlers } from './ipc/export';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'shelter', privileges: { secure: true, standard: true, supportFetchAPI: true } },
@@ -148,6 +149,7 @@ if (!app.requestSingleInstanceLock()) {
     registerMapMarkerHandlers();
     registerArchitectureHandlers();
     registerCategoryHandlers();
+    registerExportHandlers();
     createWindow();
   });
 

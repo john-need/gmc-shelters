@@ -21,6 +21,7 @@ function makeShelter(name: string, overrides: Partial<Shelter> = {}): Shelter {
     is_extant: true,
     is_gmc: false,
     show_on_web: false,
+    history: null,
     default_photo_id: null,
     created: '2020-01-01',
     updated: '2020-01-01',

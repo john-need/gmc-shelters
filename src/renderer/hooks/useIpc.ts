@@ -10,7 +10,7 @@ const noopHistoryRead = () => Promise.resolve({ content: '', missing: false } as
 const noopApi: ElectronAPI = {
   categories: { getAll: noop, create: noop, update: noop, delete: noop },
   architectures: { getAll: noop, create: noop, update: noop, delete: noop },
-  shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop },
+  shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop },
   photos: { getByShelter: noop, update: noop, delete: noop, setDefault: noop, upload: noop },
   history: { read: noopHistoryRead, write: noop },
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },

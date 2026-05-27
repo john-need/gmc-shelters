@@ -15,7 +15,7 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
     description: '', default_photo_id: null, is_gmc: false, is_extant: true,
     architecture: '', built_by: '', notes: '',
     created: '2020-01-01', updated: '2020-01-01',
-    category: '', show_on_web: false,
+    category: '', show_on_web: false, history: null,
     ...overrides,
   };
 }
