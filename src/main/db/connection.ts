@@ -101,4 +101,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 006-move-quote-to-shelter-sources.sql');
     }
   }
+
+  // Apply 007-add-shelter-history-column.sql if shelters.history column doesn't exist
+  const shelterHistoryCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('shelters') WHERE name='history'")
+    .get() as { n: number };
+
+  if (shelterHistoryCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '007-add-shelter-history-column.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 007-add-shelter-history-column.sql');
+    }
+  }
 }

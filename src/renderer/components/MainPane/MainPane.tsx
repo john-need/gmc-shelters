@@ -32,7 +32,7 @@ export default function MainPane() {
 
   useEffect(() => {
     if (!s || selectedId === null) return;
-    dispatch(loadHistory(s.slug));
+    dispatch(loadHistory(s.history ?? `${s.slug}/${s.slug}.md`));
     dispatch(loadPhotos(s.id));
     dispatch(loadSources(s.id));
     dispatch(loadMapMarkers(s.id));

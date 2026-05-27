@@ -33,6 +33,7 @@ const mockApi: ElectronAPI = {
     create: noop,
     update: noop,
     delete: noop,
+    setHistory: noop,
   },
   photos: {
     getByShelter: jest.fn().mockResolvedValue([]),
@@ -63,6 +64,7 @@ const mockApi: ElectronAPI = {
     getRepoRoot: jest.fn().mockResolvedValue('/tmp'),
     browseForDatabasePath: jest.fn().mockResolvedValue(null),
     browseForDirectoryPath: jest.fn().mockResolvedValue(null),
+    browseForHistoryFile: jest.fn().mockResolvedValue(null),
     validatePath: jest.fn().mockResolvedValue(defaultPathValidation),
     closeWindow: noop,
     minimizeWindow: noop,

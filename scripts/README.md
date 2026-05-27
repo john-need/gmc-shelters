@@ -18,6 +18,16 @@
   - Reuses managed assets by `source_sha256` on same-run and later reruns.
   - Writes SQLite run history, managed assets, and photo links in apply mode.
 
+## Export dist package
+
+The in-app **Export** button (header bar) supersedes `build_dist_package.py` + manual zip.
+Click Export, select a destination folder, and the app writes `gmc-shelters-export-YYYYMMDD.zip`
+there. See `specs/008-export-dist-zip/quickstart.md` for operator steps.
+
+> **Note**: `build_dist_package.py` / `build_shelter_manifest.py` are kept for reference but
+> `manifest_db.py` queries the deprecated `timelines` table (dropped in migration 004) and will
+> fail against the current schema. Use the in-app Export for current exports.
+
 ## Existing shelter list conversion
 
 Convert `sheleter-list.xlsx` to slug-keyed JSON.

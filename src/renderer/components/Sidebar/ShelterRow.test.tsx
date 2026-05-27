@@ -16,6 +16,7 @@ const shelter: Shelter = {
   is_extant: true,
   is_gmc: false,
   show_on_web: false,
+  history: 'bear-notch-shelter/bear-notch-shelter.md',
   default_photo_id: null,
   default_photo_file_name: null,
   created: '2020-01-01',

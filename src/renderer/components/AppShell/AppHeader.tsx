@@ -36,12 +36,31 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
     onOpenSettings(page);
   };
 
+  const [exporting, setExporting] = useState(false);
+
   const handlePublish = () => {
     dispatch(showToast({ id: Date.now().toString(), message: 'Publishing to web…' }));
   };
 
-  const handleExport = () => {
-    dispatch(showToast({ id: Date.now().toString(), message: 'Export not yet implemented.' }));
+  const handleExport = async () => {
+    setExporting(true);
+    dispatch(showToast({ id: 'export-building', message: 'Building export…' }));
+    try {
+      const result = await window.api.export.build();
+      if (result.cancelled) {
+        dispatch(showToast({ id: 'export-cancelled', message: 'Export cancelled.' }));
+      } else {
+        dispatch(showToast({
+          id: 'export-success',
+          message: `Saved ${result.savedTo} (${result.skippedPhotos} photos skipped)`,
+        }));
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      dispatch(showToast({ id: 'export-error', message: `Export failed: ${message}` }));
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -67,7 +86,7 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
 
       <div className="header-divider" />
 
-      <button className="btn" onClick={handleExport}>
+      <button className="btn" onClick={handleExport} disabled={exporting}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 11v6c0 1.7 4 3 9 3s9-1.3 9-3v-6"/>
         </svg>

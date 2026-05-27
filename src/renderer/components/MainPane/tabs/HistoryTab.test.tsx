@@ -27,6 +27,7 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
     is_extant: true,
     category: 'Lean-to',
     show_on_web: true,
+    history: 'aeolus-view-camp/aeolus-view-camp.md',
     photo_count: 0,
     ...overrides,
   };
@@ -115,7 +116,7 @@ describe('HistoryTab', () => {
 
     await waitFor(() => {
       expect(window.api.history.write).toHaveBeenCalledWith(
-        'aeolus-view-camp',
+        'aeolus-view-camp/aeolus-view-camp.md',
         '# Updated history',
         '/custom/shelters',
       );

@@ -5,15 +5,15 @@ import { readHistory, writeHistory } from '../fs/history';
 export function registerHistoryHandlers(): void {
   ipcMain.handle(
     CHANNELS.HISTORY_READ,
-    (_e, { slug, sheltersRoot }: { slug: string; sheltersRoot: string }) =>
-      readHistory(slug, sheltersRoot),
+    (_e, { historyRelPath, sheltersRoot }: { historyRelPath: string; sheltersRoot: string }) =>
+      readHistory(historyRelPath, sheltersRoot),
   );
 
   ipcMain.handle(
     CHANNELS.HISTORY_WRITE,
     (
       _e,
-      { slug, content, sheltersRoot }: { slug: string; content: string; sheltersRoot: string },
-    ) => writeHistory(slug, content, sheltersRoot),
+      { historyRelPath, content, sheltersRoot }: { historyRelPath: string; content: string; sheltersRoot: string },
+    ) => writeHistory(historyRelPath, content, sheltersRoot),
   );
 }

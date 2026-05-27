@@ -21,6 +21,7 @@ export const CHANNELS = {
   SHELTERS_CREATE: 'shelters:create',
   SHELTERS_UPDATE: 'shelters:update',
   SHELTERS_DELETE: 'shelters:delete',
+  SHELTERS_SET_HISTORY: 'shelters:setHistory',
   PHOTOS_GET_BY_SHELTER: 'photos:getByShelter',
   PHOTOS_UPDATE: 'photos:update',
   PHOTOS_DELETE: 'photos:delete',
@@ -46,11 +47,13 @@ export const CHANNELS = {
   APP_GET_REPO_ROOT: 'app:getRepoRoot',
   APP_BROWSE_DATABASE_PATH: 'app:browseDatabasePath',
   APP_BROWSE_DIRECTORY_PATH: 'app:browseDirectoryPath',
+  APP_BROWSE_HISTORY_FILE: 'app:browseHistoryFile',
   APP_VALIDATE_PATH: 'app:validatePath',
   APP_WINDOW_CLOSE: 'app:windowClose',
   APP_WINDOW_MINIMIZE: 'app:windowMinimize',
   APP_WINDOW_TOGGLE_FULLSCREEN: 'app:windowToggleFullscreen',
   APP_WINDOW_IS_FULLSCREEN: 'app:windowIsFullscreen',
+  EXPORT_BUILD: 'export:build',
 } as const;
 
 export interface Architecture {
@@ -135,6 +138,7 @@ export interface Shelter {
   is_extant: boolean;
   category: string;
   show_on_web: boolean;
+  history: string | null;
   photo_count?: number;
   default_photo_file_name?: string | null;
 }
@@ -268,6 +272,14 @@ export interface HistoryReadResult {
   missing: boolean;
 }
 
+export interface ExportResult {
+  cancelled: boolean;
+  savedTo: string | null;
+  shelterCount: number;
+  photoCount: number;
+  skippedPhotos: number;
+}
+
 export interface ElectronAPI {
   architectures: {
     getAll: () => Promise<Architecture[]>;
@@ -287,6 +299,7 @@ export interface ElectronAPI {
     create: (input: ShelterCreateInput) => Promise<Shelter>;
     update: (shelter: Shelter) => Promise<Shelter>;
     delete: (id: number, slug: string, sheltersRoot: string) => Promise<void>;
+    setHistory: (id: number, history: string) => Promise<void>;
   };
   photos: {
     getByShelter: (shelterId: number) => Promise<Photo[]>;
@@ -301,8 +314,8 @@ export interface ElectronAPI {
     reconcileApply: (input: ReconcileApplyInput) => Promise<ReconcileApplyResult>;
   };
   history: {
-    read: (slug: string, sheltersRoot: string) => Promise<HistoryReadResult>;
-    write: (slug: string, content: string, sheltersRoot: string) => Promise<void>;
+    read: (historyRelPath: string, sheltersRoot: string) => Promise<HistoryReadResult>;
+    write: (historyRelPath: string, content: string, sheltersRoot: string) => Promise<void>;
   };
   sources: {
     getByShelter: (shelterId: number) => Promise<Source[]>;
@@ -316,6 +329,9 @@ export interface ElectronAPI {
     update: (id: number, input: MapMarkerUpdateInput) => Promise<MapMarker>;
     delete: (id: number) => Promise<MapMarker[]>;
   };
+  export: {
+    build: () => Promise<ExportResult>;
+  };
   shell: {
     openExternal: (url: string) => Promise<void>;
   };
@@ -324,6 +340,7 @@ export interface ElectronAPI {
     getRepoRoot: () => Promise<string>;
     browseForDatabasePath: (defaultPath?: string) => Promise<string | null>;
     browseForDirectoryPath: (defaultPath?: string) => Promise<string | null>;
+    browseForHistoryFile: (sheltersRoot: string) => Promise<string | null>;
     validatePath: (input: string) => Promise<AppPathValidation>;
     closeWindow: () => Promise<void>;
     minimizeWindow: () => Promise<void>;

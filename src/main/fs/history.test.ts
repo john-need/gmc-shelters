@@ -15,7 +15,7 @@ describe('fs/history', () => {
   describe('readHistory', () => {
     it('returns file content when it exists', async () => {
       (fsp.readFile as jest.Mock).mockResolvedValue('# Test Shelter\n\nSome history.');
-      const result = await readHistory('test-shelter', '/custom/shelters');
+      const result = await readHistory('test-shelter/test-shelter.md', '/custom/shelters');
       expect(result).toEqual({ content: '# Test Shelter\n\nSome history.', missing: false });
     });
 
@@ -23,13 +23,13 @@ describe('fs/history', () => {
       const error = new Error('ENOENT') as NodeJS.ErrnoException;
       error.code = 'ENOENT';
       (fsp.readFile as jest.Mock).mockRejectedValue(error);
-      const result = await readHistory('missing-shelter', '/custom/shelters');
+      const result = await readHistory('missing-shelter/missing-shelter.md', '/custom/shelters');
       expect(result).toEqual({ content: '', missing: true });
     });
 
-    it('constructs the path using the provided shelters root and slug', async () => {
+    it('constructs the path using the provided shelters root and historyRelPath', async () => {
       (fsp.readFile as jest.Mock).mockResolvedValue('');
-      await readHistory('my-slug', '/custom/shelters');
+      await readHistory('my-slug/my-slug.md', '/custom/shelters');
       expect(fsp.readFile).toHaveBeenCalledWith(
         '/custom/shelters/my-slug/my-slug.md',
         'utf8',
@@ -38,7 +38,7 @@ describe('fs/history', () => {
 
     it('resolves a relative shelters root against app.getAppPath', async () => {
       (fsp.readFile as jest.Mock).mockResolvedValue('');
-      await readHistory('my-slug', 'custom/shelters');
+      await readHistory('my-slug/my-slug.md', 'custom/shelters');
       expect(fsp.readFile).toHaveBeenCalledWith(
         '/base/custom/shelters/my-slug/my-slug.md',
         'utf8',
@@ -50,7 +50,7 @@ describe('fs/history', () => {
     it('creates directory and writes file', async () => {
       (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
       (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
-      await writeHistory('my-slug', '# Content', '/custom/shelters');
+      await writeHistory('my-slug/my-slug.md', '# Content', '/custom/shelters');
       expect(fsp.mkdir).toHaveBeenCalledWith('/custom/shelters/my-slug', { recursive: true });
       expect(fsp.writeFile).toHaveBeenCalledWith(
         '/custom/shelters/my-slug/my-slug.md',

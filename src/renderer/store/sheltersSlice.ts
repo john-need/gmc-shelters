@@ -81,11 +81,12 @@ export const createShelter = createAsyncThunk(
       is_extant: true,
       is_gmc: input.is_gmc,
       show_on_web: false,
+      history: `${slug}/${slug}.md`,
       default_photo_id: null,
       created: today,
       updated: today,
       photo_count: 0,
-    } as Shelter;
+    } as unknown as Shelter;
   },
 );
 
@@ -101,9 +102,9 @@ export const deleteShelterThunk = createAsyncThunk(
 
 export const loadHistory = createAsyncThunk(
   'shelters/loadHistory',
-  async (slug: string) => {
+  async (historyRelPath: string) => {
     if (typeof window !== 'undefined' && window.api) {
-      return window.api.history.read(slug, loadStoredPaths().SHELTERS_ROOT);
+      return window.api.history.read(historyRelPath, loadStoredPaths().SHELTERS_ROOT);
     }
     return { content: '', missing: false } satisfies HistoryReadResult;
   },
@@ -111,11 +112,21 @@ export const loadHistory = createAsyncThunk(
 
 export const saveHistory = createAsyncThunk(
   'shelters/saveHistory',
-  async ({ slug, content }: { slug: string; content: string }) => {
+  async ({ historyRelPath, content }: { historyRelPath: string; content: string }) => {
     if (typeof window !== 'undefined' && window.api) {
-      await window.api.history.write(slug, content, loadStoredPaths().SHELTERS_ROOT);
+      await window.api.history.write(historyRelPath, content, loadStoredPaths().SHELTERS_ROOT);
     }
     return content;
+  },
+);
+
+export const setShelterHistoryThunk = createAsyncThunk(
+  'shelters/setHistory',
+  async ({ id, history }: { id: number; history: string }) => {
+    if (typeof window !== 'undefined' && window.api) {
+      await window.api.shelters.setHistory(id, history);
+    }
+    return { id, history };
   },
 );
 
@@ -242,6 +253,14 @@ const sheltersSlice = createSlice({
           state.historyDirty = false;
           state.historyMissing = false;
         }
+      })
+      .addCase(setShelterHistoryThunk.fulfilled, (state, action) => {
+        const { id, history } = action.payload;
+        const idx = state.list.findIndex((s) => s.id === id);
+        if (idx >= 0) state.list[idx] = { ...state.list[idx], history };
+        if (state.editBuffer && state.editBuffer.id === id) {
+          state.editBuffer = { ...state.editBuffer, history };
+        }
       });
   },
 });
@@ -255,5 +274,6 @@ export const {
   setDefaultPhotoLocal,
   clearDirty,
 } = sheltersSlice.actions;
+
 
 export default sheltersSlice.reducer;

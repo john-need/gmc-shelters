@@ -61,7 +61,12 @@
       "Bash(xargs -I{} sh -c 'echo \"=== $\\(basename {}\\) ===\" && cat \"{}\"')",
       "Bash(sips *)",
       "Bash(xargs cat)",
-      "Bash(awk '/frequency.*★★★[★☆]/{found=1} found && /^  [A-Z][a-zA-Z0-9]+\\\\?:/{print NR\": \"$0; found=0}' /Users/johnneed/Projects/gmc-shelters/node_modules/exiftool-vendored/dist/Tags.d.ts)"
+      "Bash(awk '/frequency.*★★★[★☆]/{found=1} found && /^  [A-Z][a-zA-Z0-9]+\\\\?:/{print NR\": \"$0; found=0}' /Users/johnneed/Projects/gmc-shelters/node_modules/exiftool-vendored/dist/Tags.d.ts)",
+      "Bash(xargs -I{} ls /Users/johnneed/Projects/gmc-shelters/shelters/{})",
+      "Bash(read f *)",
+      "Bash(.specify/scripts/bash/setup-plan.sh *)",
+      "Bash(awk -F'|' '{print $2}')",
+      "Bash(grep -v \".js$\")"
     ]
   }
 }

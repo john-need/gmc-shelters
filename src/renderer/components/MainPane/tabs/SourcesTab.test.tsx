@@ -25,6 +25,7 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
     is_extant: true,
     category: 'Lean-to',
     show_on_web: true,
+    history: 'birch-glen-lodge/birch-glen-lodge.md',
     photo_count: 0,
     ...overrides,
   };

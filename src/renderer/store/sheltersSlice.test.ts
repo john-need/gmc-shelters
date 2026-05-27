@@ -16,7 +16,8 @@ const mockShelter: Shelter = {
   default_photo_id: null,
   is_gmc: true, architecture: '', built_by: '', notes: '',
   created: '2020-01-01', updated: '2020-01-01',
-  is_extant: true, category: 'Shelter', show_on_web: false, photo_count: 0,
+  is_extant: true, category: 'Shelter', show_on_web: false,
+  history: 'test-shelter/test-shelter.md', photo_count: 0,
 };
 
 const initial: SheltersState = {
@@ -105,18 +106,18 @@ describe('sheltersSlice', () => {
     localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
     window.api.history.read = jest.fn().mockResolvedValue({ content: '# Loaded', missing: false });
 
-    await loadHistory('test-shelter')(jest.fn(), () => ({}), undefined);
+    await loadHistory('test-shelter/test-shelter.md')(jest.fn(), () => ({}), undefined);
 
-    expect(window.api.history.read).toHaveBeenCalledWith('test-shelter', '/custom/shelters');
+    expect(window.api.history.read).toHaveBeenCalledWith('test-shelter/test-shelter.md', '/custom/shelters');
   });
 
   it('saveHistory uses the saved shelters root from localStorage', async () => {
     localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
     window.api.history.write = jest.fn().mockResolvedValue(undefined);
 
-    await saveHistory({ slug: 'test-shelter', content: '# Updated' })(jest.fn(), () => ({}), undefined);
+    await saveHistory({ historyRelPath: 'test-shelter/test-shelter.md', content: '# Updated' })(jest.fn(), () => ({}), undefined);
 
-    expect(window.api.history.write).toHaveBeenCalledWith('test-shelter', '# Updated', '/custom/shelters');
+    expect(window.api.history.write).toHaveBeenCalledWith('test-shelter/test-shelter.md', '# Updated', '/custom/shelters');
   });
 
   it('stores the missing-file flag from loadHistory', () => {

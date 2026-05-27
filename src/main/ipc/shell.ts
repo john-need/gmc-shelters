@@ -68,6 +68,22 @@ export function registerShellHandlers(): void {
     },
   );
 
+  ipcMain.handle(
+    CHANNELS.APP_BROWSE_HISTORY_FILE,
+    async (event, { sheltersRoot }: { sheltersRoot: string }) => {
+      const resolvedRoot = resolveInputPath(sheltersRoot);
+      const result = await dialog.showOpenDialog(getSenderWindow(event.sender), {
+        title: 'Select history file',
+        defaultPath: resolvedRoot,
+        properties: ['openFile'],
+        filters: [{ name: 'Markdown', extensions: ['md'] }],
+      });
+
+      if (result.canceled || !result.filePaths[0]) return null;
+      return path.relative(resolvedRoot, result.filePaths[0]);
+    },
+  );
+
   ipcMain.handle(CHANNELS.APP_VALIDATE_PATH, (_event, { input }: { input: string }) => {
     const resolvedPath = resolveInputPath(input);
     if (!fs.existsSync(resolvedPath)) {

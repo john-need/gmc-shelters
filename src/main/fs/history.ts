@@ -3,7 +3,6 @@ import os from 'os';
 import path from 'path';
 import { app } from 'electron';
 import type { HistoryReadResult } from '../../shared/ipc-types';
-import { historyFileName } from '../../shared/history-file';
 import { log } from '../logger';
 
 function resolveSheltersRoot(sheltersRoot: string): string {
@@ -20,14 +19,14 @@ function resolveSheltersRoot(sheltersRoot: string): string {
   return path.resolve(app.getAppPath(), trimmed);
 }
 
-function historyPath(slug: string, sheltersRoot: string): string {
-  return path.join(resolveSheltersRoot(sheltersRoot), slug, historyFileName(slug));
+function resolvedHistoryPath(historyRelPath: string, sheltersRoot: string): string {
+  return path.join(resolveSheltersRoot(sheltersRoot), historyRelPath);
 }
 
-export async function readHistory(slug: string, sheltersRoot: string): Promise<HistoryReadResult> {
+export async function readHistory(historyRelPath: string, sheltersRoot: string): Promise<HistoryReadResult> {
   try {
     return {
-      content: await fs.readFile(historyPath(slug, sheltersRoot), 'utf8'),
+      content: await fs.readFile(resolvedHistoryPath(historyRelPath, sheltersRoot), 'utf8'),
       missing: false,
     };
   } catch (error) {
@@ -41,8 +40,8 @@ export async function readHistory(slug: string, sheltersRoot: string): Promise<H
   }
 }
 
-export async function writeHistory(slug: string, content: string, sheltersRoot: string): Promise<void> {
-  const filePath = historyPath(slug, sheltersRoot);
+export async function writeHistory(historyRelPath: string, content: string, sheltersRoot: string): Promise<void> {
+  const filePath = resolvedHistoryPath(historyRelPath, sheltersRoot);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, content, 'utf8');
   log.info(`History written: ${filePath}`);

@@ -1,8 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
-import { historyFileName } from '../../../../shared/history-file';
-import { setHistoryContent, saveHistory } from '../../../store/sheltersSlice';
+import { setHistoryContent, saveHistory, setShelterHistoryThunk, loadHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
 
@@ -80,14 +79,16 @@ export default function HistoryTab() {
   const dirty = useSelector((state: RootState) => state.shelters.historyDirty);
   const missing = useSelector((state: RootState) => state.shelters.historyMissing);
   const ref = useRef<HTMLTextAreaElement>(null);
+  const [browsingPath, setBrowsingPath] = useState(false);
 
   if (!s) return null;
 
+  const historyRelPath = s.history ?? `${s.slug}/${s.slug}.md`;
   const wordCount = (value.match(/\S+/g) || []).length;
   const charCount = value.length;
   const lineCount = value.split('\n').length;
-  const fileName = historyFileName(s.slug);
-  const filePath = buildHistoryFileDisplayPath(loadStoredPaths().SHELTERS_ROOT, s.slug);
+  const fileName = historyRelPath.split('/').pop() ?? `${s.slug}.md`;
+  const filePath = buildHistoryFileDisplayPath(loadStoredPaths().SHELTERS_ROOT, historyRelPath);
 
   const onChange = (next: string) => dispatch(setHistoryContent(next));
 
@@ -113,7 +114,7 @@ export default function HistoryTab() {
   };
 
   const handleSave = async () => {
-    const result = await dispatch(saveHistory({ slug: s.slug, content: value }));
+    const result = await dispatch(saveHistory({ historyRelPath, content: value }));
     if (saveHistory.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Saved · ${filePath}` }));
     }
@@ -122,17 +123,38 @@ export default function HistoryTab() {
   const handleCreate = async () => {
     const initial = `# ${s.name}\n`;
     dispatch(setHistoryContent(initial));
-    const result = await dispatch(saveHistory({ slug: s.slug, content: initial }));
+    const result = await dispatch(saveHistory({ historyRelPath, content: initial }));
     if (saveHistory.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Created · ${filePath}` }));
+    }
+  };
+
+  const handleBrowsePath = async () => {
+    if (browsingPath) return;
+    setBrowsingPath(true);
+    try {
+      const selected = await window.api.app.browseForHistoryFile(loadStoredPaths().SHELTERS_ROOT);
+      if (!selected || selected === historyRelPath) return;
+      const result = await dispatch(setShelterHistoryThunk({ id: s.id, history: selected }));
+      if (setShelterHistoryThunk.fulfilled.match(result)) {
+        dispatch(loadHistory(selected));
+        dispatch(showToast({ id: Date.now().toString(), message: `History file updated` }));
+      }
+    } finally {
+      setBrowsingPath(false);
     }
   };
 
   if (missing) {
     return (
       <div className="md-editor" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--text-muted)' }}>
-        <span>History file not found</span>
-        <button className="btn sm primary" onClick={handleCreate}>Create File</button>
+        <span>History file not found: <code>{historyRelPath}</code></span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn sm primary" onClick={handleCreate}>Create File</button>
+          <button className="btn sm" onClick={handleBrowsePath} disabled={browsingPath}>
+            {browsingPath ? 'Opening…' : 'Browse…'}
+          </button>
+        </div>
       </div>
     );
   }
@@ -205,8 +227,17 @@ export default function HistoryTab() {
         <div className="md-pane">
           <div className="md-pane-head">
             <span>Source</span>
-            <span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="filename">{filePath}</span>
+              <button
+                className="btn sm"
+                style={{ fontSize: 10, padding: '1px 5px', opacity: 0.7 }}
+                onClick={handleBrowsePath}
+                disabled={browsingPath}
+                title="Choose a different history file"
+              >
+                {browsingPath ? '…' : 'Browse…'}
+              </button>
               {dirty && <span className="dirty"> ·</span>}
             </span>
           </div>

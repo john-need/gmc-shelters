@@ -24,10 +24,10 @@ export function loadStoredPaths(): StoredPaths {
   }
 }
 
-export function buildHistoryFileDisplayPath(sheltersRoot: string, slug: string): string {
+export function buildHistoryFileDisplayPath(sheltersRoot: string, historyRelPath: string): string {
   const trimmedRoot = sheltersRoot.trim();
   const normalizedRoot = trimmedRoot.replace(/[\\/]+$/, '');
-  const fullPath = `${normalizedRoot}/${slug}/${slug}.md`;
+  const fullPath = `${normalizedRoot}/${historyRelPath}`;
   const parts = fullPath.split(/[\\/]+/).filter(Boolean);
   return parts.slice(-3).join('/');
 }
