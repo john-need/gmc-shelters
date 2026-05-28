@@ -64,3 +64,15 @@ Metadata stored in the SQLite `photos` table. The authoritative source for appli
 
 The explicit user action (button in the right column, formerly labelled "Import from File") that copies editorial field values from the File Layer into the Editorial Layer. The only mechanism for propagating file-level metadata changes into the database. It does not affect camera/exposure tags that have no Editorial Layer counterpart.
 
+## Publish Pre-flight
+
+The phase that begins when the operator clicks "Publish to web" and ends when the Publish Diff modal is ready to show. Consists of two operations run before any Drive upload: (1) building the local manifest via `buildManifest()` into `.publish-tmp/`, and (2) fetching the prior Drive manifest. The pre-flight result is held in main-process memory until the operator confirms or cancels.
+
+## Publish Diff
+
+The categorised comparison between the new local manifest and the prior Drive manifest. Four buckets: **new** (photos in local manifest with no prior Drive entry), **updated** (photos whose `updated` timestamp is newer than the prior manifest entry), **deleted** (photos in the prior manifest whose `fileName` is absent from the new local manifest — i.e. removed from `include_in_post`), and **unchanged** (skipped — no Drive call). The diff also carries the total shelter count and total map marker count from the new local manifest. History files (`.md`) are always uploaded and are not shown as diff items. All operations are unconditional: every photo in each bucket is processed automatically on Publish with no per-item override.
+
+## Publish Diff Modal
+
+The backdrop-locked modal that displays a summary of the Publish Diff before any Drive upload occurs. Shows counts only: N new · N updated · N to delete · N unchanged · N shelters · N map markers. The operator confirms or aborts — there are no per-item checkboxes. Two exit paths: **Cancel** (aborts, cleans up `.publish-tmp/`) and **Publish** (executes all operations unconditionally). Cancel is available throughout — including during an active upload — but Drive files already written before Cancel are left as-is. The modal owns the full publish lifecycle: loading state, summary review, upload progress, and completion or error.
+

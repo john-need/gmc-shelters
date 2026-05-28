@@ -304,4 +304,37 @@ describe('buildManifest', () => {
     expect(marker.slug).toBe('test-shelter');
     expect(marker.defaultPhotoId).toBe(99);
   });
+
+  // T030: contract test — driveFileId is present and nullable on each PhotoEntry
+  it('manifest contract: PhotoEntry has driveFileId (null on first build)', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'photo.jpg', include_in_post: 1 });
+
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'photo.jpg'), 'fake');
+
+    const result = await buildManifest(repoRoot, tmpDir);
+    const photo = result.manifest.shelters[0].photos[0];
+
+    // driveFileId must be present as an own property and must be null before first publish
+    expect(Object.prototype.hasOwnProperty.call(photo, 'driveFileId')).toBe(true);
+    expect(photo.driveFileId).toBeNull();
+  });
+
+  it('manifest contract: required fields are present on ShelterEntry', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter', is_extant: 1 });
+    insertMapMarker(shelterId);
+    const result = await buildManifest(repoRoot, tmpDir);
+    const s = result.manifest.shelters[0];
+
+    expect(s).toHaveProperty('id');
+    expect(s).toHaveProperty('name');
+    expect(s).toHaveProperty('slug');
+    expect(s).toHaveProperty('startYear');
+    expect(s).toHaveProperty('isExtant');
+    expect(s).toHaveProperty('photos');
+    expect(s).toHaveProperty('mapMarkers');
+    expect(result.manifest).toHaveProperty('created');
+  });
 });

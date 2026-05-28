@@ -11,6 +11,7 @@ import { registerMapMarkerHandlers } from './ipc/map-markers';
 import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
 import { registerExportHandlers } from './ipc/export';
+import { registerPublishHandlers } from './ipc/publish';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'shelter', privileges: { secure: true, standard: true, supportFetchAPI: true } },
@@ -150,6 +151,7 @@ if (!app.requestSingleInstanceLock()) {
     registerArchitectureHandlers();
     registerCategoryHandlers();
     registerExportHandlers();
+    registerPublishHandlers();
     createWindow();
   });
 

@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "shelter-manifest",
+  "title": "GMC Shelters Drive Manifest",
+  "description": "shelter-manifest.json uploaded to Google Drive root folder. Downstream consumers (e.g. WordPress plugin) read driveFileId per photo to construct Drive download/share URLs.",
+  "type": "object",
+  "required": ["created", "shelters"],
+  "properties": {
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this manifest was generated"
+    },
+    "shelters": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ShelterEntry" }
+    }
+  },
+  "definitions": {
+    "ShelterEntry": {
+      "type": "object",
+      "required": ["id", "name", "slug", "startYear", "isExtant", "photos", "mapMarkers"],
+      "properties": {
+        "id":            { "type": "integer" },
+        "name":          { "type": "string" },
+        "slug":          { "type": "string" },
+        "startYear":     { "type": "integer" },
+        "endYear":       { "type": ["integer", "null"] },
+        "description":   { "type": "string" },
+        "latitude":      { "type": ["number", "null"] },
+        "longitude":     { "type": ["number", "null"] },
+        "defaultPhotoId":{ "type": ["integer", "null"] },
+        "isGmc":         { "type": "boolean" },
+        "architecture":  { "type": "string" },
+        "builtBy":       { "type": "string" },
+        "notes":         { "type": "string" },
+        "created":       { "type": "string", "format": "date-time" },
+        "updated":       { "type": "string", "format": "date-time" },
+        "isExtant":      { "type": "boolean" },
+        "category":      { "type": "string" },
+        "history":       { "type": ["string", "null"] },
+        "historyFile":   { "type": ["string", "null"] },
+        "historyUpdated":{ "type": ["string", "null"] },
+        "photos":        { "type": "array", "items": { "$ref": "#/definitions/PhotoEntry" } },
+        "mapMarkers":    { "type": "array", "items": { "$ref": "#/definitions/MapMarkerEntry" } }
+      }
+    },
+    "PhotoEntry": {
+      "type": "object",
+      "required": ["id", "fileName", "updated"],
+      "properties": {
+        "id":           { "type": "integer" },
+        "fileName":     {
+          "type": "string",
+          "description": "Relative path: '{slug}/{bareFileName}'. Used as match key across manifests."
+        },
+        "driveFileId":  {
+          "type": ["string", "null"],
+          "description": "Google Drive file ID. Non-null after first successful publish. Preserved across publishes for unchanged photos. Same ID after in-place update."
+        },
+        "photographer": { "type": "string" },
+        "caption":      { "type": "string" },
+        "dateTaken":    { "type": "string" },
+        "notes":        { "type": "string" },
+        "created":      { "type": "string", "format": "date-time" },
+        "updated":      {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp from DB photos.updated. Used to decide whether to re-upload on next publish."
+        },
+        "shelterId":    { "type": "integer" },
+        "altText":      { "type": "string" },
+        "title":        { "type": "string" },
+        "description":  { "type": "string" }
+      }
+    },
+    "MapMarkerEntry": {
+      "type": "object",
+      "required": ["shelterId", "latitude", "longitude", "startYear"],
+      "properties": {
+        "id":           { "type": ["integer", "null"] },
+        "name":         { "type": "string" },
+        "latitude":     { "type": "number" },
+        "longitude":    { "type": "number" },
+        "notes":        { "type": ["string", "null"] },
+        "shelterId":    { "type": "integer" },
+        "startYear":    { "type": "integer" },
+        "endYear":      { "type": ["integer", "null"] },
+        "changeType":   { "type": "string" },
+        "isExtant":     { "type": "boolean" },
+        "slug":         { "type": "string" },
+        "defaultPhotoId":{ "type": ["integer", "null"] }
+      }
+    }
+  }
+}

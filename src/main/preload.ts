@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -70,6 +70,20 @@ const api: ElectronAPI = {
   },
   export: {
     build: () => ipcRenderer.invoke(CHANNELS.EXPORT_BUILD),
+  },
+  publish: {
+    preflight: (input: PublishPreflightInput) => ipcRenderer.invoke(CHANNELS.PUBLISH_PREFLIGHT, input),
+    toWeb: () => ipcRenderer.invoke(CHANNELS.PUBLISH_TO_WEB),
+    cancel: () => ipcRenderer.invoke(CHANNELS.PUBLISH_CANCEL),
+    testConnection: (input: Pick<PublishPreflightInput, 'rootFolderId' | 'scopes'>) =>
+      ipcRenderer.invoke(CHANNELS.PUBLISH_TEST_CONNECTION, input),
+    checkCredentials: () => ipcRenderer.invoke(CHANNELS.PUBLISH_CHECK_CREDENTIALS),
+    importCredentials: () => ipcRenderer.invoke(CHANNELS.PUBLISH_IMPORT_CREDENTIALS),
+    onProgress: (callback: (progress: PublishProgress) => void) => {
+      const handler = (_e: Electron.IpcRendererEvent, p: PublishProgress) => callback(p);
+      ipcRenderer.on(CHANNELS.PUBLISH_PROGRESS, handler);
+      return () => ipcRenderer.removeListener(CHANNELS.PUBLISH_PROGRESS, handler);
+    },
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),

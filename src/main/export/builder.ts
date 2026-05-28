@@ -21,6 +21,7 @@ export interface PhotoEntry {
   id: number;
   photographer: string;
   fileName: string;
+  driveFileId?: string | null;
   caption: string;
   dateTaken: string;
   notes: string;
@@ -86,8 +87,12 @@ export function stripMarkdown(md: string): string {
     .trim();
 }
 
-export async function buildManifest(repoRoot: string, tmpDir: string): Promise<BuildResult> {
+export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRoot = 'shelters/'): Promise<BuildResult> {
   const db = getDb();
+
+  const resolvedSheltersRoot = path.isAbsolute(sheltersRoot)
+    ? sheltersRoot
+    : path.resolve(repoRoot, sheltersRoot);
 
   const shelterRows = db.prepare(`
     SELECT s.id, s.name, s.slug, s.start_year, s.end_year, s.description,
@@ -143,7 +148,7 @@ export async function buildManifest(repoRoot: string, tmpDir: string): Promise<B
   for (const row of shelterRows) {
     const slug = row.slug as string;
     const shelterId = row.id as number;
-    const shelterFilesDir = path.join(repoRoot, 'shelters', slug);
+    const shelterFilesDir = path.join(resolvedSheltersRoot, slug);
     const tmpShelterDir = path.join(tmpDir, slug);
 
     // History file — use DB history column as the relative path reference
@@ -167,18 +172,19 @@ export async function buildManifest(repoRoot: string, tmpDir: string): Promise<B
     const photoEntries: PhotoEntry[] = [];
     for (const p of shelterPhotos) {
       const fileName = p.file_name as string;
-      const photoPath = path.join(shelterFilesDir, fileName);
+      const photoPath = path.join(resolvedSheltersRoot, fileName);
       if (!fs.existsSync(photoPath)) {
         skippedPhotos++;
         continue;
       }
       fs.mkdirSync(tmpShelterDir, { recursive: true });
-      fs.copyFileSync(photoPath, path.join(tmpShelterDir, fileName));
+      fs.copyFileSync(photoPath, path.join(tmpDir, fileName));
       totalPhotos++;
       photoEntries.push({
         id: p.id as number,
         photographer: (p.photographer as string) ?? '',
-        fileName: `${slug}/${fileName}`,
+        fileName,
+        driveFileId: null,
         caption: (p.caption as string) ?? '',
         dateTaken: (p.date_taken as string) ?? '',
         notes: (p.notes as string) ?? '',

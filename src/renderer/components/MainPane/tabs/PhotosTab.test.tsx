@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import sheltersReducer from '../../../store/sheltersSlice';
@@ -61,6 +61,10 @@ beforeEach(() => {
   (window as any).api = {
     app: { getRepoRoot: jest.fn().mockResolvedValue('/repo') },
     photos: {
+      update: jest.fn().mockImplementation((photo: any) => Promise.resolve({
+        file_name: 'test.jpg', created: '2024-01-01', shelter_id: 10,
+        ...photo, updated: '2024-01-01',
+      })),
       reconcileScan: mockReconcileScan,
       reconcileApply: mockReconcileApply,
       readFileMetadata: jest.fn().mockReturnValue(new Promise(() => {})),
@@ -363,6 +367,65 @@ describe('US1 — Metadata icon button', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
     expect((window as any).api.photos.readFileMetadata).toHaveBeenCalledWith('test-shelter', 'shot.jpg', expect.any(String));
+  });
+});
+
+describe('include_in_post quick-toggle checkbox', () => {
+  it('grid: renders unchecked checkbox when include_in_post is false', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: false })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => expect(screen.getByTestId('photo-card-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('photo-card-1')).getByRole('checkbox', { name: /include in post/i });
+    expect(cb).not.toBeChecked();
+  });
+
+  it('grid: renders checked checkbox when include_in_post is true', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: true })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => expect(screen.getByTestId('photo-card-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('photo-card-1')).getByRole('checkbox', { name: /include in post/i });
+    expect(cb).toBeChecked();
+  });
+
+  it('grid: clicking checkbox calls photos.update with toggled include_in_post', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: false })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => expect(screen.getByTestId('photo-card-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('photo-card-1')).getByRole('checkbox', { name: /include in post/i });
+    await act(async () => { fireEvent.click(cb); });
+    expect((window as any).api.photos.update).toHaveBeenCalledWith(
+      expect.objectContaining({ include_in_post: true }),
+    );
+  });
+
+  it('list: renders unchecked checkbox when include_in_post is false', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: false })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    await waitFor(() => expect(screen.getByTestId('list-row-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('list-row-1')).getByRole('checkbox', { name: /include in post/i });
+    expect(cb).not.toBeChecked();
+  });
+
+  it('list: renders checked checkbox when include_in_post is true', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: true })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    await waitFor(() => expect(screen.getByTestId('list-row-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('list-row-1')).getByRole('checkbox', { name: /include in post/i });
+    expect(cb).toBeChecked();
+  });
+
+  it('list: clicking checkbox calls photos.update with toggled include_in_post', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ include_in_post: false })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    await waitFor(() => expect(screen.getByTestId('list-row-1')).toBeInTheDocument());
+    const cb = within(screen.getByTestId('list-row-1')).getByRole('checkbox', { name: /include in post/i });
+    await act(async () => { fireEvent.click(cb); });
+    expect((window as any).api.photos.update).toHaveBeenCalledWith(
+      expect.objectContaining({ include_in_post: true }),
+    );
   });
 });
 

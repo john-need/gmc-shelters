@@ -45,10 +45,11 @@ interface PhotoCardProps {
   isSelected: boolean;
   onClick: () => void;
   onDoubleClick?: () => void;
+  onToggleInclude: (newValue: boolean) => void;
   photoUrl: string;
 }
 
-function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, photoUrl }: PhotoCardProps) {
+function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, onToggleInclude, photoUrl }: PhotoCardProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
@@ -81,14 +82,21 @@ function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, phot
               default
             </span>
           )}
-          {p.include_in_post && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <svg width="8" height="8" viewBox="0 0 8 8">
-                <circle cx="4" cy="4" r="4" fill="var(--rust)"/>
-              </svg>
-              pub
-            </span>
-          )}
+          <label
+            style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: 10 }}
+            onClick={(e) => e.stopPropagation()}
+            title="Include in published post"
+          >
+            <input
+              type="checkbox"
+              checked={!!p.include_in_post}
+              aria-label="Include in post"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => onToggleInclude(e.target.checked)}
+              style={{ cursor: 'pointer', margin: 0 }}
+            />
+            pub
+          </label>
         </div>
       </div>
     </div>
@@ -102,10 +110,11 @@ interface ListRowProps {
   isSelected: boolean;
   onSelect: () => void;
   onDoubleClick?: () => void;
+  onToggleInclude: (newValue: boolean) => void;
   photoUrl: string;
 }
 
-function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, photoUrl }: ListRowProps) {
+function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, onToggleInclude, photoUrl }: ListRowProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
@@ -152,8 +161,18 @@ function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, photo
       <span style={{ color: 'var(--ink-2)', fontSize: 12 }}>{p.photographer || '—'}</span>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-3)' }}>{p.date_taken || '—'}</span>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-4)' }}>#{p.id}</span>
-      <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)' }}>
-        {p.include_in_post ? 'PUB' : '—'}
+      <span
+        style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <input
+          type="checkbox"
+          checked={!!p.include_in_post}
+          aria-label="Include in post"
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => onToggleInclude(e.target.checked)}
+          style={{ cursor: 'pointer', margin: 0 }}
+        />
       </span>
     </div>
   );
@@ -541,6 +560,29 @@ export default function PhotosTab() {
     }
   };
 
+  const handleToggleInclude = (photoId: number, newValue: boolean) => {
+    const photo = photos.find((p) => p.id === photoId);
+    if (!photo) return;
+    dispatch(updatePhotoLocal({ shelterId: s.id, photo: { id: photoId, include_in_post: newValue } }));
+    dispatch(savePhotoMetadata({
+      id: photo.id,
+      shelter_id: photo.shelter_id,
+      sheltersRoot,
+      title: photo.title,
+      photographer: photo.photographer,
+      caption: photo.caption,
+      alt_text: photo.alt_text,
+      description: photo.description,
+      notes: photo.notes,
+      include_in_post: newValue,
+      date_taken: photo.date_taken,
+      updated: new Date().toISOString().slice(0, 10),
+      rotation: 0,
+      flipped: false,
+      crop: null,
+    }));
+  };
+
   const handleReconcileClose = (applied: boolean) => {
     setReconcileOpen(false);
     if (applied) {
@@ -636,6 +678,7 @@ export default function PhotosTab() {
                 isSelected={p.id === selectedId}
                 onClick={() => setSelectedId(p.id)}
                 onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
+                onToggleInclude={(v) => handleToggleInclude(p.id, v)}
                 photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
               />
             ))}
@@ -652,7 +695,7 @@ export default function PhotosTab() {
               borderBottom: '1px solid var(--line)',
             }}>
               <span /><span>Title</span><span>Photographer</span><span>Date</span><span>ID</span>
-              <span style={{ textAlign: 'right' }}>Flags</span>
+              <span style={{ textAlign: 'right' }}>Post</span>
             </div>
             {photos.map((p, i) => (
               <ListRow
@@ -663,6 +706,7 @@ export default function PhotosTab() {
                 isSelected={p.id === selectedId}
                 onSelect={() => setSelectedId(p.id)}
                 onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
+                onToggleInclude={(v) => handleToggleInclude(p.id, v)}
                 photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
               />
             ))}
