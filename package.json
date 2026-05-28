@@ -1,6 +1,6 @@
 {
   "name": "gmc-shelters",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "GMC Shelters desktop application",
   "main": ".vite/build/index.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "make": "electron-forge make",
+    "publish": "electron-forge publish",
     "package": "electron-forge package"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "@mui/material": "^5.16.0",
     "@reduxjs/toolkit": "^2.3.0",
     "archiver": "^5.3.2",
+    "audit": "^0.0.6",
     "better-sqlite3": "^11.3.0",
     "electron-log": "^5.2.0",
     "exiftool-vendored": "^35.20.0",
@@ -37,6 +39,7 @@
     "@electron-forge/maker-dmg": "^7.5.0",
     "@electron-forge/maker-zip": "^7.5.0",
     "@electron-forge/plugin-vite": "^7.5.0",
+    "@electron-forge/publisher-github": "^7.11.2",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@types/archiver": "^5.3.4",
