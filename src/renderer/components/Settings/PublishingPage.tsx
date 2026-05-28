@@ -1,11 +1,5 @@
-import { useState, useMemo } from 'react';
-
-const DEFAULT_PUBLISHING = {
-  ROOT_FOLDER_ID: '',
-  DIST_PATH: '',
-  MANIFEST_NAME: 'shelter-manifest.json',
-  SCOPES: ['https://www.googleapis.com/auth/drive'],
-};
+import { useState, useMemo, useEffect } from 'react';
+import { DEFAULT_PUBLISHING, loadStoredPublishing } from '../../publishSettings';
 
 const SCOPE_PRESETS = [
   { url: 'https://www.googleapis.com/auth/drive', label: 'drive (full)' },
@@ -15,19 +9,14 @@ const SCOPE_PRESETS = [
   { url: 'https://www.googleapis.com/auth/drive.appdata', label: 'drive.appdata' },
 ];
 
-function loadSaved() {
-  try {
-    const stored = localStorage.getItem('gmc.publishing');
-    return stored ? { ...DEFAULT_PUBLISHING, ...JSON.parse(stored) } : { ...DEFAULT_PUBLISHING };
-  } catch {
-    return { ...DEFAULT_PUBLISHING };
-  }
-}
-
 export default function PublishingPage() {
-  const [saved, setSaved] = useState(loadSaved);
+  const [saved, setSaved] = useState(loadStoredPublishing);
   const [draft, setDraft] = useState(saved);
   const [toast, setToast] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [credentials, setCredentials] = useState<{ exists: boolean; path: string } | null>(null);
+  const [importingCredentials, setImportingCredentials] = useState(false);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -37,6 +26,10 @@ export default function PublishingPage() {
   const dirty = useMemo(() => JSON.stringify(saved) !== JSON.stringify(draft), [saved, draft]);
   const set = (key: string, val: unknown) => setDraft((d: typeof DEFAULT_PUBLISHING) => ({ ...d, [key]: val }));
 
+  useEffect(() => {
+    window.api.publish.checkCredentials().then(setCredentials).catch(() => {});
+  }, []);
+
   const save = () => {
     setSaved(draft);
     try { localStorage.setItem('gmc.publishing', JSON.stringify(draft)); } catch {}
@@ -44,6 +37,49 @@ export default function PublishingPage() {
   };
   const revert = () => setDraft(saved);
   const resetAll = () => setDraft({ ...DEFAULT_PUBLISHING });
+
+  const handleImportCredentials = async () => {
+    setImportingCredentials(true);
+    try {
+      const result = await window.api.publish.importCredentials();
+      if (result === null) return; // cancelled
+      setCredentials({ exists: result.ok, path: result.path });
+      if (result.ok) {
+        flash('credentials.json installed');
+        setConnectionStatus(null);
+      } else {
+        flash(`Failed to import: ${result.message ?? 'unknown error'}`);
+      }
+    } catch (err) {
+      flash(err instanceof Error ? err.message : String(err));
+    } finally {
+      setImportingCredentials(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    if (!draft.ROOT_FOLDER_ID) {
+      setConnectionStatus({ ok: false, message: 'ROOT_FOLDER_ID is not configured.' });
+      return;
+    }
+    setTestingConnection(true);
+    setConnectionStatus(null);
+    try {
+      const result = await window.api.publish.testConnection({
+        rootFolderId: draft.ROOT_FOLDER_ID,
+        scopes: draft.SCOPES,
+      });
+      if ('error' in result) {
+        setConnectionStatus({ ok: false, message: String(result.error) });
+      } else {
+        setConnectionStatus(result);
+      }
+    } catch (err) {
+      setConnectionStatus({ ok: false, message: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
 
   type Draft = typeof DEFAULT_PUBLISHING;
   const setScope = (i: number, val: string) =>
@@ -68,18 +104,68 @@ export default function PublishingPage() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={resetAll}>Reset to defaults</button>
-          <button className="btn" onClick={() => flash('Re-authenticating Google Drive…')}>
+          <button className="btn" onClick={handleTestConnection} disabled={testingConnection}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
-            Test connection
+            {testingConnection ? 'Testing…' : 'Test connection'}
           </button>
         </div>
       </div>
+      {connectionStatus && (
+        <div style={{
+          marginTop: 8,
+          padding: '6px 12px',
+          borderRadius: 6,
+          fontSize: 12,
+          fontFamily: 'var(--font-mono)',
+          background: connectionStatus.ok ? 'var(--ok-bg, #d4edda)' : 'var(--err-bg, #f8d7da)',
+          color: connectionStatus.ok ? 'var(--ok, #155724)' : 'var(--err, #721c24)',
+          border: `1px solid ${connectionStatus.ok ? 'var(--ok-border, #c3e6cb)' : 'var(--err-border, #f5c6cb)'}`,
+        }}>
+          {connectionStatus.ok ? '✓' : '✗'} {connectionStatus.message}
+        </div>
+      )}
 
       <div className="settings-body">
+        <div className="settings-card">
+          <h3>credentials.json <em>· OAuth2 key</em></h3>
+          <div className="desc">
+            Download this file from Google Cloud Console → APIs &amp; Services → Credentials (Desktop app type).
+            It is stored in the app data directory and never committed to the repository.
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
+            <button className="btn" onClick={handleImportCredentials} disabled={importingCredentials}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {importingCredentials ? 'Selecting…' : 'Browse for credentials.json'}
+            </button>
+            {credentials !== null && (
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                color: credentials.exists ? 'var(--ok, #155724)' : 'var(--err, #721c24)',
+              }}>
+                {credentials.exists ? '✓ found' : '✗ not found'}
+              </span>
+            )}
+          </div>
+          {credentials !== null && (
+            <div style={{
+              marginTop: 6,
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10.5,
+              color: 'var(--ink-3)',
+              wordBreak: 'break-all',
+            }}>
+              {credentials.path}
+            </div>
+          )}
+        </div>
+
         <div className="settings-card">
           <h3>Google Drive target <em>· where the manifest lives</em></h3>
           <div className="desc">
@@ -108,25 +194,7 @@ export default function PublishingPage() {
                 </code>.
               </span>
             </div>
-            <div className="pub-field col-2">
-              <div className="label-mono">
-                <span>DIST_PATH</span>
-                <span className={`badge ${draft.DIST_PATH ? 'set' : 'empty'}`}>
-                  {draft.DIST_PATH ? 'configured' : 'unset'}
-                </span>
-              </div>
-              <input
-                className="input mono"
-                value={draft.DIST_PATH}
-                onChange={(e) => set('DIST_PATH', e.target.value)}
-                placeholder="dist/  or  build/web/"
-                spellCheck={false}
-              />
-              <span className="help">
-                Local folder produced by the build step. Its contents are uploaded to ROOT_FOLDER_ID.
-              </span>
-            </div>
-            <div className="pub-field col-2">
+<div className="pub-field col-2">
               <div className="label-mono">
                 <span>MANIFEST_NAME</span>
                 <span className="badge">filename</span>

@@ -15,6 +15,8 @@ const noopApi: ElectronAPI = {
   history: { read: noopHistoryRead, write: noop },
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
+  export: { build: noop },
+  publish: { preflight: noop, toWeb: () => Promise.resolve(undefined as never), cancel: noop, testConnection: noop, checkCredentials: noop, importCredentials: noop, onProgress: () => () => {} },
   shell: { openExternal: noop },
   app: {
     getVersion: noop,
