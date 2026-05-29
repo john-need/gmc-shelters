@@ -68,7 +68,7 @@ export default function PublishModal({ phase, diff, onCancel, onPublish, progres
               <div style={{ marginTop: 12 }} />
               <Row label="Shelters" value={diff.shelterCount} />
               <Row label="Map markers" value={diff.markerCount} />
-              {diff.historyFileCount > 0 && <Row label="History files" value={diff.historyFileCount} />}
+              {diff.historyToUploadCount > 0 && <Row label="History files" value={diff.historyToUploadCount} />}
             </div>
           )}
 

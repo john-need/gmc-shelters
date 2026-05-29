@@ -8,7 +8,7 @@ jest.mock('../export/builder');
 jest.mock('./gdrive');
 
 import fs from 'fs';
-import type { ManifestJson, PhotoEntry } from '../export/builder';
+import type { ManifestJson, PhotoEntry, HistoryEntry } from '../export/builder';
 import { GDriveClient } from './gdrive';
 import { runPublish, computeDiff } from './index';
 import type { PreflightState } from './index';
@@ -21,7 +21,11 @@ function makePhoto(fileName: string, updated: string, driveFileId: string | null
   return { id: 1, fileName, updated, driveFileId, photographer: '', caption: '', dateTaken: '', notes: '', created: updated, shelterId: 1, altText: '', title: '', description: '' };
 }
 
-function makeManifest(photos: PhotoEntry[]): ManifestJson {
+function makeHistory(filePath: string, updated: string, driveFileId: string | null = null): HistoryEntry {
+  return { filePath, updated, driveFileId };
+}
+
+function makeManifest(photos: PhotoEntry[], history: HistoryEntry | null = null): ManifestJson {
   return {
     created: '2025-01-01T00:00:00.000Z',
     shelters: [
@@ -29,7 +33,7 @@ function makeManifest(photos: PhotoEntry[]): ManifestJson {
         id: 1, name: 'Test Shelter', slug: 'test-shelter', startYear: 1960, endYear: null,
         description: '', longitude: null, latitude: null, defaultPhotoId: null,
         isGmc: true, architecture: '', builtBy: '', notes: '', created: '', updated: '',
-        isExtant: true, category: '', history: null, historyFile: null, historyUpdated: null,
+        isExtant: true, category: '', history,
         mapMarkers: [], photos,
       },
     ],
@@ -47,13 +51,14 @@ function makeState(
   localManifest: ManifestJson,
   priorPhotoIndex: Map<string, PhotoEntry>,
   client: unknown,
-  opts: { rootFolderFiles?: Map<string, string>; manifestFileId?: string | null } = {},
+  opts: { rootFolderFiles?: Map<string, string>; manifestFileId?: string | null; priorHistoryIndex?: Map<string, HistoryEntry> } = {},
 ): PreflightState {
-  const diff = computeDiff(localManifest, priorPhotoIndex.size > 0 ? { created: '', shelters: [{ id: 0, name: '', slug: '', startYear: 0, endYear: null, description: '', longitude: null, latitude: null, defaultPhotoId: null, isGmc: false, architecture: '', builtBy: '', notes: '', created: '', updated: '', isExtant: true, category: '', history: null, historyFile: null, historyUpdated: null, mapMarkers: [], photos: Array.from(priorPhotoIndex.values()) }] } : null);
+  const diff = computeDiff(localManifest, priorPhotoIndex.size > 0 ? { created: '', shelters: [{ id: 0, name: '', slug: '', startYear: 0, endYear: null, description: '', longitude: null, latitude: null, defaultPhotoId: null, isGmc: false, architecture: '', builtBy: '', notes: '', created: '', updated: '', isExtant: true, category: '', history: null, mapMarkers: [], photos: Array.from(priorPhotoIndex.values()) }] } : null);
   return {
     tmpDir: '/repo/.publish-tmp',
     localManifest,
     priorPhotoIndex,
+    priorHistoryIndex: opts.priorHistoryIndex ?? new Map(),
     client: client as GDriveClient,
     rootFolderFiles: opts.rootFolderFiles ?? new Map(),
     manifestFileId: opts.manifestFileId ?? null,
@@ -203,5 +208,84 @@ describe('runPublish', () => {
 
     await runPublish(state);
     expect(mockClient.deleteFile).toHaveBeenCalledWith('old-drive-id');
+  });
+
+  describe('history file upload decision logic', () => {
+    it('uploads history file and sets driveFileId when no prior entry exists', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const manifest = makeManifest([], history);
+      const state = makeState(manifest, new Map(), mockClient);
+
+      await runPublish(state);
+      const historyUploads = mockClient.uploadFile.mock.calls.filter((c: unknown[]) => c[3] === 'text/markdown');
+      expect(historyUploads).toHaveLength(1);
+      expect(manifest.shelters[0].history!.driveFileId).toBe('new-drive-id');
+    });
+
+    it('calls updateFile for history when prior driveFileId exists and updated is newer', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const manifest = makeManifest([], history);
+      const priorHistory = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z', 'prior-history-id');
+      const state = makeState(manifest, new Map(), mockClient, {
+        priorHistoryIndex: new Map([['test-shelter', priorHistory]]),
+      });
+
+      await runPublish(state);
+      expect(mockClient.updateFile).toHaveBeenCalledWith('prior-history-id', expect.any(String), 'text/markdown');
+      expect(manifest.shelters[0].history!.driveFileId).toBe('prior-history-id');
+    });
+
+    it('skips history upload and carries forward driveFileId when updated is unchanged', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z');
+      const manifest = makeManifest([], history);
+      const priorHistory = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z', 'carried-id');
+      const state = makeState(manifest, new Map(), mockClient, {
+        priorHistoryIndex: new Map([['test-shelter', priorHistory]]),
+      });
+
+      await runPublish(state);
+      const historyCalls = mockClient.uploadFile.mock.calls.filter((c: unknown[]) => c[3] === 'text/markdown');
+      const historyUpdateCalls = mockClient.updateFile.mock.calls.filter((c: unknown[]) => c[2] === 'text/markdown');
+      expect(historyCalls).toHaveLength(0);
+      expect(historyUpdateCalls).toHaveLength(0);
+      expect(manifest.shelters[0].history!.driveFileId).toBe('carried-id');
+    });
+  });
+
+  describe('computeDiff history counts', () => {
+    it('counts history file as toUpload when no prior entry exists', () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const local = makeManifest([], history);
+      const diff = computeDiff(local, null);
+      expect(diff.historyToUploadCount).toBe(1);
+      expect(diff.historyUnchangedCount).toBe(0);
+    });
+
+    it('counts history file as toUpload when updated is newer than prior', () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const local = makeManifest([], history);
+      const priorHistory = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z', 'prior-id');
+      const prior = makeManifest([], priorHistory);
+      const diff = computeDiff(local, prior);
+      expect(diff.historyToUploadCount).toBe(1);
+      expect(diff.historyUnchangedCount).toBe(0);
+    });
+
+    it('counts history file as unchanged when updated matches prior', () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z');
+      const local = makeManifest([], history);
+      const priorHistory = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z', 'prior-id');
+      const prior = makeManifest([], priorHistory);
+      const diff = computeDiff(local, prior);
+      expect(diff.historyToUploadCount).toBe(0);
+      expect(diff.historyUnchangedCount).toBe(1);
+    });
+
+    it('counts zero for history when shelter has no history file', () => {
+      const local = makeManifest([]);
+      const diff = computeDiff(local, null);
+      expect(diff.historyToUploadCount).toBe(0);
+      expect(diff.historyUnchangedCount).toBe(0);
+    });
   });
 });

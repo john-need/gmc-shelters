@@ -38,11 +38,34 @@
         "updated":       { "type": "string", "format": "date-time" },
         "isExtant":      { "type": "boolean" },
         "category":      { "type": "string" },
-        "history":       { "type": ["string", "null"] },
-        "historyFile":   { "type": ["string", "null"] },
-        "historyUpdated":{ "type": ["string", "null"] },
+        "history": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/definitions/HistoryEntry" }
+          ],
+          "description": "Null when no history file exists on disk for this shelter."
+        },
         "photos":        { "type": "array", "items": { "$ref": "#/definitions/PhotoEntry" } },
         "mapMarkers":    { "type": "array", "items": { "$ref": "#/definitions/MapMarkerEntry" } }
+      }
+    },
+    "HistoryEntry": {
+      "type": "object",
+      "required": ["filePath", "updated"],
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "Relative path to the history markdown file, e.g. 'slug/slug.md'."
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Filesystem mtime at manifest-build time. Used to decide whether to re-upload on next publish."
+        },
+        "driveFileId": {
+          "type": ["string", "null"],
+          "description": "Google Drive file ID. Null before first successful publish. Preserved across publishes for unchanged history files."
+        }
       }
     },
     "PhotoEntry": {
