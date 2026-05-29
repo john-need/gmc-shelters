@@ -33,6 +33,12 @@ export interface PhotoEntry {
   description: string;
 }
 
+export interface HistoryEntry {
+  filePath: string;
+  updated: string;
+  driveFileId: string | null;
+}
+
 export interface ShelterEntry {
   id: number;
   name: string;
@@ -51,9 +57,7 @@ export interface ShelterEntry {
   updated: string;
   isExtant: boolean;
   category: string;
-  history: string | null;
-  historyFile: string | null;
-  historyUpdated: string | null;
+  history: HistoryEntry | null;
   mapMarkers: MapMarkerEntry[];
   photos: PhotoEntry[];
 }
@@ -155,12 +159,14 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
     const dbHistory = (row.history as string | null) ?? null;
     const mdFileName = dbHistory ? dbHistory.split('/').pop()! : `${slug}.md`;
     const mdPath = path.join(shelterFilesDir, mdFileName);
-    let historyFile: string | null = null;
-    let historyUpdated: string | null = null;
+    let history: HistoryEntry | null = null;
     try {
       const stat = fs.statSync(mdPath);
-      historyFile = dbHistory ?? `${slug}/${slug}.md`;
-      historyUpdated = stat.mtime.toISOString();
+      history = {
+        filePath: dbHistory ?? `${slug}/${slug}.md`,
+        updated: stat.mtime.toISOString(),
+        driveFileId: null,
+      };
       fs.mkdirSync(tmpShelterDir, { recursive: true });
       fs.copyFileSync(mdPath, path.join(tmpShelterDir, mdFileName));
     } catch {
@@ -235,9 +241,7 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
       updated: (row.updated as string) ?? '',
       isExtant: Boolean(row.is_extant),
       category: (row.category as string) ?? '',
-      history: dbHistory,
-      historyFile,
-      historyUpdated,
+      history,
       mapMarkers: markers,
       photos: photoEntries,
     });

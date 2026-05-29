@@ -4,7 +4,7 @@ import { app } from 'electron';
 import { buildManifest } from '../export/builder';
 import { GDriveClient } from './gdrive';
 import type { PublishPreflightInput, PublishResult, PublishProgress, PublishDiff, PublishDiffItem } from '../../shared/ipc-types';
-import type { PhotoEntry, ManifestJson } from '../export/builder';
+import type { PhotoEntry, HistoryEntry, ManifestJson } from '../export/builder';
 
 const PUBLISH_TMP = '.publish-tmp';
 
@@ -12,6 +12,7 @@ export interface PreflightState {
   tmpDir: string;
   localManifest: ManifestJson;
   priorPhotoIndex: Map<string, PhotoEntry>;
+  priorHistoryIndex: Map<string, HistoryEntry>;
   client: GDriveClient;
   rootFolderFiles: Map<string, string>;
   manifestFileId: string | null;
@@ -65,10 +66,25 @@ export function computeDiff(
     }
   }
 
-  let historyFileCount = 0;
+  const priorHistoryBySlug = new Map<string, HistoryEntry>();
+  if (priorManifest) {
+    for (const shelter of priorManifest.shelters) {
+      if (shelter.history) priorHistoryBySlug.set(shelter.slug, shelter.history);
+    }
+  }
+
+  let historyToUploadCount = 0;
+  let historyUnchangedCount = 0;
   let markerCount = 0;
   for (const shelter of localManifest.shelters) {
-    if (shelter.historyFile) historyFileCount++;
+    if (shelter.history) {
+      const prior = priorHistoryBySlug.get(shelter.slug);
+      if (!prior || shelter.history.updated > prior.updated) {
+        historyToUploadCount++;
+      } else {
+        historyUnchangedCount++;
+      }
+    }
     markerCount += shelter.mapMarkers.length;
   }
 
@@ -79,7 +95,8 @@ export function computeDiff(
     unchangedCount,
     shelterCount: localManifest.shelters.length,
     markerCount,
-    historyFileCount,
+    historyToUploadCount,
+    historyUnchangedCount,
     toUpload,
     toUpdate,
     toDelete,
@@ -116,11 +133,13 @@ export async function runPreflight(
     }
 
     const priorPhotoIndex = new Map<string, PhotoEntry>();
+    const priorHistoryIndex = new Map<string, HistoryEntry>();
     if (priorManifest) {
       for (const shelter of priorManifest.shelters) {
         for (const photo of shelter.photos) {
           priorPhotoIndex.set(photo.fileName, photo);
         }
+        if (shelter.history) priorHistoryIndex.set(shelter.slug, shelter.history);
       }
     }
 
@@ -128,7 +147,7 @@ export async function runPreflight(
 
     return {
       diff,
-      state: { tmpDir, localManifest: buildResult.manifest, priorPhotoIndex, client, rootFolderFiles, manifestFileId, config, diff },
+      state: { tmpDir, localManifest: buildResult.manifest, priorPhotoIndex, priorHistoryIndex, client, rootFolderFiles, manifestFileId, config, diff },
     };
   } catch (err) {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
@@ -215,11 +234,16 @@ export async function runPublish(
       }
     }
 
-    // (3) Upload history files (always, no user control)
+    // (3) Upload history files — skip if unchanged (same updated timestamp as prior)
     for (const shelter of localManifest.shelters) {
       if (isCancelled()) break;
-      if (!shelter.historyFile) continue;
-      const mdFileName = shelter.historyFile.split('/').pop()!;
+      if (!shelter.history) continue;
+      const prior = state.priorHistoryIndex.get(shelter.slug);
+      if (prior && shelter.history.updated <= prior.updated) {
+        shelter.history.driveFileId = prior.driveFileId;
+        continue;
+      }
+      const mdFileName = shelter.history.filePath.split('/').pop()!;
       const localMdPath = path.join(tmpDir, shelter.slug, mdFileName);
       if (!fs.existsSync(localMdPath)) continue;
       try {
@@ -228,12 +252,11 @@ export async function runPublish(
           folderId = await client.createFolder(shelter.slug, config.rootFolderId);
           shelterFolderIds.set(shelter.slug, folderId);
         }
-        const folderFiles = await client.listFolder(folderId);
-        const existingId = folderFiles.get(mdFileName) ?? null;
-        if (existingId) {
-          await client.updateFile(existingId, localMdPath, 'text/markdown');
+        if (prior?.driveFileId) {
+          await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
+          shelter.history.driveFileId = prior.driveFileId;
         } else {
-          await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
+          shelter.history.driveFileId = await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
         }
       } catch { /* non-fatal */ }
     }

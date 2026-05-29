@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,8 +58,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7348" />
-    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+    <option name="cachedIndexableFilesCount" value="4583" />
   </component>
   <component name="Git.Merge.Settings">
     <option name="BRANCH" value="001-shelter-photo-carousel" />
@@ -70,7 +66,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="003-map-markers-tab" />
+        <entry key="$PROJECT_DIR$" value="make" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -136,7 +132,7 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "foo",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Library/Application Support/gmc-shelters",
@@ -176,7 +172,7 @@
       <recent name="$PROJECT_DIR$/shelters/glastenbury-mountain-forestry-cabin" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.make">
+  <component name="RunManager" selected="npm.start">
     <configuration name="All Tests" type="JavaScriptTestRunnerJest" nameIsGenerated="true">
       <node-interpreter value="project" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
@@ -283,6 +279,7 @@
       <workItem from="1777939599643" duration="15017000" />
       <workItem from="1778508680410" duration="13142000" />
       <workItem from="1778599971555" duration="21579000" />
+      <workItem from="1780050016702" duration="3255000" />
     </task>
     <servers />
   </component>

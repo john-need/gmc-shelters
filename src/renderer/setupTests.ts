@@ -60,7 +60,7 @@ const mockApi: ElectronAPI = {
   },
   export: { build: noop },
   publish: {
-    preflight: jest.fn().mockResolvedValue({ toUpload: [], toUpdate: [], toDelete: [], skipCount: 0, historyFileCount: 0 }),
+    preflight: jest.fn().mockResolvedValue({ toUpload: [], toUpdate: [], toDelete: [], skipCount: 0, historyToUploadCount: 0, historyUnchangedCount: 0 }),
     toWeb: jest.fn().mockResolvedValue(null),
     cancel: jest.fn().mockResolvedValue(undefined),
     testConnection: jest.fn().mockResolvedValue(null),

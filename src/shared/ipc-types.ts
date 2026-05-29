@@ -309,7 +309,8 @@ export interface PublishDiff {
   unchangedCount: number;
   shelterCount: number;
   markerCount: number;
-  historyFileCount: number;
+  historyToUploadCount: number;
+  historyUnchangedCount: number;
   toUpload: PublishDiffItem[];
   toUpdate: PublishDiffItem[];
   toDelete: PublishDiffItem[];

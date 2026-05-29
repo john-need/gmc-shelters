@@ -48,6 +48,10 @@ An image associated with exactly one Shelter. A Shelter designates one Photo as 
 
 A freeform Markdown document associated with exactly one Shelter, stored at `{SHELTERS_ROOT}/{slug}/{slug}.md`. It is authored by the user and rendered in the History tab. A Shelter History may be absent (no file on disk), in which case the editor is replaced by a prompt to create it.
 
+## History Entry
+
+The manifest representation of a Shelter History file. Stored as `history` on a `ShelterEntry`; `null` when no history file exists on disk. Shape: `{ filePath: string, updated: string, driveFileId: string | null }`. `filePath` is the relative path used to locate the file (e.g. `slug/slug.md`). `updated` is the filesystem mtime at manifest-build time (ISO 8601). `driveFileId` is null before first publish; set and carried forward across publishes the same way as `PhotoEntry.driveFileId`.
+
 ## Photo Metadata
 
 Attributes associated with a Photo. Metadata exists in two independent layers that are intentionally not kept in sync automatically.
@@ -70,9 +74,9 @@ The phase that begins when the operator clicks "Publish to web" and ends when th
 
 ## Publish Diff
 
-The categorised comparison between the new local manifest and the prior Drive manifest. Four buckets: **new** (photos in local manifest with no prior Drive entry), **updated** (photos whose `updated` timestamp is newer than the prior manifest entry), **deleted** (photos in the prior manifest whose `fileName` is absent from the new local manifest — i.e. removed from `include_in_post`), and **unchanged** (skipped — no Drive call). The diff also carries the total shelter count and total map marker count from the new local manifest. History files (`.md`) are always uploaded and are not shown as diff items. All operations are unconditional: every photo in each bucket is processed automatically on Publish with no per-item override.
+The categorised comparison between the new local manifest and the prior Drive manifest. Four buckets: **new** (photos in local manifest with no prior Drive entry), **updated** (photos whose `updated` timestamp is newer than the prior manifest entry), **deleted** (photos in the prior manifest whose `fileName` is absent from the new local manifest — i.e. removed from `include_in_post`), and **unchanged** (skipped — no Drive call). The diff also carries the total shelter count and total map marker count from the new local manifest. History files (`.md`) are uploaded only when `history.updated` is newer than the prior manifest's `history.updated` (or no prior entry exists); the diff carries `historyToUploadCount` and `historyUnchangedCount` separately. History files are not shown as per-item diff entries. All photo operations are unconditional: every photo in each bucket is processed automatically on Publish with no per-item override.
 
 ## Publish Diff Modal
 
-The backdrop-locked modal that displays a summary of the Publish Diff before any Drive upload occurs. Shows counts only: N new · N updated · N to delete · N unchanged · N shelters · N map markers. The operator confirms or aborts — there are no per-item checkboxes. Two exit paths: **Cancel** (aborts, cleans up `.publish-tmp/`) and **Publish** (executes all operations unconditionally). Cancel is available throughout — including during an active upload — but Drive files already written before Cancel are left as-is. The modal owns the full publish lifecycle: loading state, summary review, upload progress, and completion or error.
+The backdrop-locked modal that displays a summary of the Publish Diff before any Drive upload occurs. Shows counts only: N new · N updated · N to delete · N unchanged · N shelters · N map markers · N history files (when > 0). The operator confirms or aborts — there are no per-item checkboxes. Two exit paths: **Cancel** (aborts, cleans up `.publish-tmp/`) and **Publish** (executes all operations unconditionally). Cancel is available throughout — including during an active upload — but Drive files already written before Cancel are left as-is. The modal owns the full publish lifecycle: loading state, summary review, upload progress, and completion or error.
 

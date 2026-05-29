@@ -19,16 +19,13 @@ const config: ForgeConfig = {
     appBundleId: 'tech.inulabs.gmc-shelters',
     executableName: 'gmc-shelters',
     icon: 'assets/icon',
-    ignore: [
-      /^\/specs\//,
-      /^\/tests\//,
-      /^\/\.specify\//,
-      /^\/\.agents\//,
-      /^\/\.claude\//,
-      /^\/\.junie\//,
-      /^\/database\/migrations\//,
-      /^\/shelters\//,
-    ],
+    ignore: (file) => {
+      if (!file) return false;
+      if (/^\/\.vite($|\/)/.test(file)) return false;
+      if (/^\/node_modules($|\/)/.test(file)) return false;
+      if (file === '/package.json') return false;
+      return true;
+    },
   },
   rebuildConfig: {},
   makers: [
