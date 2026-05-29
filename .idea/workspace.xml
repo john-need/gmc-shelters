@@ -143,6 +143,7 @@
     "nodejs.jest.jest_package": "/Users/johnneed/Projects/gmc-shelters/node_modules/jest",
     "nodejs_package_manager_path": "npm",
     "npm.lint.executor": "Run",
+    "npm.make.executor": "Run",
     "npm.start.executor": "Run",
     "settings.editor.selected.configurable": "ml.llm.AcpAgentsConfigurable",
     "to.speed.mode.migration.done": "true",

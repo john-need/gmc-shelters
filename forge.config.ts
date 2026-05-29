@@ -2,6 +2,19 @@ import type { ForgeConfig } from '@electron-forge/shared-types';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 
 const config: ForgeConfig = {
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'john-need',
+          name: 'gmc-shelters',
+        },
+        prerelease: false,
+        draft: true,
+      },
+    },
+  ],
   packagerConfig: {
     appBundleId: 'tech.inulabs.gmc-shelters',
     executableName: 'gmc-shelters',
