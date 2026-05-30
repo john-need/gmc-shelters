@@ -74,6 +74,7 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
     setPublishProgress(null);
     setModalOpen(true);
 
+    const unsubProgress = window.api.publish.onProgress(setPublishProgress);
     try {
       const result = await window.api.publish.preflight({
         rootFolderId: config.ROOT_FOLDER_ID,
@@ -92,6 +93,8 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : String(err));
       setModalPhase('error');
+    } finally {
+      unsubProgress();
     }
   };
 

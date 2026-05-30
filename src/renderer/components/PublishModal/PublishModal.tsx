@@ -12,6 +12,20 @@ interface Props {
   error: string | null;
 }
 
+function preflightLabel(p: PublishProgress | null): string {
+  if (p?.stage === 'building') return 'Building manifest…';
+  if (p?.stage === 'fetching') return 'Fetching current Drive state…';
+  return 'Computing diff…';
+}
+
+function uploadLabel(p: PublishProgress): string {
+  if (p.stage === 'manifest' || p.itemKind === 'manifest') return 'Writing manifest';
+  const verb = p.action === 'update' ? 'Updating' : 'Uploading';
+  const kind = p.itemKind === 'history' ? 'history' : 'photo';
+  const name = p.fileName ? p.fileName.split('/').pop() : '';
+  return name ? `${verb} ${kind} · ${name}` : `${verb} ${kind}`;
+}
+
 function Row({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid var(--border, #efefef)' }}>
@@ -50,11 +64,12 @@ export default function PublishModal({ phase, diff, onCancel, onPublish, progres
 
           {/* Loading */}
           {phase === 'loading' && (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '20px 0' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3, #aaa)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
                 <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
               </svg>
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              <div style={{ fontSize: 12, color: 'var(--ink-3, #888)' }}>{preflightLabel(progress)}</div>
             </div>
           )}
 
@@ -73,20 +88,24 @@ export default function PublishModal({ phase, diff, onCancel, onPublish, progres
           )}
 
           {/* Publishing */}
-          {phase === 'publishing' && (
+          {phase === 'publishing' && progress && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {progress?.stage === 'uploading' && progress.total > 0 && (
+              {progress.stage === 'deleting' && (
+                <div style={{ fontSize: 12, color: 'var(--ink-3, #888)' }}>
+                  Removing {progress.deleteCount ?? 0} file{(progress.deleteCount ?? 0) === 1 ? '' : 's'} from Drive…
+                </div>
+              )}
+              {(progress.stage === 'uploading' || progress.stage === 'manifest') && progress.total > 0 && (
                 <>
                   <div style={{ height: 4, background: 'var(--border, #e0e0e0)', borderRadius: 2, overflow: 'hidden' }}>
                     <div style={{ height: '100%', background: 'var(--rust, #a04030)', borderRadius: 2, width: `${Math.round((progress.current / progress.total) * 100)}%`, transition: 'width 0.2s' }} />
                   </div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-2, #555)' }}>{uploadLabel(progress)}</div>
                   <div style={{ fontSize: 11, color: 'var(--ink-3, #888)', fontFamily: 'var(--font-mono)' }}>
-                    {progress.current} / {progress.total}{progress.fileName ? ` · ${progress.fileName.split('/').pop()}` : ''}
+                    {progress.current} / {progress.total} uploaded
                   </div>
                 </>
               )}
-              {progress?.stage === 'building' && <div style={{ fontSize: 12, color: 'var(--ink-3, #888)' }}>Building manifest…</div>}
-              {progress?.stage === 'manifest' && <div style={{ fontSize: 12, color: 'var(--ink-3, #888)' }}>Writing manifest…</div>}
             </div>
           )}
 

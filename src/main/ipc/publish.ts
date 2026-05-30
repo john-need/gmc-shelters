@@ -12,7 +12,7 @@ let publishInProgress = false;
 let cancelRequested = false;
 
 export function registerPublishHandlers(): void {
-  ipcMain.handle(CHANNELS.PUBLISH_PREFLIGHT, async (_event, input: PublishPreflightInput) => {
+  ipcMain.handle(CHANNELS.PUBLISH_PREFLIGHT, async (event, input: PublishPreflightInput) => {
     if (preflightState || publishInProgress) return { error: 'ALREADY_RUNNING' };
     if (!input.rootFolderId) return { error: 'CONFIG_INVALID' };
     if (!input.scopes || input.scopes.length === 0) return { error: 'CONFIG_INVALID' };
@@ -21,7 +21,8 @@ export function registerPublishHandlers(): void {
     if (!fs.existsSync(credPath)) return { error: 'NO_CREDENTIALS' };
 
     try {
-      const { diff, state } = await runPreflight(input, app.getAppPath());
+      const onProgress = (p: PublishProgress) => event.sender.send(CHANNELS.PUBLISH_PROGRESS, p);
+      const { diff, state } = await runPreflight(input, app.getAppPath(), onProgress);
       preflightState = state;
       cancelRequested = false;
       return diff;

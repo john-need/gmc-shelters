@@ -320,10 +320,19 @@ export interface PublishToWebInput {
 }
 
 export interface PublishProgress {
-  stage: 'building' | 'uploading' | 'manifest';
+  stage: 'building' | 'fetching' | 'deleting' | 'uploading' | 'manifest';
+  /** Count of upload operations completed so far. Uploads only — excludes unchanged photos and deletes. */
   current: number;
+  /** Total files to upload = new photos + updated photos + changed history files + 1 manifest. */
   total: number;
+  /** What kind of file the current upload is. Absent for non-upload stages (building/deleting). */
+  itemKind?: 'photo' | 'history' | 'manifest';
+  /** Whether the current upload creates a new Drive file or updates an existing one. */
+  action?: 'create' | 'update';
+  /** Basename or relative path of the current file. */
   fileName?: string;
+  /** Number of files being removed from Drive, for the 'deleting' stated message. */
+  deleteCount?: number;
 }
 
 export interface PublishResult {
