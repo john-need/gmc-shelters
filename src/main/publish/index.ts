@@ -118,12 +118,16 @@ export function computeDiff(
 export async function runPreflight(
   config: PublishPreflightInput,
   repoRoot: string,
+  onProgress?: (p: PublishProgress) => void,
 ): Promise<{ diff: PublishDiff; state: PreflightState }> {
   const tmpDir = path.join(repoRoot, PUBLISH_TMP);
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
   await fs.promises.mkdir(tmpDir, { recursive: true });
 
   try {
+    // Pre-flight is not an upload — emit stated stages so the user knows what's
+    // happening during the "Computing diff…" wait.
+    onProgress?.({ stage: 'building', current: 0, total: 0 });
     const buildResult = await buildManifest(repoRoot, tmpDir, config.sheltersRoot);
 
     const userData = app.getPath('userData');
@@ -131,6 +135,7 @@ export async function runPreflight(
     const tokenPath = path.join(userData, 'gmc-gdrive-token.json');
     const client = new GDriveClient(credPath, tokenPath, config.scopes);
 
+    onProgress?.({ stage: 'fetching', current: 0, total: 0 });
     const rootFolderFiles = await client.listFolder(config.rootFolderId);
     const manifestFileId = rootFolderFiles.get('shelter-manifest.json') ?? null;
 
@@ -194,22 +199,36 @@ export async function runPublish(
   const uploadSet = new Set(diff.toUpload.map(i => i.fileName));
   const updateSet = new Set(diff.toUpdate.map(i => i.fileName));
 
-  const totalPhotos = localManifest.shelters.reduce((s, sh) => s + sh.photos.length, 0);
-  const totalOps = totalPhotos + diff.toDelete.length;
-  let opIndex = 0;
+  // The progress bar counts actual uploads only: new + updated photos, changed
+  // history files, and the single manifest write. Unchanged photos and deletes
+  // are not uploads and are excluded from the denominator.
+  const totalUploads = diff.newCount + diff.updatedCount + diff.historyToUploadCount + 1;
+  let uploaded = 0;
 
   try {
-    // (1) Process photos in local manifest
+    // (1) Delete removed photos from Drive first (unconditional). Not an upload —
+    //     surfaced as its own stated phase so the upload bar runs uninterrupted.
+    if (diff.toDelete.length > 0) {
+      onProgress?.({ stage: 'deleting', current: uploaded, total: totalUploads, deleteCount: diff.toDelete.length });
+      for (const item of diff.toDelete) {
+        if (isCancelled()) break;
+        if (item.driveFileId) {
+          try { await client.deleteFile(item.driveFileId); } catch { /* non-fatal */ }
+        }
+      }
+    }
+
+    // (2) Process photos in local manifest
     outer: for (const shelter of localManifest.shelters) {
       for (const photo of shelter.photos) {
         if (isCancelled()) break outer;
-        opIndex++;
-        onProgress?.({ stage: 'uploading', current: opIndex, total: totalOps, fileName: photo.fileName });
 
         const localPath = path.join(tmpDir, photo.fileName);
         const prior = priorPhotoIndex.get(photo.fileName);
 
         if (uploadSet.has(photo.fileName)) {
+          uploaded++;
+          onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'photo', action: 'create', fileName: photo.fileName });
           if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
           try {
             let folderId = shelterFolderIds.get(shelter.slug) ?? null;
@@ -222,6 +241,8 @@ export async function runPublish(
             result.photosUploaded++;
           } catch { result.photosFailed++; }
         } else if (updateSet.has(photo.fileName)) {
+          uploaded++;
+          onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'photo', action: 'update', fileName: photo.fileName });
           if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
           const driveFileId = prior?.driveFileId;
           if (!driveFileId) { result.photosFailed++; continue; }
@@ -244,19 +265,10 @@ export async function runPublish(
             } catch { result.photosFailed++; }
           }
         } else {
-          // Unchanged — carry forward driveFileId
+          // Unchanged — carry forward driveFileId, not counted in the upload bar
           photo.driveFileId = prior?.driveFileId ?? null;
           result.photosSkipped++;
         }
-      }
-    }
-
-    // (2) Delete removed photos from Drive (unconditional)
-    for (const item of diff.toDelete) {
-      if (isCancelled()) break;
-      opIndex++;
-      if (item.driveFileId) {
-        try { await client.deleteFile(item.driveFileId); } catch { /* non-fatal */ }
       }
     }
 
@@ -269,7 +281,11 @@ export async function runPublish(
         shelter.history.driveFileId = prior.driveFileId;
         continue;
       }
+      // Slated for upload (matches diff.historyToUploadCount). Count it before the
+      // existence check so the bar stays aligned with the denominator.
+      uploaded++;
       const mdFileName = shelter.history.filePath.split('/').pop()!;
+      onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'history', action: prior?.driveFileId ? 'update' : 'create', fileName: mdFileName });
       const localMdPath = path.join(tmpDir, shelter.slug, mdFileName);
       if (!fs.existsSync(localMdPath)) continue;
       try {
@@ -304,8 +320,9 @@ export async function runPublish(
     }
 
     if (!isCancelled()) {
-      // (4) Write updated manifest to Drive
-      onProgress?.({ stage: 'manifest', current: totalOps, total: totalOps });
+      // (4) Write updated manifest to Drive. Final upload — pin current to total
+      //     so the bar reads 100% even if a slated file was missing locally.
+      onProgress?.({ stage: 'manifest', current: totalUploads, total: totalUploads, itemKind: 'manifest' });
       const updatedManifestPath = path.join(tmpDir, manifestName);
       fs.writeFileSync(updatedManifestPath, JSON.stringify(localManifest, null, 2));
       try {

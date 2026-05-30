@@ -10,9 +10,10 @@ jest.mock('./gdrive');
 import fs from 'fs';
 import type { ManifestJson, PhotoEntry, HistoryEntry } from '../export/builder';
 import { GDriveClient } from './gdrive';
-import { runPublish, computeDiff } from './index';
+import { buildManifest } from '../export/builder';
+import { runPublish, runPreflight, computeDiff } from './index';
 import type { PreflightState } from './index';
-import type { PublishPreflightInput } from '../../shared/ipc-types';
+import type { PublishPreflightInput, PublishProgress } from '../../shared/ipc-types';
 
 const MockGDriveClient = GDriveClient as jest.MockedClass<typeof GDriveClient>;
 const mockFs = fs as jest.Mocked<typeof fs>;
@@ -337,6 +338,86 @@ describe('runPublish', () => {
       const diff = computeDiff(local, prior as ManifestJson);
       expect(diff.historyToUploadCount).toBe(1);
       expect(diff.historyUnchangedCount).toBe(0);
+    });
+  });
+
+  describe('preflight progress', () => {
+    it('emits building then fetching stages before returning the diff', async () => {
+      (buildManifest as jest.MockedFunction<typeof buildManifest>).mockResolvedValue({ manifest: makeManifest([]) } as unknown as Awaited<ReturnType<typeof buildManifest>>);
+      mockClient.listFolder.mockResolvedValue(new Map());
+      mockClient.downloadJson.mockResolvedValue(null);
+
+      const events: PublishProgress[] = [];
+      await runPreflight(CONFIG, '/repo', (p) => events.push(p));
+
+      expect(events.map((e) => e.stage)).toEqual(['building', 'fetching']);
+    });
+  });
+
+  describe('progress reporting', () => {
+    it('counts only actual uploads (new + updated photos + manifest) in total, excluding unchanged and deletes', async () => {
+      const photos = [
+        makePhoto('test-shelter/new.jpg', '2025-06-01T00:00:00Z', null),
+        makePhoto('test-shelter/upd.jpg', '2025-06-01T00:00:00Z', 'upd-id'),
+        makePhoto('test-shelter/same.jpg', '2025-01-01T00:00:00Z', 'same-id'),
+      ];
+      const manifest = makeManifest(photos);
+      const priorIndex = new Map([
+        ['test-shelter/upd.jpg', makePhoto('test-shelter/upd.jpg', '2025-01-01T00:00:00Z', 'upd-id')],
+        ['test-shelter/same.jpg', makePhoto('test-shelter/same.jpg', '2025-01-01T00:00:00Z', 'same-id')],
+        ['test-shelter/gone.jpg', makePhoto('test-shelter/gone.jpg', '2025-01-01T00:00:00Z', 'gone-id')],
+      ]);
+      const state = makeState(manifest, priorIndex, mockClient, { manifestFileId: 'manifest-id' });
+
+      const events: PublishProgress[] = [];
+      await runPublish(state, (p) => events.push(p));
+
+      // total = 1 new + 1 updated + 0 history + 1 manifest = 3, on every event
+      expect(events.every((e) => e.total === 3)).toBe(true);
+      // the final upload tick reaches the total
+      expect(events[events.length - 1]).toMatchObject({ stage: 'manifest', current: 3, total: 3 });
+    });
+
+    it('emits a deleting stage with deleteCount before any upload progress', async () => {
+      const manifest = makeManifest([makePhoto('test-shelter/new.jpg', '2025-06-01T00:00:00Z', null)]);
+      const priorIndex = new Map([['test-shelter/gone.jpg', makePhoto('test-shelter/gone.jpg', '2025-01-01T00:00:00Z', 'gone-id')]]);
+      const state = makeState(manifest, priorIndex, mockClient, { manifestFileId: 'manifest-id' });
+
+      const events: PublishProgress[] = [];
+      await runPublish(state, (p) => events.push(p));
+
+      const deleteIdx = events.findIndex((e) => e.stage === 'deleting');
+      const firstUploadIdx = events.findIndex((e) => e.stage === 'uploading');
+      expect(deleteIdx).toBeGreaterThanOrEqual(0);
+      expect(events[deleteIdx].deleteCount).toBe(1);
+      expect(deleteIdx).toBeLessThan(firstUploadIdx);
+    });
+
+    it('does not emit upload progress for unchanged photos', async () => {
+      const manifest = makeManifest([makePhoto('test-shelter/same.jpg', '2025-01-01T00:00:00Z', 'same-id')]);
+      const priorIndex = new Map([['test-shelter/same.jpg', makePhoto('test-shelter/same.jpg', '2025-01-01T00:00:00Z', 'same-id')]]);
+      const state = makeState(manifest, priorIndex, mockClient, { manifestFileId: 'manifest-id' });
+
+      const events: PublishProgress[] = [];
+      await runPublish(state, (p) => events.push(p));
+
+      expect(events.some((e) => e.fileName === 'test-shelter/same.jpg')).toBe(false);
+      const photoUploads = events.filter((e) => e.stage === 'uploading' && e.itemKind === 'photo');
+      expect(photoUploads).toHaveLength(0);
+    });
+
+    it('tags photo and history uploads with itemKind and action', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const manifest = makeManifest([makePhoto('test-shelter/new.jpg', '2025-06-01T00:00:00Z', null)], history);
+      const state = makeState(manifest, new Map(), mockClient, { manifestFileId: 'manifest-id' });
+
+      const events: PublishProgress[] = [];
+      await runPublish(state, (p) => events.push(p));
+
+      expect(events).toContainEqual(expect.objectContaining({ stage: 'uploading', itemKind: 'photo', action: 'create', fileName: 'test-shelter/new.jpg' }));
+      expect(events).toContainEqual(expect.objectContaining({ stage: 'uploading', itemKind: 'history', action: 'create', fileName: 'test-shelter.md' }));
+      // total = 1 photo + 1 history + 1 manifest = 3
+      expect(events.every((e) => e.total === 3)).toBe(true);
     });
   });
 
