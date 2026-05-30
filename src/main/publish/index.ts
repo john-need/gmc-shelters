@@ -8,6 +8,16 @@ import type { PhotoEntry, HistoryEntry, ManifestJson } from '../export/builder';
 
 const PUBLISH_TMP = '.publish-tmp';
 
+// A stored driveFileId can go stale when a file is deleted/trashed on Drive
+// out-of-band. Drive then returns a 404 "File not found: <id>." on get/update.
+// We detect that so callers can re-create the file instead of failing.
+function isNotFoundError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { code?: number | string; status?: number; message?: string };
+  if (e.code === 404 || e.code === '404' || e.status === 404) return true;
+  return typeof e.message === 'string' && /not found/i.test(e.message);
+}
+
 export interface PreflightState {
   tmpDir: string;
   localManifest: ManifestJson;
@@ -219,7 +229,20 @@ export async function runPublish(
             await client.updateFile(driveFileId, localPath, 'image/jpeg');
             photo.driveFileId = driveFileId;
             result.photosUpdated++;
-          } catch { result.photosFailed++; }
+          } catch (err) {
+            if (!isNotFoundError(err)) { result.photosFailed++; continue; }
+            // Drive file was removed out-of-band — re-upload as new.
+            try {
+              let folderId = shelterFolderIds.get(shelter.slug) ?? null;
+              if (!folderId) {
+                folderId = await client.createFolder(shelter.slug, config.rootFolderId);
+                shelterFolderIds.set(shelter.slug, folderId);
+              }
+              const bareFileName = photo.fileName.split('/').slice(1).join('/');
+              photo.driveFileId = await client.uploadFile(localPath, bareFileName, folderId, 'image/jpeg');
+              result.photosUploaded++;
+            } catch { result.photosFailed++; }
+          }
         } else {
           // Unchanged — carry forward driveFileId
           photo.driveFileId = prior?.driveFileId ?? null;
@@ -255,11 +278,19 @@ export async function runPublish(
           folderId = await client.createFolder(shelter.slug, config.rootFolderId);
           shelterFolderIds.set(shelter.slug, folderId);
         }
+        let updatedTracked = false;
         if (prior?.driveFileId) {
-          await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
-          shelter.history.driveFileId = prior.driveFileId;
-        } else {
-          // No tracked driveFileId — check Drive for an existing file (schema migration or first upload)
+          try {
+            await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
+            shelter.history.driveFileId = prior.driveFileId;
+            updatedTracked = true;
+          } catch (err) {
+            // Tracked file is gone on Drive — fall through to existing-or-upload.
+            if (!isNotFoundError(err)) throw err;
+          }
+        }
+        if (!updatedTracked) {
+          // No usable tracked driveFileId — check Drive for an existing file (schema migration, first upload, or stale id)
           const folderFiles = await client.listFolder(folderId);
           const existingId = folderFiles.get(mdFileName) ?? null;
           if (existingId) {
@@ -279,7 +310,13 @@ export async function runPublish(
       fs.writeFileSync(updatedManifestPath, JSON.stringify(localManifest, null, 2));
       try {
         if (state.manifestFileId) {
-          await client.updateFile(state.manifestFileId, updatedManifestPath, 'application/json');
+          try {
+            await client.updateFile(state.manifestFileId, updatedManifestPath, 'application/json');
+          } catch (err) {
+            // Tracked manifest file is gone on Drive — re-create it instead of failing.
+            if (!isNotFoundError(err)) throw err;
+            await client.uploadFile(updatedManifestPath, manifestName, config.rootFolderId, 'application/json');
+          }
         } else {
           await client.uploadFile(updatedManifestPath, manifestName, config.rootFolderId, 'application/json');
         }

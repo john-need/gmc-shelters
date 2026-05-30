@@ -7,18 +7,9 @@
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/export/builder.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/export/builder.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/publish.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/publish.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/publish/index.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/publish/index.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/publish/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/publish/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Settings/PublishingPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Settings/PublishingPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/publishSettings.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/publishSettings.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/photosSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/photosSlice.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +138,7 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "fix/publish-manifest-and-tests",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Library/Application Support/gmc-shelters",

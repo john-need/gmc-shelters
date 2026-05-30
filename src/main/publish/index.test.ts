@@ -119,6 +119,25 @@ describe('runPublish', () => {
       expect(result.photosUpdated).toBe(1);
     });
 
+    it('re-uploads a selected-update photo when its tracked Drive file is gone (404)', async () => {
+      const photo = makePhoto('test-shelter/photo.jpg', '2025-06-01T00:00:00Z', 'existing-id');
+      const manifest = makeManifest([photo]);
+      const priorPhoto = makePhoto('test-shelter/photo.jpg', '2025-01-01T00:00:00Z', 'existing-id');
+      const priorIndex = new Map([['test-shelter/photo.jpg', priorPhoto]]);
+      const state = makeState(manifest, priorIndex, mockClient, { manifestFileId: 'manifest-id' });
+      // First updateFile is the photo update — make it 404; manifest update (2nd call) still resolves.
+      mockClient.updateFile.mockRejectedValueOnce(
+        Object.assign(new Error('File not found: existing-id.'), { code: 404 }),
+      );
+
+      const result = await runPublish(state);
+      const photoUploads = mockClient.uploadFile.mock.calls.filter((c: unknown[]) => c[3] === 'image/jpeg');
+      expect(photoUploads).toHaveLength(1);
+      expect(result.photosUploaded).toBe(1);
+      expect(result.photosFailed).toBe(0);
+      expect(photo.driveFileId).toBe('new-drive-id');
+    });
+
     it('calls uploadFile for a selected-upload photo', async () => {
       const photo = makePhoto('test-shelter/photo.jpg', '2025-06-01T00:00:00Z', null);
       const manifest = makeManifest([photo]);
@@ -186,6 +205,29 @@ describe('runPublish', () => {
         expect.any(String), 'shelter-manifest.json', 'root-folder-id', 'application/json',
       );
       expect(result.manifestWritten).toBe(true);
+    });
+
+    it('re-uploads the manifest when the tracked manifest file is gone on Drive (404)', async () => {
+      const state = makeState(makeManifest([]), new Map(), mockClient, { manifestFileId: 'stale-manifest-id' });
+      mockClient.updateFile.mockRejectedValueOnce(
+        Object.assign(new Error('File not found: stale-manifest-id.'), { code: 404 }),
+      );
+
+      const result = await runPublish(state);
+      expect(mockClient.uploadFile).toHaveBeenCalledWith(
+        expect.any(String), 'shelter-manifest.json', 'root-folder-id', 'application/json',
+      );
+      expect(result.manifestWritten).toBe(true);
+      expect(result.manifestError).toBeUndefined();
+    });
+
+    it('records manifestError when the manifest update fails for a non-404 reason', async () => {
+      const state = makeState(makeManifest([]), new Map(), mockClient, { manifestFileId: 'manifest-id' });
+      mockClient.updateFile.mockRejectedValueOnce(new Error('quota exceeded'));
+
+      const result = await runPublish(state);
+      expect(result.manifestWritten).toBe(false);
+      expect(result.manifestError).toBe('quota exceeded');
     });
   });
 
