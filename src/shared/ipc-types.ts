@@ -289,7 +289,6 @@ export interface ExportResult {
 
 export interface PublishPreflightInput {
   rootFolderId: string;
-  manifestName: string;
   scopes: string[];
   sheltersRoot: string;
 }

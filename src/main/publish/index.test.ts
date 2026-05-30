@@ -42,7 +42,6 @@ function makeManifest(photos: PhotoEntry[], history: HistoryEntry | null = null)
 
 const CONFIG: PublishPreflightInput = {
   rootFolderId: 'root-folder-id',
-  manifestName: 'shelter-manifest.json',
   scopes: ['https://www.googleapis.com/auth/drive'],
   sheltersRoot: 'shelters/',
 };
@@ -286,6 +285,44 @@ describe('runPublish', () => {
       const diff = computeDiff(local, null);
       expect(diff.historyToUploadCount).toBe(0);
       expect(diff.historyUnchangedCount).toBe(0);
+    });
+
+    it('counts history file as toUpload when prior history is old-schema string (migration)', () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-01-01T00:00:00Z');
+      const local = makeManifest([], history);
+      // Simulate pre-refactor manifest where history was a plain string
+      const prior = { created: '', shelters: [{ ...local.shelters[0], history: 'test-shelter/test-shelter.md' as unknown as ReturnType<typeof makeHistory> }] };
+      const diff = computeDiff(local, prior as ManifestJson);
+      expect(diff.historyToUploadCount).toBe(1);
+      expect(diff.historyUnchangedCount).toBe(0);
+    });
+  });
+
+  describe('schema migration: old-schema history string in prior manifest', () => {
+    it('uses listFolder to find existing Drive file and calls updateFile instead of creating duplicate', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const manifest = makeManifest([], history);
+      // priorHistoryIndex is empty — simulating that the old string value was filtered out
+      const state = makeState(manifest, new Map(), mockClient);
+      mockClient.listFolder.mockResolvedValue(new Map([['test-shelter.md', 'old-drive-history-id']]));
+
+      await runPublish(state);
+      expect(mockClient.updateFile).toHaveBeenCalledWith('old-drive-history-id', expect.any(String), 'text/markdown');
+      expect(manifest.shelters[0].history!.driveFileId).toBe('old-drive-history-id');
+      const historyUploads = mockClient.uploadFile.mock.calls.filter((c: unknown[]) => c[3] === 'text/markdown');
+      expect(historyUploads).toHaveLength(0);
+    });
+
+    it('calls uploadFile when no existing Drive file found during migration', async () => {
+      const history = makeHistory('test-shelter/test-shelter.md', '2025-06-01T00:00:00Z');
+      const manifest = makeManifest([], history);
+      const state = makeState(manifest, new Map(), mockClient);
+      mockClient.listFolder.mockResolvedValue(new Map());
+
+      await runPublish(state);
+      const historyUploads = mockClient.uploadFile.mock.calls.filter((c: unknown[]) => c[3] === 'text/markdown');
+      expect(historyUploads).toHaveLength(1);
+      expect(manifest.shelters[0].history!.driveFileId).toBe('new-drive-id');
     });
   });
 });

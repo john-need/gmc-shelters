@@ -5,17 +5,17 @@ jest.mock('../publish/gdrive');
 import { ipcMain, app } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
 import { registerPublishHandlers } from './publish';
-import { runPublish } from '../publish/index';
+import { runPreflight, runPublish } from '../publish/index';
 import { GDriveClient } from '../publish/gdrive';
 
 const mockIpcMain = ipcMain as jest.Mocked<typeof ipcMain>;
+const mockRunPreflight = runPreflight as jest.Mock;
 const mockRunPublish = runPublish as jest.Mock;
 const MockGDriveClient = GDriveClient as jest.MockedClass<typeof GDriveClient>;
 const mockApp = app as jest.Mocked<typeof app>;
 
 const validInput = {
   rootFolderId: 'folder-id',
-  manifestName: 'shelter-manifest.json',
   scopes: ['https://www.googleapis.com/auth/drive'],
 };
 
@@ -34,7 +34,66 @@ describe('registerPublishHandlers', () => {
     mockApp.getAppPath.mockReturnValue('/repo');
   });
 
-  // ----- US1: PUBLISH_TO_WEB -----
+  // ----- PUBLISH_PREFLIGHT: validation + state setup -----
+  // Config/credential validation lives here (phase 1). PUBLISH_TO_WEB (phase 2)
+  // only runs once a preflight has stored state.
+
+  describe('PUBLISH_PREFLIGHT', () => {
+    it('returns CONFIG_INVALID when rootFolderId is blank', async () => {
+      registerPublishHandlers();
+      const handler = getHandler(CHANNELS.PUBLISH_PREFLIGHT);
+      const result = await handler(fakeEvent, { ...validInput, rootFolderId: '' });
+      expect(result).toEqual({ error: 'CONFIG_INVALID' });
+      expect(mockRunPreflight).not.toHaveBeenCalled();
+    });
+
+    it('returns CONFIG_INVALID when scopes array is empty', async () => {
+      registerPublishHandlers();
+      const handler = getHandler(CHANNELS.PUBLISH_PREFLIGHT);
+      const result = await handler(fakeEvent, { ...validInput, scopes: [] });
+      expect(result).toEqual({ error: 'CONFIG_INVALID' });
+    });
+
+    it('returns NO_CREDENTIALS when credentials file is missing', async () => {
+      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
+      registerPublishHandlers();
+      const handler = getHandler(CHANNELS.PUBLISH_PREFLIGHT);
+      const result = await handler(fakeEvent, validInput);
+      expect(result).toEqual({ error: 'NO_CREDENTIALS' });
+      expect(mockRunPreflight).not.toHaveBeenCalled();
+      mockFsExists.mockRestore();
+    });
+
+    it('returns the diff and stores preflight state on success', async () => {
+      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const diff = { newCount: 3, updatedCount: 0, deleteCount: 0, unchangedCount: 0 };
+      mockRunPreflight.mockResolvedValue({ diff, state: { tmpDir: '/tmp/x' } });
+
+      registerPublishHandlers();
+      const result = await getHandler(CHANNELS.PUBLISH_PREFLIGHT)(fakeEvent, validInput);
+      expect(result).toEqual(diff);
+
+      // clear module-level preflight state for subsequent tests
+      await getHandler(CHANNELS.PUBLISH_CANCEL)(fakeEvent);
+      mockFsExists.mockRestore();
+    });
+
+    it('returns ALREADY_RUNNING when a preflight has already produced state', async () => {
+      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
+
+      registerPublishHandlers();
+      const handler = getHandler(CHANNELS.PUBLISH_PREFLIGHT);
+      await handler(fakeEvent, validInput); // first preflight stores state
+      const result = await handler(fakeEvent, validInput); // second is blocked
+      expect(result).toEqual({ error: 'ALREADY_RUNNING' });
+
+      await getHandler(CHANNELS.PUBLISH_CANCEL)(fakeEvent);
+      mockFsExists.mockRestore();
+    });
+  });
+
+  // ----- PUBLISH_TO_WEB: requires prior preflight, then publishes -----
 
   describe('PUBLISH_TO_WEB', () => {
     it('registers ipcMain.handle for PUBLISH_TO_WEB channel', () => {
@@ -42,77 +101,44 @@ describe('registerPublishHandlers', () => {
       expect(mockIpcMain.handle).toHaveBeenCalledWith(CHANNELS.PUBLISH_TO_WEB, expect.any(Function));
     });
 
-    it('returns ALREADY_RUNNING error when a publish is already in progress', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
-
-      // Use a controllable promise so we can resolve it at the end to reset isPublishing
-      let resolveFirst!: (val: unknown) => void;
-      mockRunPublish.mockReturnValue(new Promise(resolve => { resolveFirst = resolve; }));
-
+    it('returns NO_PREFLIGHT when no preflight has run', async () => {
       registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-
-      // Start first publish (don't await — it's in-progress)
-      const firstCall = handler(fakeEvent, validInput);
-
-      // Second invocation should return ALREADY_RUNNING immediately
-      const result = await handler(fakeEvent, validInput);
-      expect(result).toEqual({ error: 'ALREADY_RUNNING' });
-
-      // Resolve the first to reset isPublishing for subsequent tests
-      resolveFirst({ shelterCount: 0, photosUploaded: 0, photosUpdated: 0, photosSkipped: 0, photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 0, manifestWritten: false });
-      await firstCall;
-      mockFsExists.mockRestore();
-    });
-
-    it('returns CONFIG_INVALID when rootFolderId is blank', async () => {
-      registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-      const result = await handler(fakeEvent, { ...validInput, rootFolderId: '' });
-      expect(result).toEqual({ error: 'CONFIG_INVALID' });
+      const result = await getHandler(CHANNELS.PUBLISH_TO_WEB)(fakeEvent);
+      expect(result).toEqual({ error: 'NO_PREFLIGHT' });
       expect(mockRunPublish).not.toHaveBeenCalled();
     });
 
-    it('returns CONFIG_INVALID when scopes array is empty', async () => {
-      registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-      const result = await handler(fakeEvent, { ...validInput, scopes: [] });
-      expect(result).toEqual({ error: 'CONFIG_INVALID' });
-    });
-
-    it('returns NO_CREDENTIALS when credentials file is missing', async () => {
-      // Mock fs to simulate missing credentials file
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
-      registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-      const result = await handler(fakeEvent, validInput);
-      expect(result).toEqual({ error: 'NO_CREDENTIALS' });
-      expect(mockRunPublish).not.toHaveBeenCalled();
-      mockFsExists.mockRestore();
-    });
-
-    it('defaults manifestName to shelter-manifest.json when blank', async () => {
+    it('returns a PublishResult on success after preflight', async () => {
       const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
-      mockRunPublish.mockResolvedValue({ shelterCount: 1, photosUploaded: 0, photosUpdated: 0, photosSkipped: 0, photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 0, manifestWritten: true });
-
-      registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-      const result = await handler(fakeEvent, { ...validInput, manifestName: '' });
-      expect(result).not.toHaveProperty('error');
-      const callArgs = mockRunPublish.mock.calls[0][0];
-      expect(callArgs.manifestName).toBe('shelter-manifest.json');
-      mockFsExists.mockRestore();
-    });
-
-    it('returns a PublishResult on success', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
       const expectedResult = { shelterCount: 5, photosUploaded: 10, photosUpdated: 2, photosSkipped: 3, photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 1, manifestWritten: true };
       mockRunPublish.mockResolvedValue(expectedResult);
 
       registerPublishHandlers();
-      const handler = getHandler(CHANNELS.PUBLISH_TO_WEB);
-      const result = await handler(fakeEvent, validInput);
+      await getHandler(CHANNELS.PUBLISH_PREFLIGHT)(fakeEvent, validInput); // store state
+      const result = await getHandler(CHANNELS.PUBLISH_TO_WEB)(fakeEvent);
       expect(result).toEqual(expectedResult);
+      mockFsExists.mockRestore();
+    });
+
+    it('returns ALREADY_RUNNING when a publish is already in progress', async () => {
+      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
+
+      // controllable promise so the first publish stays in-progress
+      let resolveFirst!: (val: unknown) => void;
+      mockRunPublish.mockReturnValue(new Promise(resolve => { resolveFirst = resolve; }));
+
+      registerPublishHandlers();
+      await getHandler(CHANNELS.PUBLISH_PREFLIGHT)(fakeEvent, validInput); // store state
+      const toWeb = getHandler(CHANNELS.PUBLISH_TO_WEB);
+
+      const firstCall = toWeb(fakeEvent); // in-progress (not awaited)
+      const result = await toWeb(fakeEvent); // blocked
+      expect(result).toEqual({ error: 'ALREADY_RUNNING' });
+
+      resolveFirst({ shelterCount: 0, photosUploaded: 0, photosUpdated: 0, photosSkipped: 0, photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 0, manifestWritten: false });
+      await firstCall;
       mockFsExists.mockRestore();
     });
   });

@@ -69,7 +69,9 @@ export function computeDiff(
   const priorHistoryBySlug = new Map<string, HistoryEntry>();
   if (priorManifest) {
     for (const shelter of priorManifest.shelters) {
-      if (shelter.history) priorHistoryBySlug.set(shelter.slug, shelter.history);
+      if (shelter.history && typeof shelter.history === 'object') {
+        priorHistoryBySlug.set(shelter.slug, shelter.history);
+      }
     }
   }
 
@@ -120,8 +122,7 @@ export async function runPreflight(
     const client = new GDriveClient(credPath, tokenPath, config.scopes);
 
     const rootFolderFiles = await client.listFolder(config.rootFolderId);
-    const manifestName = config.manifestName || 'shelter-manifest.json';
-    const manifestFileId = rootFolderFiles.get(manifestName) ?? null;
+    const manifestFileId = rootFolderFiles.get('shelter-manifest.json') ?? null;
 
     let priorManifest: ManifestJson | null = null;
     if (manifestFileId) {
@@ -139,7 +140,9 @@ export async function runPreflight(
         for (const photo of shelter.photos) {
           priorPhotoIndex.set(photo.fileName, photo);
         }
-        if (shelter.history) priorHistoryIndex.set(shelter.slug, shelter.history);
+        if (shelter.history && typeof shelter.history === 'object') {
+          priorHistoryIndex.set(shelter.slug, shelter.history);
+        }
       }
     }
 
@@ -161,7 +164,7 @@ export async function runPublish(
   isCancelled: () => boolean = () => false,
 ): Promise<PublishResult> {
   const { tmpDir, localManifest, priorPhotoIndex, client, config } = state;
-  const manifestName = config.manifestName || 'shelter-manifest.json';
+  const manifestName = 'shelter-manifest.json';
   const diff = state.diff;
 
   const result: PublishResult = {
@@ -256,7 +259,15 @@ export async function runPublish(
           await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
           shelter.history.driveFileId = prior.driveFileId;
         } else {
-          shelter.history.driveFileId = await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
+          // No tracked driveFileId — check Drive for an existing file (schema migration or first upload)
+          const folderFiles = await client.listFolder(folderId);
+          const existingId = folderFiles.get(mdFileName) ?? null;
+          if (existingId) {
+            await client.updateFile(existingId, localMdPath, 'text/markdown');
+            shelter.history.driveFileId = existingId;
+          } else {
+            shelter.history.driveFileId = await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
+          }
         }
       } catch { /* non-fatal */ }
     }

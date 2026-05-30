@@ -168,7 +168,7 @@ describe('fs/photos', () => {
   describe('ensureShelterDir', () => {
     it('creates shelter dir and photos subdir', async () => {
       (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
-      await ensureShelterDir('my-shelter');
+      await ensureShelterDir('my-shelter', 'shelters');
       expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-shelter', { recursive: true });
       expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-shelter/photos', { recursive: true });
     });
@@ -319,7 +319,7 @@ describe('transformPhoto', () => {
     expect(sharp).toHaveBeenCalledWith('/path/to/img.jpg');
     expect(mockSharp.rotate).toHaveBeenCalledWith(90);
     expect(mockSharp.flop).toHaveBeenCalled();
-    expect(mockSharp.extract).toHaveBeenCalledWith(transform.crop);
+    expect(mockSharp.extract).toHaveBeenCalledWith({ left: 10, top: 10, width: 100, height: 100 });
     expect(fsp.writeFile).toHaveBeenCalledWith('/path/to/img.jpg', expect.any(Buffer));
   });
 

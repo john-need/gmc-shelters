@@ -131,19 +131,18 @@ describe('ShelterTab', () => {
     // fileName = default view.jpg
     // finalUrl = shelter:///tmp/repo%20root/shelters/default%20view.jpg
     expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/default%20view.jpg');
-    expect(screen.getByText(/photo id 11/i)).toBeInTheDocument();
     expect(screen.queryByText(/1 photos · 1 published/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/1932–present/i)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /open default photo preview/i }));
+    fireEvent.click(screen.getByRole('button', { name: /choose default photo/i }));
 
-    expect(screen.getByRole('dialog', { name: /default photo preview/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /choose default photo/i })).toBeInTheDocument();
     expect(screen.getAllByAltText(/birch glen lodge seen from the trail/i)).toHaveLength(2);
 
-    fireEvent.click(screen.getByRole('button', { name: /close default photo preview/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: /default photo preview/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog', { name: /choose default photo/i })).not.toBeInTheDocument();
     });
   });
 
