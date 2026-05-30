@@ -72,6 +72,7 @@ function makeStore(shelter: Shelter, photos: Photo[] = []) {
         historyContent: '',
         historyOriginal: '',
         historyDirty: false,
+        historyMissing: false,
       },
       photos: {
         byShelter: { [shelter.id]: photos },
