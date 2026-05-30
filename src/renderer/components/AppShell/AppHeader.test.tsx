@@ -16,11 +16,11 @@ function makeStore(shelterCount = 0) {
           id: i + 1, name: `Shelter ${i + 1}`, slug: `shelter-${i + 1}`,
           start_year: 1960, end_year: null, description: '', category: 'lean-to',
           architecture: '', built_by: '', notes: '',
-          is_extant: true, is_gmc: false, show_on_web: false, default_photo_id: null,
+          is_extant: true, is_gmc: false, show_on_web: false, default_photo_id: null, history: null,
           created: '2020-01-01', updated: '2020-01-01', photo_count: 0,
         })),
         selectedId: null, editBuffer: null, loading: false, saving: false,
-        dirty: false, historyContent: '', historyOriginal: '', historyDirty: false,
+        dirty: false, historyContent: '', historyOriginal: '', historyDirty: false, historyMissing: false,
       },
     },
   });

@@ -47,6 +47,7 @@ function renderSidebar(shelters: Shelter[]) {
         historyContent: '',
         historyOriginal: '',
         historyDirty: false,
+        historyMissing: false,
       },
       ui: {
         sidebarCollapsed: false,
