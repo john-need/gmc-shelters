@@ -77,7 +77,7 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
     try {
       const result = await window.api.publish.preflight({
         rootFolderId: config.ROOT_FOLDER_ID,
-        manifestName: config.MANIFEST_NAME || 'shelter-manifest.json',
+
         scopes: config.SCOPES,
         sheltersRoot: loadStoredPaths().SHELTERS_ROOT,
       });

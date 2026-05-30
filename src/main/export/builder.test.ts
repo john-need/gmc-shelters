@@ -219,7 +219,7 @@ describe('buildManifest', () => {
 
   it('includes photo with include_in_post=1 and file on disk', async () => {
     const shelterId = insertShelter({ slug: 'test-shelter' });
-    insertPhoto(shelterId, { file_name: 'photo.jpg', include_in_post: 1, updated: '2026-05-01' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photo.jpg', include_in_post: 1, updated: '2026-05-01' });
 
     // Create the shelter dir and photo file on disk
     const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
@@ -253,7 +253,7 @@ describe('buildManifest', () => {
     expect(result.skippedPhotos).toBe(1);
   });
 
-  it('sets history, historyFile and historyUpdated when .md exists', async () => {
+  it('sets history with filePath and updated when .md exists', async () => {
     insertShelter({ slug: 'test-shelter' });
 
     const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
@@ -263,18 +263,17 @@ describe('buildManifest', () => {
 
     const result = await buildManifest(repoRoot, tmpDir);
     const s = result.manifest.shelters[0];
-    expect(s.history).toBe('test-shelter/test-shelter.md');
-    expect(s.historyFile).toBe('test-shelter/test-shelter.md');
-    expect(s.historyUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(s.history).not.toBeNull();
+    expect(s.history!.filePath).toBe('test-shelter/test-shelter.md');
+    expect(s.history!.updated).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(s.history!.driveFileId).toBeNull();
   });
 
-  it('sets historyFile and historyUpdated to null when .md absent', async () => {
+  it('sets history to null when .md absent', async () => {
     insertShelter({ slug: 'test-shelter' });
     const result = await buildManifest(repoRoot, tmpDir);
     const s = result.manifest.shelters[0];
-    expect(s.history).toBe('test-shelter/test-shelter.md');
-    expect(s.historyFile).toBeNull();
-    expect(s.historyUpdated).toBeNull();
+    expect(s.history).toBeNull();
   });
 
   it('includes shelter.updated from DB', async () => {
@@ -308,7 +307,7 @@ describe('buildManifest', () => {
   // T030: contract test — driveFileId is present and nullable on each PhotoEntry
   it('manifest contract: PhotoEntry has driveFileId (null on first build)', async () => {
     const shelterId = insertShelter({ slug: 'test-shelter' });
-    insertPhoto(shelterId, { file_name: 'photo.jpg', include_in_post: 1 });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photo.jpg', include_in_post: 1 });
 
     const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
     fs.mkdirSync(shelterDir, { recursive: true });

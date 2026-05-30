@@ -65,6 +65,12 @@ const dialog = {
   showOpenDialog: jest.fn().mockResolvedValue({ canceled: false, filePaths: [] }),
 };
 
+const protocol = {
+  registerSchemesAsPrivileged: jest.fn(),
+  handle: jest.fn(),
+  registerFileProtocol: jest.fn(),
+};
+
 module.exports = {
   app,
   BrowserWindow: BrowserWindowMock,
@@ -74,4 +80,5 @@ module.exports = {
   Menu,
   shell,
   dialog,
+  protocol,
 };

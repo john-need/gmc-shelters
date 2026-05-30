@@ -27,6 +27,7 @@ module.exports = {
       },
       moduleNameMapper: {
         '\\.css$': 'identity-obj-proxy',
+        '\\.(png|jpe?g|gif|svg|webp|avif|woff2?|ttf|eot)$': '<rootDir>/src/renderer/__mocks__/fileMock.ts',
         '^electron$': '<rootDir>/src/main/__mocks__/electron.ts',
         '^@shared/(.*)$': '<rootDir>/src/shared/$1',
         '^leaflet$': '<rootDir>/src/renderer/__mocks__/leaflet.ts',

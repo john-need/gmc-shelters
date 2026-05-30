@@ -194,22 +194,6 @@ export default function PublishingPage() {
                 </code>.
               </span>
             </div>
-<div className="pub-field col-2">
-              <div className="label-mono">
-                <span>MANIFEST_NAME</span>
-                <span className="badge">filename</span>
-              </div>
-              <input
-                className="input mono"
-                value={draft.MANIFEST_NAME}
-                onChange={(e) => set('MANIFEST_NAME', e.target.value)}
-                placeholder="shelter-manifest.json"
-                spellCheck={false}
-              />
-              <span className="help">
-                JSON manifest the build emits — lists every shelter, photos, sources, and markers.
-              </span>
-            </div>
           </div>
         </div>
 

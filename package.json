@@ -4,8 +4,11 @@
   "description": "GMC Shelters desktop application",
   "main": ".vite/build/index.js",
   "scripts": {
+    "prestart": "electron-rebuild -f -w better-sqlite3",
     "start": "electron-forge start",
+    "pretest": "npm rebuild better-sqlite3",
     "test": "jest",
+    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "make": "electron-forge make",

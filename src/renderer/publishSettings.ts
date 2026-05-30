@@ -1,6 +1,5 @@
 export const DEFAULT_PUBLISHING = {
   ROOT_FOLDER_ID: '',
-  MANIFEST_NAME: 'shelter-manifest.json',
   SCOPES: ['https://www.googleapis.com/auth/drive'],
 };
 

@@ -27,7 +27,7 @@ const photo = (overrides: Partial<Photo> = {}): Photo => ({
   ...overrides,
 });
 
-const initialState: PhotosState = { byShelter: {}, loading: false, uploading: false };
+const initialState: PhotosState = { byShelter: {}, originals: {}, loading: false, uploading: false };
 
 describe('photosSlice reducers', () => {
   it('has correct initial state', () => {
@@ -36,14 +36,14 @@ describe('photosSlice reducers', () => {
 
   describe('updatePhotoLocal', () => {
     it('merges partial photo into existing list entry', () => {
-      const state: PhotosState = { byShelter: { 10: [photo()] }, loading: false, uploading: false };
+      const state: PhotosState = { byShelter: { 10: [photo()] }, originals: {}, loading: false, uploading: false };
       const next = photosReducer(state, updatePhotoLocal({ shelterId: 10, photo: { id: 1, title: 'Updated' } }));
       expect(next.byShelter[10][0].title).toBe('Updated');
       expect(next.byShelter[10][0].file_name).toBe('test.jpg');
     });
 
     it('does nothing when shelterId not in state', () => {
-      const state: PhotosState = { byShelter: {}, loading: false, uploading: false };
+      const state: PhotosState = { byShelter: {}, originals: {}, loading: false, uploading: false };
       const next = photosReducer(state, updatePhotoLocal({ shelterId: 10, photo: { id: 1, title: 'X' } }));
       expect(next.byShelter[10]).toBeUndefined();
     });
@@ -53,6 +53,7 @@ describe('photosSlice reducers', () => {
     it('filters out photo by id', () => {
       const state: PhotosState = {
         byShelter: { 10: [photo({ id: 1 }), photo({ id: 2 })] },
+        originals: {},
         loading: false,
         uploading: false,
       };
@@ -124,7 +125,7 @@ describe('photosSlice extraReducers', () => {
     it('replaces photo in list on fulfilled', () => {
       const existing = photo({ id: 3, title: 'Old' });
       const updated = photo({ id: 3, title: 'New' });
-      const state: PhotosState = { byShelter: { 10: [existing] }, loading: false, uploading: false };
+      const state: PhotosState = { byShelter: { 10: [existing] }, originals: {}, loading: false, uploading: false };
       const input = { ...updated, shelter_id: 10 };
       const next = photosReducer(
         state,

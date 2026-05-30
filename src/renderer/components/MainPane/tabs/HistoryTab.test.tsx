@@ -157,10 +157,8 @@ describe('HistoryTab', () => {
       </Provider>,
     );
 
-    expect(screen.getByText(/history file missing at/i)).toBeInTheDocument();
-    expect(
-      screen.getAllByText('shelters/aeolus-view-camp/aeolus-view-camp.md'),
-    ).toHaveLength(2);
-    expect(screen.getByText(/save file to create it/i)).toBeInTheDocument();
+    expect(screen.getByText(/history file not found/i)).toBeInTheDocument();
+    expect(screen.getByText('aeolus-view-camp/aeolus-view-camp.md')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create file/i })).toBeInTheDocument();
   });
 });

@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db" />
+    <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="db">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/publish/index.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/publish/index.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/publish/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/publish/index.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -132,7 +138,7 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "foo",
+    "git-widget-placeholder": "fix/publish-manifest-and-tests",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Library/Application Support/gmc-shelters",
@@ -144,6 +150,7 @@
     "nodejs_package_manager_path": "npm",
     "npm.lint.executor": "Run",
     "npm.make.executor": "Run",
+    "npm.package.executor": "Run",
     "npm.start.executor": "Run",
     "settings.editor.selected.configurable": "ml.llm.AcpAgentsConfigurable",
     "to.speed.mode.migration.done": "true",
@@ -237,6 +244,19 @@
       </EXTENSION>
       <method v="2" />
     </configuration>
+    <configuration name="package" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="package" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <EXTENSION ID="com.intellij.javascript.debugger.execution.StartBrowserRunConfigurationExtension">
+        <browser with-js-debugger="true" />
+      </EXTENSION>
+      <method v="2" />
+    </configuration>
     <configuration name="start" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="start" />
@@ -252,6 +272,7 @@
       <item itemvalue="npm.lint" />
       <item itemvalue="npm.start" />
       <item itemvalue="npm.make" />
+      <item itemvalue="npm.package" />
       <item itemvalue="Shell Script.build dist" />
       <item itemvalue="Shell Script.Deploy 2 Drive" />
     </list>
