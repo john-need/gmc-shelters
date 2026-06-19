@@ -115,4 +115,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 007-add-shelter-history-column.sql');
     }
   }
+
+  // Apply 008-add-include-in-history-to-shelter-sources.sql if column doesn't exist
+  const includeInHistoryCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('shelter_sources') WHERE name='include_in_history'")
+    .get() as { n: number };
+
+  if (includeInHistoryCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '008-add-include-in-history-to-shelter-sources.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 008-add-include-in-history-to-shelter-sources.sql');
+    }
+  }
 }

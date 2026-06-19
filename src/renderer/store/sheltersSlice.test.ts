@@ -132,4 +132,24 @@ describe('sheltersSlice', () => {
     expect(state.historyMissing).toBe(true);
     expect(state.historyDirty).toBe(false);
   });
+
+  it('saveHistory fulfilled refreshes visible history content', () => {
+    const state = sheltersReducer(
+      {
+        ...initial,
+        historyContent: '# Old',
+        historyOriginal: '# Older',
+        historyDirty: true,
+      },
+      {
+        type: saveHistory.fulfilled.type,
+        payload: '# New',
+      },
+    );
+
+    expect(state.historyContent).toBe('# New');
+    expect(state.historyOriginal).toBe('# New');
+    expect(state.historyDirty).toBe(false);
+    expect(state.historyMissing).toBe(false);
+  });
 });

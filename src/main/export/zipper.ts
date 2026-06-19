@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import archiver from 'archiver';
 
 export function createZip(srcDir: string, destPath: string): Promise<void> {

@@ -103,8 +103,8 @@ export default function PhotoMetadataDialog({ photo, shelterId: _shelterId, slug
     try {
       await window.api.photos.writeFileMetadata(slug, photo.file_name, sheltersRoot, changed);
       onClose();
-    } catch (err: any) {
-      setWriteError(err?.message ?? 'Failed to write metadata');
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : 'Failed to write metadata');
     }
   };
 

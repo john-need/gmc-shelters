@@ -4,6 +4,7 @@ import type { Source, SourceInput } from '../../shared/ipc-types';
 const SELECT_SOURCE = `
   SELECT s.*,
     ss.shelter_id AS shelter_id,
+    ss.include_in_history AS include_in_history,
     ss.annotation AS annotation,
     ss.notes      AS notes,
     ss.quote      AS quote
@@ -11,11 +12,18 @@ const SELECT_SOURCE = `
   JOIN shelter_sources ss ON ss.source_id = s.id
 `;
 
+function hydrateSource(row: Source): Source {
+  return {
+    ...row,
+    include_in_history: Boolean(row.include_in_history),
+  };
+}
+
 export function getSourcesByShelter(shelterId: number): Source[] {
   const db = getDb();
-  return db
+  return (db
     .prepare(`${SELECT_SOURCE} WHERE ss.shelter_id = ? ORDER BY s.author, s.year`)
-    .all(shelterId) as Source[];
+    .all(shelterId) as Source[]).map(hydrateSource);
 }
 
 export function createSource(input: SourceInput): Source {
@@ -56,12 +64,21 @@ export function createSource(input: SourceInput): Source {
   const sourceId = result.lastInsertRowid as number;
 
   db.prepare(
-    'INSERT INTO shelter_sources (shelter_id, source_id, annotation, notes, quote) VALUES (?, ?, ?, ?, ?)',
-  ).run(input.shelter_id, sourceId, input.annotation ?? '', input.notes ?? '', input.quote ?? '');
+    `INSERT INTO shelter_sources
+      (shelter_id, source_id, include_in_history, annotation, notes, quote)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(
+    input.shelter_id,
+    sourceId,
+    input.include_in_history ? 1 : 0,
+    input.annotation ?? '',
+    input.notes ?? '',
+    input.quote ?? '',
+  );
 
-  return db
+  return hydrateSource(db
     .prepare(`${SELECT_SOURCE} WHERE s.id = ? AND ss.shelter_id = ?`)
-    .get(sourceId, input.shelter_id) as Source;
+    .get(sourceId, input.shelter_id) as Source);
 }
 
 export function updateSource(source: Source): Source {
@@ -98,12 +115,21 @@ export function updateSource(source: Source): Source {
   );
 
   db.prepare(
-    'UPDATE shelter_sources SET annotation = ?, notes = ?, quote = ? WHERE shelter_id = ? AND source_id = ?',
-  ).run(source.annotation ?? '', source.notes ?? '', source.quote ?? '', source.shelter_id, source.id);
+    `UPDATE shelter_sources
+      SET include_in_history = ?, annotation = ?, notes = ?, quote = ?
+      WHERE shelter_id = ? AND source_id = ?`,
+  ).run(
+    source.include_in_history ? 1 : 0,
+    source.annotation ?? '',
+    source.notes ?? '',
+    source.quote ?? '',
+    source.shelter_id,
+    source.id,
+  );
 
-  return db
+  return hydrateSource(db
     .prepare(`${SELECT_SOURCE} WHERE s.id = ? AND ss.shelter_id = ?`)
-    .get(source.id, source.shelter_id) as Source;
+    .get(source.id, source.shelter_id) as Source);
 }
 
 export function deleteSource(id: number): void {

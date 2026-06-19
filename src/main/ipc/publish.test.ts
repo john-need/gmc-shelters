@@ -2,6 +2,7 @@ jest.mock('electron');
 jest.mock('../publish/index');
 jest.mock('../publish/gdrive');
 
+import fs from 'fs';
 import { ipcMain, app } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
 import { registerPublishHandlers } from './publish';

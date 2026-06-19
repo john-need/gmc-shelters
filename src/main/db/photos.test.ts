@@ -73,6 +73,20 @@ describe('db/photos', () => {
     expect(updated.caption).toBe('A caption');
   });
 
+  it('updatePhoto preserves year-only date_taken values', () => {
+    const created = insertPhoto(shelterId, 'year-only.jpg', 'Old Title');
+    updatePhoto({
+      id: created.id, shelter_id: shelterId,
+      title: 'New Title', photographer: 'Jane',
+      caption: 'A caption', date_taken: '1984',
+      notes: 'some notes', alt_text: 'alt', description: 'desc',
+      include_in_post: true, updated: '2020-01-01',
+    });
+    const photos = getPhotosByShelter(shelterId);
+    const updated = photos.find((p) => p.id === created.id)!;
+    expect(updated.date_taken).toBe('1984');
+  });
+
   it('deletePhoto removes the photo', () => {
     const photo = insertPhoto(shelterId, 'del.jpg');
     deletePhoto(photo.id);

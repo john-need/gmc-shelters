@@ -61,10 +61,6 @@ function makeDraftIcon(): L.DivIcon {
   return new L.DivIcon({ className: '', html: `<div class="mm-pin mm-pin--draft">+</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
 }
 
-function makeShelterIcon(): L.DivIcon {
-  return new L.DivIcon({ className: 'mm-shelter-pin', iconSize: [14, 14], iconAnchor: [7, 7] });
-}
-
 // ─── map viewport ─────────────────────────────────────────────────────────
 
 function fitMapToBounds(map: L.Map, markers: MapMarker[]): void {
@@ -307,7 +303,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           {markers.length === 0 && mode === 'idle' && (
             <div className="mm-empty">
               <div className="mm-empty-label">No map markers recorded.</div>
-              <div className="mm-empty-hint">Click "Add marker" then click the map to place the first location.</div>
+              <div className="mm-empty-hint">Click &ldquo;Add marker&rdquo; then click the map to place the first location.</div>
             </div>
           )}
 

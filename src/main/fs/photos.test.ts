@@ -201,6 +201,29 @@ describe('writePhotoXmp', () => {
       })
     );
   });
+
+  it('omits CreateDate when date_taken is year-only', async () => {
+    const photo: any = {
+      id: 6007,
+      title: 'My Title',
+      photographer: 'Author Name',
+      date_taken: '1984',
+      caption: 'A caption',
+      alt_text: 'Accessibility text',
+      description: 'Long description',
+      notes: 'Some notes',
+      file_name: 'test.jpg',
+    };
+
+    await writePhotoXmp(photo as Photo, '/abs/shelters', 'my-shelter');
+
+    expect(mockExifToolInstance.write).toHaveBeenCalledWith(
+      '/abs/shelters/test.jpg',
+      expect.objectContaining({
+        CreateDate: undefined,
+      })
+    );
+  });
 });
 
 describe('readPhotoXmp', () => {

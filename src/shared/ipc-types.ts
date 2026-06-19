@@ -183,6 +183,7 @@ export interface Photo {
 export interface Source {
   id: number;
   shelter_id: number;
+  include_in_history: boolean;
   type: SourceType;
   author: string;
   title: string;

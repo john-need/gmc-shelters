@@ -32,6 +32,7 @@ function prettyUrl(u: string): string {
 }
 
 const BLANK_SOURCE: Omit<Source, 'id' | 'shelter_id' | 'created' | 'updated'> = {
+  include_in_history: false,
   type: 'book',
   author: '', title: '', container_title: '', editor: '',
   edition: '', volume: '', issue: '', pages: '',
@@ -44,6 +45,7 @@ interface SourceCardProps {
   s: Source;
   selected: boolean;
   onClick: () => void;
+  onToggleInclude: (include: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -77,7 +79,7 @@ function SourceQuote({ text }: { text: string }) {
   );
 }
 
-function SourceCard({ s, selected, onClick, onEdit, onDelete }: SourceCardProps) {
+function SourceCard({ s, selected, onClick, onToggleInclude, onEdit, onDelete }: SourceCardProps) {
   const typeLabel = SOURCE_TYPES.find((t) => t.v === s.type)?.label ?? s.type;
   const html = citeChicago(s);
 
@@ -92,6 +94,15 @@ function SourceCard({ s, selected, onClick, onEdit, onDelete }: SourceCardProps)
         <div className="source-citation" dangerouslySetInnerHTML={{ __html: html }} />
 
         <div className="source-meta-row">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={s.include_in_history}
+              aria-label="Include in history"
+              onChange={(e) => onToggleInclude(e.target.checked)}
+            />
+            <span>Include in history</span>
+          </label>
           {s.year && <span className="chip">{s.year}</span>}
           {s.pages && <span className="chip">pp. {s.pages}</span>}
           {s.archive && (
@@ -559,6 +570,9 @@ export default function SourcesTab() {
                 s={src}
                 selected={src.id === selectedId}
                 onClick={() => setSelectedId(src.id === selectedId ? null : src.id)}
+                onToggleInclude={(include) => {
+                  void dispatch(updateSource({ ...src, include_in_history: include }));
+                }}
                 onEdit={() => startEdit(src)}
                 onDelete={() => handleDelete(src.id)}
               />

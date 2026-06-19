@@ -440,6 +440,28 @@ describe('US1 — Sync from File button', () => {
     });
   });
 
+  describe('photo date taken field', () => {
+    it('accepts a year-only value and saves it', async () => {
+      const shelter = makeShelter();
+      const photo = makePhoto();
+      const store = makeStore(shelter, [photo]);
+      render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const input = await screen.findByLabelText(/date taken/i);
+      fireEvent.change(input, { target: { value: '1984' } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /save metadata/i }));
+      });
+
+      await waitFor(() => {
+        expect((window as any).api.photos.update).toHaveBeenCalledWith(
+          expect.objectContaining({ date_taken: '1984' }),
+        );
+      });
+    });
+  });
+
   it('T014b: "Import from File" label is absent', async () => {
     const shelter = makeShelter();
     const photo = makePhoto();
