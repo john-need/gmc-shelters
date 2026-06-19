@@ -35,6 +35,7 @@ function makeSource(overrides: Partial<Source> = {}): Source {
   return {
     id: 11,
     shelter_id: 7,
+    include_in_history: false,
     type: 'book',
     author: '',
     title: '',
@@ -130,6 +131,48 @@ describe('SourcesTab', () => {
           author: '',
           title: '',
         }),
+      );
+    });
+  });
+
+  it('toggles history inclusion and rewrites the history sources section', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+
+    const shelter = makeShelter();
+    const existingSource = makeSource({
+      id: 21,
+      author: 'Doe, Jane',
+      title: 'Shelter Notes',
+      include_in_history: false,
+    });
+    const updatedSource = { ...existingSource, include_in_history: true };
+    const store = makeStore(shelter, [existingSource]);
+
+    window.api.sources.update = jest.fn().mockResolvedValue(updatedSource);
+    window.api.history.write = jest.fn().mockResolvedValue(undefined);
+
+    render(
+      <Provider store={store}>
+        <SourcesTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /include in history/i }));
+
+    await waitFor(() => {
+      expect(window.api.sources.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: existingSource.id,
+          include_in_history: true,
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(window.api.history.write).toHaveBeenCalledWith(
+        shelter.history,
+        expect.stringContaining('### Sources'),
+        '/custom/shelters',
       );
     });
   });

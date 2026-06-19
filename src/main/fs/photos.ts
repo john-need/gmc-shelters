@@ -5,6 +5,7 @@ import { ExifTool } from 'exiftool-vendored';
 import sharp from 'sharp';
 import { log } from '../logger';
 import type { Photo, PhotoTransformInput, FileMetadataTag } from '../../shared/ipc-types';
+import { getPhotoExifDateValue } from '@shared/photo-date';
 
 const exiftool = new ExifTool({ taskTimeoutMillis: 5000 });
 
@@ -76,7 +77,7 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
     await exiftool.write(filePath, {
       Title: photo.title,
       Creator: photo.photographer,
-      CreateDate: photo.date_taken || undefined,
+      CreateDate: getPhotoExifDateValue(photo.date_taken),
       Description: photo.caption,
       Headline: photo.alt_text,
       Subject: photo.description,
@@ -90,11 +91,14 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
   }
 }
 
-function getString(val: any): string | null {
+function getString(val: unknown): string | null {
   if (!val) return null;
   if (Array.isArray(val)) return val.join(', ');
-  if (typeof val === 'object' && val.rawValue) return val.rawValue;
-  return val.toString();
+  if (typeof val === 'object') {
+    const rawValue = (val as { rawValue?: unknown }).rawValue;
+    if (typeof rawValue === 'string') return rawValue;
+  }
+  return String(val);
 }
 
 export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot: string): Promise<Partial<Photo>> {
@@ -167,7 +171,7 @@ export async function writePhotoFileMetadata(slug: string, fileName: string, she
   const filePath = photoFilePath(slug, fileName, sheltersRoot);
   log.info(`Writing file metadata to ${filePath}`);
   try {
-    await exiftool.write(filePath, tags as any);
+    await exiftool.write(filePath, tags as Parameters<typeof exiftool.write>[1]);
     log.info(`File metadata written successfully to ${filePath}`);
   } catch (err) {
     log.error(`Failed to write file metadata to ${filePath}`, err);
@@ -214,8 +218,8 @@ export async function listPhotosDir(slug: string, sheltersRoot: string): Promise
   try {
     const entries = await fs.readdir(dir);
     return entries.filter((f) => IMAGE_EXTENSIONS.has(path.extname(f).toLowerCase()));
-  } catch (err: any) {
-    if (err.code === 'ENOENT') return [];
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw err;
   }
 }
@@ -230,8 +234,8 @@ export async function listShelterRootImages(slug: string, sheltersRoot: string):
     return entries
       .filter((e) => e.isFile() && IMAGE_EXTENSIONS.has(path.extname(e.name).toLowerCase()))
       .map((e) => e.name);
-  } catch (err: any) {
-    if (err.code === 'ENOENT') return [];
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw err;
   }
 }

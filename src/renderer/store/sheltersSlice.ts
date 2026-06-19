@@ -236,6 +236,7 @@ const sheltersSlice = createSlice({
         state.historyMissing = action.payload.missing;
       })
       .addCase(saveHistory.fulfilled, (state, action) => {
+        state.historyContent = action.payload;
         state.historyOriginal = action.payload;
         state.historyDirty = false;
         state.historyMissing = false;

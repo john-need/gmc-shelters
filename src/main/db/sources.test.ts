@@ -36,6 +36,7 @@ const NORMALIZED_SCHEMA = `
   CREATE TABLE shelter_sources (
     shelter_id  INTEGER NOT NULL REFERENCES shelters(id) ON DELETE CASCADE,
     source_id   INTEGER NOT NULL REFERENCES sources(id)  ON DELETE CASCADE,
+    include_in_history INTEGER NOT NULL DEFAULT 0,
     annotation  TEXT NOT NULL DEFAULT '',
     notes       TEXT NOT NULL DEFAULT '',
     quote       TEXT NOT NULL DEFAULT '',
@@ -60,6 +61,7 @@ describe('db/sources', () => {
 
   const blank = {
     shelter_id: 0, type: 'book' as const,
+    include_in_history: false,
     author: '', title: '', container_title: '', editor: '', edition: '',
     volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '',
@@ -75,6 +77,7 @@ describe('db/sources', () => {
     expect(s.author).toBe('Doe');
     expect(s.title).toBe('A Book');
     expect(s.shelter_id).toBe(shelterId);
+    expect(s.include_in_history).toBe(false);
   });
 
   it('getSourcesByShelter returns created sources', () => {
@@ -85,9 +88,10 @@ describe('db/sources', () => {
 
   it('updateSource updates fields', () => {
     const s = createSource({ ...blank, shelter_id: shelterId, author: 'Old', type: 'book' });
-    const updated = updateSource({ ...s, author: 'New Author', year: 1999 });
+    const updated = updateSource({ ...s, author: 'New Author', year: 1999, include_in_history: true });
     expect(updated.author).toBe('New Author');
     expect(updated.year).toBe(1999);
+    expect(updated.include_in_history).toBe(true);
   });
 
   it('deleteSource removes the source', () => {

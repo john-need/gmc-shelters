@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import uiReducer, { showToast, clearToast } from '../../store/uiSlice';
+import uiReducer, { showToast } from '../../store/uiSlice';
 import sheltersReducer from '../../store/sheltersSlice';
 import photosReducer from '../../store/photosSlice';
 import sourcesReducer from '../../store/sourcesSlice';

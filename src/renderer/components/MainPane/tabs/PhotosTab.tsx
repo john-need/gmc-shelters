@@ -7,6 +7,7 @@ import { setDefaultPhotoLocal } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
+import { normalizePhotoDateTaken } from '@shared/photo-date';
 import PhotoEditorDialog from './PhotoEditorDialog';
 import PhotoMetadataDialog from './PhotoMetadataDialog';
 
@@ -215,7 +216,7 @@ function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _slug, defaultPh
   const toggleFile = (fileName: string) => {
     setSelectedFiles((prev) => {
       const next = new Set(prev);
-      next.has(fileName) ? next.delete(fileName) : next.add(fileName);
+      if (next.has(fileName)) next.delete(fileName); else next.add(fileName);
       return next;
     });
   };
@@ -223,7 +224,7 @@ function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _slug, defaultPh
   const toggleRecord = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -369,7 +370,6 @@ export default function PhotosTab() {
   const photos = useSelector((state: RootState) =>
     s ? (state.photos.byShelter[s.id] ?? []) : [],
   );
-  const uploading = useSelector((state: RootState) => state.photos.uploading);
   const originals = useSelector((state: RootState) => state.photos.originals);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -538,11 +538,7 @@ export default function PhotosTab() {
       if (typeof window !== 'undefined' && window.api) {
         const metadata = await window.api.photos.readMetadata(s.slug, selected.file_name, sheltersRoot);
 
-        let dateTaken = metadata.date_taken || '';
-        // Convert "YYYY:MM:DD HH:MM:SS" (exif) to "YYYY-MM-DD" (HTML5 date)
-        if (dateTaken.match(/^\d{4}:\d{2}:\d{2}/)) {
-          dateTaken = dateTaken.substring(0, 10).replace(/:/g, '-');
-        }
+        const dateTaken = normalizePhotoDateTaken(metadata.date_taken);
 
         dispatch(updatePhotoLocal({
           shelterId: s.id,
@@ -665,7 +661,7 @@ export default function PhotosTab() {
             color: 'var(--ink-3)', fontFamily: 'var(--font-display)',
             fontStyle: 'italic', fontSize: 16,
           }}>
-            No photographs in this record's folder yet.
+            No photographs in this record&apos;s folder yet.
           </div>
         ) : view === 'grid' ? (
           <div className="photos-grid">
@@ -814,7 +810,14 @@ export default function PhotosTab() {
               </div>
               <div className="field">
                 <label className="label">Date taken</label>
-                <input className="input mono" type="date" value={selected.date_taken || ''} onChange={(e) => updatePhoto(selected.id, { date_taken: e.target.value })} />
+                <input
+                  aria-label="Date taken"
+                  className="input mono"
+                  type="text"
+                  placeholder="YYYY or YYYY-MM-DD"
+                  value={selected.date_taken || ''}
+                  onChange={(e) => updatePhoto(selected.id, { date_taken: e.target.value })}
+                />
               </div>
             </div>
 

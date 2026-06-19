@@ -1,5 +1,6 @@
 import { getDb } from './connection';
 import type { Photo, PhotoUpdateInput } from '../../shared/ipc-types';
+import { normalizePhotoDateTaken } from '@shared/photo-date';
 
 interface PhotoRow {
   id: number;
@@ -46,6 +47,7 @@ export function getPhotosByShelter(shelterId: number): Photo[] {
 export function updatePhoto(input: PhotoUpdateInput & { id: number; shelter_id: number }): Photo {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
+  const normalizedDateTaken = normalizePhotoDateTaken(input.date_taken);
 
   db.prepare(
     `UPDATE photos SET
@@ -56,7 +58,7 @@ export function updatePhoto(input: PhotoUpdateInput & { id: number; shelter_id: 
     input.title ?? '',
     input.photographer ?? '',
     input.caption ?? '',
-    input.date_taken ?? null,
+    normalizedDateTaken || null,
     input.notes ?? '',
     input.alt_text ?? '',
     input.description ?? '',

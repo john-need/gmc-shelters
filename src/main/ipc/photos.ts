@@ -147,9 +147,9 @@ export function registerPhotoHandlers(): void {
           const title = path.basename(fileName, path.extname(fileName));
           await insertPhoto(shelterId, relativePath, title);
           result.added++;
-        } catch (err: any) {
+        } catch (err: unknown) {
           result.failed++;
-          result.failures.push({ item: fileName, reason: err?.message ?? 'unknown error' });
+          result.failures.push({ item: fileName, reason: err instanceof Error ? err.message : 'unknown error' });
         }
       }
 
@@ -158,9 +158,9 @@ export function registerPhotoHandlers(): void {
           clearDefaultPhoto(shelterId, photoId);
           deletePhoto(photoId);
           result.deleted++;
-        } catch (err: any) {
+        } catch (err: unknown) {
           result.failed++;
-          result.failures.push({ item: String(photoId), reason: err?.message ?? 'unknown error' });
+          result.failures.push({ item: String(photoId), reason: err instanceof Error ? err.message : 'unknown error' });
         }
       }
 

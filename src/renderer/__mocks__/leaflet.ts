@@ -2,7 +2,7 @@
 // Leaflet 2.0 removed lowercase factory fns; component now uses `new L.Map()`, `new L.Marker()`, etc.
 
 function makeMarkerStub() {
-  const stub: any = {
+  const stub: Record<string, jest.Mock> = {
     addTo: jest.fn().mockReturnThis(),
     on: jest.fn().mockReturnThis(),
     remove: jest.fn(),
