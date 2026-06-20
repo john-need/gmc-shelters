@@ -39,9 +39,36 @@ function rowToPhoto(row: PhotoRow): Photo {
 export function getPhotosByShelter(shelterId: number): Photo[] {
   const db = getDb();
   const rows = db
-    .prepare('SELECT * FROM photos WHERE shelter_id = ? ORDER BY created')
+    .prepare('SELECT * FROM photos WHERE shelter_id = ? ORDER BY sort_order, created, id')
     .all(shelterId) as PhotoRow[];
   return rows.map(rowToPhoto);
+}
+
+export function reorderPhotos(shelterId: number, orderedPhotoIds: number[]): void {
+  const db = getDb();
+  const existingIds = db
+    .prepare('SELECT id FROM photos WHERE shelter_id = ? ORDER BY sort_order, created, id')
+    .all(shelterId) as Array<{ id: number }>;
+
+  if (existingIds.length !== orderedPhotoIds.length) {
+    throw new Error(`Photo reorder for shelter ${shelterId} must include every photo exactly once`);
+  }
+
+  const existingIdSet = new Set(existingIds.map((row) => row.id));
+  const orderedIdSet = new Set(orderedPhotoIds);
+  if (orderedIdSet.size !== orderedPhotoIds.length || orderedPhotoIds.some((id) => !existingIdSet.has(id))) {
+    throw new Error(`Photo reorder for shelter ${shelterId} contains unknown or duplicate photo ids`);
+  }
+
+  const updateOrder = db.prepare('UPDATE photos SET sort_order = ?, updated = ? WHERE id = ? AND shelter_id = ?');
+  const today = new Date().toISOString().slice(0, 10);
+  const txn = db.transaction((photoIds: number[]) => {
+    photoIds.forEach((photoId, index) => {
+      updateOrder.run(index + 1, today, photoId, shelterId);
+    });
+  });
+
+  txn(orderedPhotoIds);
 }
 
 export function updatePhoto(input: PhotoUpdateInput & { id: number; shelter_id: number }): Photo {
@@ -94,14 +121,18 @@ export function insertPhoto(
 ): Photo {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
+  const nextSortOrder = (
+    db.prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_sort_order FROM photos WHERE shelter_id = ?')
+     .get(shelterId) as { next_sort_order: number }
+  ).next_sort_order;
   const result = db
     .prepare(
-      `INSERT INTO photos
+     `INSERT INTO photos
          (shelter_id, file_name, title, photographer, caption, date_taken, notes,
-          alt_text, description, include_in_post, created, updated)
-       VALUES (?, ?, ?, '', '', null, '', '', '', 0, ?, ?)`,
+          alt_text, description, include_in_post, sort_order, created, updated)
+      VALUES (?, ?, ?, '', '', null, '', '', '', 0, ?, ?, ?)`,
     )
-    .run(shelterId, fileName, title ?? fileName, today, today);
+    .run(shelterId, fileName, title ?? fileName, nextSortOrder, today, today);
 
   return rowToPhoto(
     db.prepare('SELECT * FROM photos WHERE id = ?').get(result.lastInsertRowid) as PhotoRow,

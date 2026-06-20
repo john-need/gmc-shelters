@@ -6,6 +6,7 @@ import { setSidebarCollapsed, setQuery, setFilter, setAdvancedFilters } from '..
 import type { AdvancedFilters } from '../../store/uiSlice';
 import type { Shelter } from '../../../shared/ipc-types';
 import { loadStoredPaths } from '../../pathSettings';
+import { useGuardedNav } from '../NavigationGuard/NavigationGuardProvider';
 import ShelterRow from './ShelterRow';
 
 export default function Sidebar() {
@@ -17,6 +18,7 @@ export default function Sidebar() {
   const filter = useSelector((s: RootState) => s.ui.filter);
   const adv = useSelector((s: RootState) => s.ui.advancedFilters);
 
+  const guardedNav = useGuardedNav();
   const [advOpen, setAdvOpen] = useState(false);
   const [repoRoot, setRepoRoot] = useState('');
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
@@ -106,7 +108,8 @@ export default function Sidebar() {
   );
 
   const handleSelect = (id: number) => {
-    dispatch(setSelectedId(id));
+    if (id === selectedId) return;
+    guardedNav(() => dispatch(setSelectedId(id)));
   };
 
   useEffect(() => {
@@ -124,15 +127,18 @@ export default function Sidebar() {
       const nextIdx = e.key === 'ArrowDown' ? idx + 1 : idx - 1;
       if (nextIdx < 0 || nextIdx >= sortedShelters.length) return;
 
-      dispatch(setSelectedId(sortedShelters[nextIdx].id));
-      requestAnimationFrame(() => {
-        document.querySelector('.shelter-item.selected')?.scrollIntoView({ block: 'nearest' });
+      const nextId = sortedShelters[nextIdx].id;
+      guardedNav(() => {
+        dispatch(setSelectedId(nextId));
+        requestAnimationFrame(() => {
+          document.querySelector('.shelter-item.selected')?.scrollIntoView({ block: 'nearest' });
+        });
       });
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, sortedShelters, dispatch]);
+  }, [selectedId, sortedShelters, dispatch, guardedNav]);
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>

@@ -5,7 +5,7 @@ import sheltersReducer from '../../../store/sheltersSlice';
 import photosReducer from '../../../store/photosSlice';
 import architecturesReducer from '../../../store/architecturesSlice';
 import categoriesReducer from '../../../store/categoriesSlice';
-import uiReducer from '../../../store/uiSlice';
+import uiReducer, { type UiState } from '../../../store/uiSlice';
 import ShelterTab from './ShelterTab';
 import type { Photo, Shelter } from '../../../../shared/ipc-types';
 
@@ -76,6 +76,7 @@ function makeStore(shelter: Shelter, photos: Photo[] = []) {
       },
       photos: {
         byShelter: { [shelter.id]: photos },
+        originals: {},
         loading: false,
         uploading: false,
       },
@@ -95,7 +96,7 @@ function makeStore(shelter: Shelter, photos: Photo[] = []) {
           showOnWeb: 'any',
         },
         toast: null,
-      },
+      } as UiState,
     },
   });
 }

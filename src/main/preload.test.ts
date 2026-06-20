@@ -39,4 +39,11 @@ describe('preload contextBridge', () => {
     expect(typeof api.app.toggleFullscreen).toBe('function');
     expect(typeof api.app.isFullscreen).toBe('function');
   });
+
+  it('photos.reorder is exposed as a function', async () => {
+    const { contextBridge } = await import('electron');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, Record<string, unknown>>];
+    expect(typeof api.photos.reorder).toBe('function');
+  });
 });

@@ -2,10 +2,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import photosReducer, {
   updatePhotoLocal,
   removePhotoLocal,
+  reorderPhotosLocal,
   loadPhotos,
   uploadPhoto,
   savePhotoMetadata,
   reconcileApply,
+  reorderPhotos,
   PhotosState,
 } from './photosSlice';
 import type { Photo, ReconcileApplyInput } from '@shared/ipc-types';
@@ -67,6 +69,19 @@ describe('photosSlice reducers', () => {
       expect(next.byShelter[99]).toBeUndefined();
     });
   });
+
+  describe('reorderPhotosLocal', () => {
+    it('reorders shelter photos by provided ids', () => {
+      const state: PhotosState = {
+        byShelter: { 10: [photo({ id: 1, title: 'First' }), photo({ id: 2, title: 'Second' }), photo({ id: 3, title: 'Third' })] },
+        originals: {},
+        loading: false,
+        uploading: false,
+      };
+      const next = photosReducer(state, reorderPhotosLocal({ shelterId: 10, photoIds: [3, 1, 2] }));
+      expect(next.byShelter[10].map((entry) => entry.id)).toEqual([3, 1, 2]);
+    });
+  });
 });
 
 describe('photosSlice extraReducers', () => {
@@ -97,7 +112,7 @@ describe('photosSlice extraReducers', () => {
 
   describe('uploadPhoto', () => {
     it('sets uploading true on pending', () => {
-      const next = photosReducer(initialState, uploadPhoto.pending('', { shelterId: 10, sourcePath: '/x.jpg' }));
+      const next = photosReducer(initialState, uploadPhoto.pending('', { shelterId: 10, sourcePath: '/x.jpg', sheltersRoot: '/tmp' }));
       expect(next.uploading).toBe(true);
     });
 
@@ -105,7 +120,7 @@ describe('photosSlice extraReducers', () => {
       const p = photo({ id: 5 });
       const next = photosReducer(
         { ...initialState, uploading: true },
-        uploadPhoto.fulfilled({ shelterId: 10, photo: p }, '', { shelterId: 10, sourcePath: '/x.jpg' }),
+        uploadPhoto.fulfilled({ shelterId: 10, photo: p }, '', { shelterId: 10, sourcePath: '/x.jpg', sheltersRoot: '/tmp' }),
       );
       expect(next.uploading).toBe(false);
       expect(next.byShelter[10]).toHaveLength(1);
@@ -115,7 +130,7 @@ describe('photosSlice extraReducers', () => {
     it('clears uploading on rejected', () => {
       const next = photosReducer(
         { ...initialState, uploading: true },
-        uploadPhoto.rejected(new Error('fail'), '', { shelterId: 10, sourcePath: '/x.jpg' }),
+        uploadPhoto.rejected(new Error('fail'), '', { shelterId: 10, sourcePath: '/x.jpg', sheltersRoot: '/tmp' }),
       );
       expect(next.uploading).toBe(false);
     });
@@ -126,7 +141,7 @@ describe('photosSlice extraReducers', () => {
       const existing = photo({ id: 3, title: 'Old' });
       const updated = photo({ id: 3, title: 'New' });
       const state: PhotosState = { byShelter: { 10: [existing] }, originals: {}, loading: false, uploading: false };
-      const input = { ...updated, shelter_id: 10 };
+      const input = { ...updated, shelter_id: 10, sheltersRoot: '/tmp' };
       const next = photosReducer(
         state,
         savePhotoMetadata.fulfilled({ shelterId: 10, photo: updated }, '', input),
@@ -171,6 +186,54 @@ describe('photosSlice extraReducers', () => {
       };
       const action = await store.dispatch(reconcileApply(input));
       expect(action.type).toBe('photos/reconcileApply/rejected');
+    });
+  });
+
+  describe('reorderPhotos', () => {
+    const mockReorder = jest.fn();
+    const mockGetByShelter = jest.fn();
+
+    beforeEach(() => {
+      (window as any).api = { photos: { reorder: mockReorder, getByShelter: mockGetByShelter } };
+    });
+
+    afterEach(() => {
+      (window as any).api = undefined;
+    });
+
+    const storeWith = (ids: number[]) =>
+      configureStore({
+        reducer: { photos: photosReducer },
+        preloadedState: {
+          photos: {
+            byShelter: { 10: ids.map((id) => photo({ id })) },
+            originals: {},
+            loading: false,
+            uploading: false,
+          },
+        },
+      });
+
+    it('optimistically reorders the list and persists via api', async () => {
+      mockReorder.mockResolvedValue(undefined);
+      const store = storeWith([1, 2, 3]);
+
+      await store.dispatch(reorderPhotos({ shelterId: 10, photoIds: [3, 1, 2] }));
+
+      expect(store.getState().photos.byShelter[10].map((p) => p.id)).toEqual([3, 1, 2]);
+      expect(mockReorder).toHaveBeenCalledWith({ shelterId: 10, photoIds: [3, 1, 2] });
+    });
+
+    it('rolls back from the server and rejects when persistence fails', async () => {
+      mockReorder.mockRejectedValue(new Error('disk full'));
+      mockGetByShelter.mockResolvedValue([photo({ id: 1 }), photo({ id: 2 }), photo({ id: 3 })]);
+      const store = storeWith([1, 2, 3]);
+
+      const action = await store.dispatch(reorderPhotos({ shelterId: 10, photoIds: [3, 1, 2] }));
+
+      expect(action.type).toBe('photos/reorder/rejected');
+      expect(mockGetByShelter).toHaveBeenCalledWith(10);
+      expect(store.getState().photos.byShelter[10].map((p) => p.id)).toEqual([1, 2, 3]);
     });
   });
 });

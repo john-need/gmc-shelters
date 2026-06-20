@@ -1,12 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Photo, UntrackedFile, OrphanedRecord, ReconcileApplyResult } from '../../../../shared/ipc-types';
-import { uploadPhoto, savePhotoMetadata, updatePhotoLocal, removePhotoLocal, reconcileApply, loadPhotos } from '../../../store/photosSlice';
+import { uploadPhoto, savePhotoMetadata, updatePhotoLocal, removePhotoLocal, reconcileApply, loadPhotos, reorderPhotos } from '../../../store/photosSlice';
 import { setDefaultPhotoLocal } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { buildPhotoUrl } from '../../../utils/paths';
+import { reorderByIds } from '../../../utils/reorderByIds';
 import { normalizePhotoDateTaken } from '@shared/photo-date';
 import PhotoEditorDialog from './PhotoEditorDialog';
 import PhotoMetadataDialog from './PhotoMetadataDialog';
@@ -39,27 +59,24 @@ function photoBackground(idx: number) {
   return `repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0 2px, transparent 2px 14px), ${grad}`;
 }
 
-interface PhotoCardProps {
+const noop = () => {};
+
+interface PhotoCardBodyProps {
   p: Photo;
   idx: number;
   isDefault: boolean;
-  isSelected: boolean;
-  onClick: () => void;
-  onDoubleClick?: () => void;
-  onToggleInclude: (newValue: boolean) => void;
+  onToggleInclude: (id: number, newValue: boolean) => void;
   photoUrl: string;
 }
 
-function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, onToggleInclude, photoUrl }: PhotoCardProps) {
+// Memoised so the image-bearing subtree is skipped on dnd-kit's per-threshold
+// re-renders of the sortable wrapper. Props (p, photoUrl, stable callbacks) are
+// referentially stable during a drag, so the body never re-renders mid-drag.
+const PhotoCardBody = memo(function PhotoCardBody({ p, idx, isDefault, onToggleInclude, photoUrl }: PhotoCardBodyProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
-    <div
-      data-testid={`photo-card-${p.id}`}
-      className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`}
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
-    >
+    <>
       <div className="photo-thumb" style={{ background: photoBackground(idx), position: 'relative', overflow: 'hidden' }}>
         {photoUrl && !imgError ? (
           <img
@@ -86,6 +103,7 @@ function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, onTo
           <label
             style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: 10 }}
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
             title="Include in published post"
           >
             <input
@@ -93,47 +111,77 @@ function PhotoCard({ p, idx, isDefault, isSelected, onClick, onDoubleClick, onTo
               checked={!!p.include_in_post}
               aria-label="Include in post"
               onClick={(e) => e.stopPropagation()}
-              onChange={(e) => onToggleInclude(e.target.checked)}
+              onChange={(e) => onToggleInclude(p.id, e.target.checked)}
               style={{ cursor: 'pointer', margin: 0 }}
             />
             pub
           </label>
         </div>
       </div>
+    </>
+  );
+});
+
+interface PhotoCardProps extends PhotoCardBodyProps {
+  isSelected: boolean;
+  onSelect: (id: number) => void;
+  onOpenEditor: (id: number) => void;
+}
+
+const PhotoCard = memo(function PhotoCard({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onToggleInclude, photoUrl }: PhotoCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id });
+  return (
+    <div
+      ref={setNodeRef}
+      data-testid={`photo-card-${p.id}`}
+      className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`}
+      onClick={() => onSelect(p.id)}
+      onDoubleClick={() => onOpenEditor(p.id)}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        cursor: 'grab',
+      }}
+      {...attributes}
+      {...listeners}
+    >
+      <PhotoCardBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={onToggleInclude} photoUrl={photoUrl} />
+    </div>
+  );
+});
+
+function PhotoCardOverlay({ p, idx, isDefault, photoUrl }: PhotoCardBodyProps) {
+  return (
+    <div
+      className={`photo-card ${isDefault ? 'default' : ''}`}
+      style={{
+        outline: '2px solid var(--forest)',
+        outlineOffset: 2,
+        boxShadow: '0 12px 28px rgba(0,0,0,0.35)',
+        cursor: 'grabbing',
+      }}
+    >
+      <PhotoCardBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={noop} photoUrl={photoUrl} />
     </div>
   );
 }
 
-interface ListRowProps {
+const LIST_ROW_GRID = '40px 1.5fr 1fr 110px 80px 90px';
+
+interface ListRowBodyProps {
   p: Photo;
   idx: number;
   isDefault: boolean;
-  isSelected: boolean;
-  onSelect: () => void;
-  onDoubleClick?: () => void;
-  onToggleInclude: (newValue: boolean) => void;
+  onToggleInclude: (id: number, newValue: boolean) => void;
   photoUrl: string;
 }
 
-function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, onToggleInclude, photoUrl }: ListRowProps) {
+const ListRowBody = memo(function ListRowBody({ p, idx, isDefault, onToggleInclude, photoUrl }: ListRowBodyProps) {
   const [imgError, setImgError] = useState(false);
   const initial = p.title ? p.title.charAt(0) : p.file_name.charAt(0).toUpperCase();
   return (
-    <div
-      data-testid={`list-row-${p.id}`}
-      onClick={onSelect}
-      onDoubleClick={onDoubleClick}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '40px 1.5fr 1fr 110px 80px 90px',
-        alignItems: 'center',
-        padding: '6px 12px',
-        cursor: 'pointer',
-        borderBottom: '1px solid var(--line)',
-        background: isSelected ? 'var(--selected)' : 'transparent',
-        fontSize: 12.5,
-      }}
-    >
+    <>
       <div style={{
         width: 26, height: 26, borderRadius: 3,
         background: photoBackground(idx),
@@ -165,16 +213,73 @@ function ListRow({ p, idx, isDefault, isSelected, onSelect, onDoubleClick, onTog
       <span
         style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <input
           type="checkbox"
           checked={!!p.include_in_post}
           aria-label="Include in post"
           onClick={(e) => e.stopPropagation()}
-          onChange={(e) => onToggleInclude(e.target.checked)}
+          onChange={(e) => onToggleInclude(p.id, e.target.checked)}
           style={{ cursor: 'pointer', margin: 0 }}
         />
       </span>
+    </>
+  );
+});
+
+interface ListRowProps extends ListRowBodyProps {
+  isSelected: boolean;
+  onSelect: (id: number) => void;
+  onOpenEditor: (id: number) => void;
+}
+
+const ListRow = memo(function ListRow({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onToggleInclude, photoUrl }: ListRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id });
+  return (
+    <div
+      ref={setNodeRef}
+      data-testid={`list-row-${p.id}`}
+      onClick={() => onSelect(p.id)}
+      onDoubleClick={() => onOpenEditor(p.id)}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: LIST_ROW_GRID,
+        alignItems: 'center',
+        padding: '6px 12px',
+        cursor: 'grab',
+        borderBottom: '1px solid var(--line)',
+        background: isSelected ? 'var(--selected)' : 'transparent',
+        fontSize: 12.5,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      {...attributes}
+      {...listeners}
+    >
+      <ListRowBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={onToggleInclude} photoUrl={photoUrl} />
+    </div>
+  );
+});
+
+function ListRowOverlay({ p, idx, isDefault, photoUrl }: ListRowBodyProps) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: LIST_ROW_GRID,
+        alignItems: 'center',
+        padding: '6px 12px',
+        background: 'var(--surface)',
+        fontSize: 12.5,
+        outline: '2px solid var(--forest)',
+        outlineOffset: -2,
+        boxShadow: '0 12px 28px rgba(0,0,0,0.35)',
+        cursor: 'grabbing',
+      }}
+    >
+      <ListRowBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={noop} photoUrl={photoUrl} />
     </div>
   );
 }
@@ -377,6 +482,7 @@ export default function PhotosTab() {
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [version, setVersion] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+  const [activeDragId, setActiveDragId] = useState<number | null>(null);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [repoRoot, setRepoRoot] = useState('');
   const [detailWidth, setDetailWidth] = useState(380);
@@ -384,6 +490,13 @@ export default function PhotosTab() {
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
 
   useEffect(() => {
     let cancelled = false;
@@ -427,6 +540,7 @@ export default function PhotosTab() {
 
   const selected = photos.find((p) => p.id === selectedId) ?? null;
   const original = selected ? originals[selected.id] : null;
+  const activeDragPhoto = activeDragId !== null ? photos.find((p) => p.id === activeDragId) ?? null : null;
 
   const isMetadataDirty = !!(selected && original && (
     (selected.title || '') !== (original.title || '') ||
@@ -508,6 +622,30 @@ export default function PhotosTab() {
     }
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const id = Number(event.active.id);
+    setActiveDragId(id);
+    setSelectedId(id);
+  };
+
+  const handleDragCancel = () => setActiveDragId(null);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const fromId = Number(active.id);
+    const nextIds = reorderByIds(photos.map((photo) => photo.id), fromId, Number(over.id));
+    setSelectedId(fromId);
+
+    dispatch(reorderPhotos({ shelterId: s.id, photoIds: nextIds }))
+      .unwrap()
+      .catch(() => {
+        dispatch(showToast({ id: Date.now().toString(), message: 'Could not save photo order.' }));
+      });
+  };
+
   const handleSaveMetadata = async () => {
     if (!selected) return;
     const result = await dispatch(savePhotoMetadata({
@@ -552,7 +690,7 @@ export default function PhotosTab() {
       }
     } catch (err) {
       console.error('Import failed', err);
-      dispatch(showToast({ id: Date.now().toString(), message: 'Failed to import metadata.', type: 'error' }));
+      dispatch(showToast({ id: Date.now().toString(), message: 'Failed to import metadata.' }));
     }
   };
 
@@ -578,6 +716,9 @@ export default function PhotosTab() {
       crop: null,
     }));
   };
+
+  const handleSelect = (id: number) => setSelectedId(id);
+  const handleOpenEditor = (id: number) => { setSelectedId(id); setEditorOpen(true); };
 
   const handleReconcileClose = (applied: boolean) => {
     setReconcileOpen(false);
@@ -663,50 +804,86 @@ export default function PhotosTab() {
           }}>
             No photographs in this record&apos;s folder yet.
           </div>
-        ) : view === 'grid' ? (
-          <div className="photos-grid">
-            {photos.map((p, i) => (
-              <PhotoCard
-                key={p.id}
-                p={p}
-                idx={i}
-                isDefault={s.default_photo_id === p.id}
-                isSelected={p.id === selectedId}
-                onClick={() => setSelectedId(p.id)}
-                onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
-                onToggleInclude={(v) => handleToggleInclude(p.id, v)}
-                photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
-              />
-            ))}
-          </div>
         ) : (
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--line-2)', borderRadius: 6, overflow: 'hidden' }}>
-            <div style={{
-              display: 'grid', gridTemplateColumns: '40px 1.5fr 1fr 110px 80px 90px',
-              padding: '8px 12px',
-              fontFamily: 'var(--font-mono)', fontSize: 9.5,
-              textTransform: 'uppercase', letterSpacing: '0.1em',
-              color: 'var(--ink-3)',
-              background: 'var(--surface-2)',
-              borderBottom: '1px solid var(--line)',
-            }}>
-              <span /><span>Title</span><span>Photographer</span><span>Date</span><span>ID</span>
-              <span style={{ textAlign: 'right' }}>Post</span>
-            </div>
-            {photos.map((p, i) => (
-              <ListRow
-                key={p.id}
-                p={p}
-                idx={i}
-                isDefault={s.default_photo_id === p.id}
-                isSelected={p.id === selectedId}
-                onSelect={() => setSelectedId(p.id)}
-                onDoubleClick={() => { setSelectedId(p.id); setEditorOpen(true); }}
-                onToggleInclude={(v) => handleToggleInclude(p.id, v)}
-                photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
-              />
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext
+              items={photoIds}
+              strategy={view === 'grid' ? rectSortingStrategy : verticalListSortingStrategy}
+            >
+              {view === 'grid' ? (
+                <div className="photos-grid">
+                  {photos.map((p, i) => (
+                    <PhotoCard
+                      key={p.id}
+                      p={p}
+                      idx={i}
+                      isDefault={s.default_photo_id === p.id}
+                      isSelected={p.id === selectedId}
+                      onSelect={handleSelect}
+                      onOpenEditor={handleOpenEditor}
+                      onToggleInclude={handleToggleInclude}
+                      photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--line-2)', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: LIST_ROW_GRID,
+                    padding: '8px 12px',
+                    fontFamily: 'var(--font-mono)', fontSize: 9.5,
+                    textTransform: 'uppercase', letterSpacing: '0.1em',
+                    color: 'var(--ink-3)',
+                    background: 'var(--surface-2)',
+                    borderBottom: '1px solid var(--line)',
+                  }}>
+                    <span /><span>Title</span><span>Photographer</span><span>Date</span><span>ID</span>
+                    <span style={{ textAlign: 'right' }}>Post</span>
+                  </div>
+                  {photos.map((p, i) => (
+                    <ListRow
+                      key={p.id}
+                      p={p}
+                      idx={i}
+                      isDefault={s.default_photo_id === p.id}
+                      isSelected={p.id === selectedId}
+                      onSelect={handleSelect}
+                      onOpenEditor={handleOpenEditor}
+                      onToggleInclude={handleToggleInclude}
+                      photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : ''}
+                    />
+                  ))}
+                </div>
+              )}
+            </SortableContext>
+            <DragOverlay>
+              {activeDragPhoto ? (
+                view === 'grid' ? (
+                  <PhotoCardOverlay
+                    p={activeDragPhoto}
+                    idx={Math.max(0, photos.findIndex((p) => p.id === activeDragPhoto.id))}
+                    isDefault={s.default_photo_id === activeDragPhoto.id}
+                    onToggleInclude={() => {}}
+                    photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, activeDragPhoto.file_name)}?v=${version}` : ''}
+                  />
+                ) : (
+                  <ListRowOverlay
+                    p={activeDragPhoto}
+                    idx={Math.max(0, photos.findIndex((p) => p.id === activeDragPhoto.id))}
+                    isDefault={s.default_photo_id === activeDragPhoto.id}
+                    onToggleInclude={() => {}}
+                    photoUrl={repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, activeDragPhoto.file_name)}?v=${version}` : ''}
+                  />
+                )
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
       </div>
 

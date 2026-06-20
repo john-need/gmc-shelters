@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import sheltersReducer from '../../../store/sheltersSlice';
 import photosReducer from '../../../store/photosSlice';
@@ -21,8 +21,9 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
 }
 
 function makeStore(shelter: Shelter, photos: Photo[] = []) {
+  const reducer = combineReducers({ shelters: sheltersReducer, photos: photosReducer, ui: uiReducer });
   return configureStore({
-    reducer: { shelters: sheltersReducer, photos: photosReducer, ui: uiReducer },
+    reducer,
     preloadedState: {
       shelters: {
         list: [shelter],
@@ -55,6 +56,7 @@ function makePhoto(overrides: Partial<Photo> = {}): Photo {
 
 const mockReconcileScan = jest.fn();
 const mockReconcileApply = jest.fn();
+const mockReorderPhotos = jest.fn();
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -65,6 +67,7 @@ beforeEach(() => {
         file_name: 'test.jpg', created: '2024-01-01', shelter_id: 10,
         ...photo, updated: '2024-01-01',
       })),
+      reorder: mockReorderPhotos,
       reconcileScan: mockReconcileScan,
       reconcileApply: mockReconcileApply,
       readFileMetadata: jest.fn().mockReturnValue(new Promise(() => {})),
@@ -377,6 +380,41 @@ describe('include_in_post quick-toggle checkbox', () => {
     await waitFor(() => expect(screen.getByTestId('photo-card-1')).toBeInTheDocument());
     const cb = within(screen.getByTestId('photo-card-1')).getByRole('checkbox', { name: /include in post/i });
     expect(cb).not.toBeChecked();
+  });
+
+  // dnd-kit's pointer drag cannot be driven by jsdom's fireEvent.drag*, so the
+  // reorder math + persistence are covered at the seam: reorderByIds.test.ts and
+  // photosSlice.test.ts (reorderPhotos thunk). Here we verify the views mount the
+  // photos as sortable items in order.
+  describe('photo drag reordering', () => {
+    const threePhotos = () => [
+      makePhoto({ id: 1, title: 'First', file_name: 'first.jpg' }),
+      makePhoto({ id: 2, title: 'Second', file_name: 'second.jpg' }),
+      makePhoto({ id: 3, title: 'Third', file_name: 'third.jpg' }),
+    ];
+
+    it('grid: renders photos as sortable cards in order', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const cards = await screen.findAllByTestId(/^photo-card-/);
+      expect(cards.map((c) => c.getAttribute('data-testid'))).toEqual([
+        'photo-card-1', 'photo-card-2', 'photo-card-3',
+      ]);
+      expect(cards[0]).toHaveAttribute('aria-roledescription', 'sortable');
+    });
+
+    it('list: renders rows as sortable items in order', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      render(<Provider store={store}><PhotosTab /></Provider>);
+      fireEvent.click(screen.getByRole('button', { name: /list/i }));
+
+      const rows = await screen.findAllByTestId(/^list-row-/);
+      expect(rows.map((r) => r.getAttribute('data-testid'))).toEqual([
+        'list-row-1', 'list-row-2', 'list-row-3',
+      ]);
+      expect(rows[0]).toHaveAttribute('aria-roledescription', 'sortable');
+    });
   });
 
   it('grid: renders checked checkbox when include_in_post is true', async () => {

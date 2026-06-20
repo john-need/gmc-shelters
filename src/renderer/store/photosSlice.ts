@@ -58,6 +58,21 @@ export const savePhotoMetadata = createAsyncThunk(
   },
 );
 
+export const reorderPhotos = createAsyncThunk(
+  'photos/reorder',
+  async ({ shelterId, photoIds }: { shelterId: number; photoIds: number[] }, { dispatch }) => {
+    dispatch(reorderPhotosLocal({ shelterId, photoIds }));
+    if (typeof window !== 'undefined' && window.api) {
+      try {
+        await window.api.photos.reorder({ shelterId, photoIds });
+      } catch (err) {
+        dispatch(loadPhotos(shelterId));
+        throw err;
+      }
+    }
+  },
+);
+
 const photosSlice = createSlice({
   name: 'photos',
   initialState,
@@ -76,6 +91,18 @@ const photosSlice = createSlice({
         state.byShelter[shelterId] = state.byShelter[shelterId].filter((p) => p.id !== photoId);
       }
       delete state.originals[photoId];
+    },
+    reorderPhotosLocal(state, action: PayloadAction<{ shelterId: number; photoIds: number[] }>) {
+      const { shelterId, photoIds } = action.payload;
+      const list = state.byShelter[shelterId];
+      if (!list) return;
+
+      const photosById = new Map(list.map((photo) => [photo.id, photo]));
+      if (photoIds.length !== list.length || photoIds.some((id) => !photosById.has(id))) return;
+
+      state.byShelter[shelterId] = photoIds
+        .map((id) => photosById.get(id))
+        .filter((photo): photo is Photo => Boolean(photo));
     },
   },
   extraReducers: (builder) => {
@@ -118,5 +145,5 @@ const photosSlice = createSlice({
   },
 });
 
-export const { updatePhotoLocal, removePhotoLocal } = photosSlice.actions;
+export const { updatePhotoLocal, removePhotoLocal, reorderPhotosLocal } = photosSlice.actions;
 export default photosSlice.reducer;

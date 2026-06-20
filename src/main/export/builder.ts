@@ -118,7 +118,7 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
            created, updated, shelter_id, alt_text, title, description
     FROM photos
     WHERE include_in_post = 1
-    ORDER BY id
+    ORDER BY shelter_id, sort_order, id
   `).all() as Record<string, unknown>[];
 
   // Queries map_markers, not timelines — timelines was removed in migration 004.

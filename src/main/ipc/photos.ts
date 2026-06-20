@@ -2,10 +2,10 @@ import path from 'path';
 import fs from 'fs/promises';
 import { ipcMain, app } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
-import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto } from '../db/photos';
+import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
 import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
-import type { PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
+import type { PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
   ipcMain.handle(
@@ -69,6 +69,11 @@ export function registerPhotoHandlers(): void {
     CHANNELS.PHOTOS_SET_DEFAULT,
     (_e, { shelterId, photoId }: { shelterId: number; photoId: number }) =>
       setDefaultPhoto(shelterId, photoId),
+  );
+
+  ipcMain.handle(
+    CHANNELS.PHOTOS_REORDER,
+    (_e, input: PhotoReorderInput) => reorderPhotos(input.shelterId, input.photoIds),
   );
 
   ipcMain.handle(CHANNELS.PHOTOS_UPLOAD, async (_e, input: PhotoUploadInput) => {

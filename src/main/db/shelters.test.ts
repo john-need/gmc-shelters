@@ -114,26 +114,26 @@ describe('db/shelters', () => {
 
   describe('createShelter', () => {
     it('inserts and returns a new shelter', () => {
-      const s = createShelter({ name: 'New Hut', start_year: 1950, category: 'Cabin', is_gmc: true });
+      const s = createShelter({ name: 'New Hut', start_year: 1950, category: 'Cabin', is_gmc: true, sheltersRoot: '/tmp' });
       expect(s.name).toBe('New Hut');
       expect(s.start_year).toBe(1950);
       expect(s.is_gmc).toBe(true);
     });
 
     it('auto-generates slug from name', () => {
-      const s = createShelter({ name: 'Birch Glen Shelter', start_year: 1960, category: 'Shelter', is_gmc: false });
+      const s = createShelter({ name: 'Birch Glen Shelter', start_year: 1960, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
       expect(s.slug).toBe('birch-glen-shelter');
     });
 
     it('shelter is retrievable after creation', () => {
-      const s = createShelter({ name: 'Persistent', start_year: 1970, category: 'Lean-to', is_gmc: false });
+      const s = createShelter({ name: 'Persistent', start_year: 1970, category: 'Lean-to', is_gmc: false, sheltersRoot: '/tmp' });
       expect(getShelterById(s.id)).not.toBeNull();
     });
   });
 
   describe('updateShelter', () => {
     it('updates fields and returns updated shelter', () => {
-      const created = createShelter({ name: 'Original', start_year: 1940, category: 'Shelter', is_gmc: false });
+      const created = createShelter({ name: 'Original', start_year: 1940, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
       const updated = updateShelter({ ...created, name: 'Renamed', description: 'New desc' });
       expect(updated.name).toBe('Renamed');
       expect(updated.description).toBe('New desc');
@@ -142,7 +142,7 @@ describe('db/shelters', () => {
 
   describe('deleteShelter', () => {
     it('removes the shelter', () => {
-      const s = createShelter({ name: 'ToDelete', start_year: 1930, category: 'Lodge', is_gmc: false });
+      const s = createShelter({ name: 'ToDelete', start_year: 1930, category: 'Lodge', is_gmc: false, sheltersRoot: '/tmp' });
       deleteShelter(s.id);
       expect(getShelterById(s.id)).toBeNull();
     });

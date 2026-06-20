@@ -8,6 +8,7 @@ import { loadStoredPaths } from '../../pathSettings';
 import type { PublishDiff, PublishProgress, PublishResult } from '@shared/ipc-types';
 import PublishModal from '../PublishModal/PublishModal';
 import type { PublishPhase } from '../PublishModal/PublishModal';
+import { useGuardedNav } from '../NavigationGuard/NavigationGuardProvider';
 
 interface Props {
   onNewShelter: () => void;
@@ -27,6 +28,7 @@ const PUBLISH_ERROR_MESSAGES: Record<string, string> = {
 
 export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
   const dispatch = useDispatch<AppDispatch>();
+  const guardedNav = useGuardedNav();
   const count = useSelector((s: RootState) => s.shelters.list.length);
   const [menuOpen, setMenuOpen] = useState(false);
   const btnRef = useRef<HTMLDivElement>(null);
@@ -276,7 +278,7 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
           )}
         </div>
 
-        <button className="btn primary" onClick={onNewShelter}>
+        <button className="btn primary" onClick={() => guardedNav(onNewShelter)}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14M5 12h14"/>
           </svg>

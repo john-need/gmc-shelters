@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import mapMarkersReducer, { createMarker, deleteMarker } from '../../../store/mapMarkersSlice';
 import sheltersReducer from '../../../store/sheltersSlice';
@@ -34,8 +34,9 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
 }
 
 function makeStore(markers: MapMarker[] = [], shelterId = 10) {
+  const reducer = combineReducers({ mapMarkers: mapMarkersReducer, shelters: sheltersReducer, ui: uiReducer });
   return configureStore({
-    reducer: { mapMarkers: mapMarkersReducer, shelters: sheltersReducer, ui: uiReducer },
+    reducer,
     preloadedState: {
       mapMarkers: {
         byShelter: markers.length > 0 ? { [shelterId]: markers } : {},

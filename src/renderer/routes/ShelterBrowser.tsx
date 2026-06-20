@@ -10,6 +10,7 @@ import AppBody from '../components/AppShell/AppBody';
 import SettingsLayout from '../components/Settings/SettingsLayout';
 import Toast from '../components/ui/Toast';
 import NewShelterModal from '../components/modals/NewShelterModal';
+import { NavigationGuardProvider } from '../components/NavigationGuard/NavigationGuardProvider';
 
 export default function ShelterBrowser() {
   const dispatch = useDispatch<AppDispatch>();
@@ -26,16 +27,18 @@ export default function ShelterBrowser() {
   const closeSettings = () => setSettingsPage(null);
 
   return (
-    <div className="app-window">
-      <Titlebar />
-      <AppHeader onNewShelter={() => setShowNewModal(true)} onOpenSettings={openSettings} />
-      {settingsPage ? (
-        <SettingsLayout page={settingsPage} setPage={setSettingsPage} onClose={closeSettings} />
-      ) : (
-        <AppBody />
-      )}
-      <Toast />
-      {showNewModal && <NewShelterModal onClose={() => setShowNewModal(false)} />}
-    </div>
+    <NavigationGuardProvider>
+      <div className="app-window">
+        <Titlebar />
+        <AppHeader onNewShelter={() => setShowNewModal(true)} onOpenSettings={openSettings} />
+        {settingsPage ? (
+          <SettingsLayout page={settingsPage} setPage={setSettingsPage} onClose={closeSettings} />
+        ) : (
+          <AppBody />
+        )}
+        <Toast />
+        {showNewModal && <NewShelterModal onClose={() => setShowNewModal(false)} />}
+      </div>
+    </NavigationGuardProvider>
   );
 }

@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import Sidebar from './Sidebar';
 import sheltersReducer from '../../store/sheltersSlice';
-import uiReducer from '../../store/uiSlice';
+import uiReducer, { type UiState } from '../../store/uiSlice';
 import type { Shelter } from '../../../shared/ipc-types';
 
 function makeShelter(name: string, overrides: Partial<Shelter> = {}): Shelter {
@@ -63,7 +63,7 @@ function renderSidebar(shelters: Shelter[]) {
           showOnWeb: 'any',
         },
         toast: null,
-      },
+      } as UiState,
     },
   });
 

@@ -44,6 +44,10 @@ The relationship between a Source and a Shelter, carried by the `shelter_sources
 
 An image associated with exactly one Shelter. A Shelter designates one Photo as its `default_photo`. A Map Marker may reference a Photo to show representative imagery for that historical location.
 
+## Photo Order
+
+The operator-defined sequence of Photos within a single Shelter. Photo Order is edited in the Photos tab by dragging photos, persists with the Shelter's photo records, and determines the order of photos in the Shelter Manifest and downstream publish outputs.
+
 ## Shelter History
 
 A freeform Markdown document associated with exactly one Shelter, stored at `{SHELTERS_ROOT}/{slug}/{slug}.md`. It is authored by the user and rendered in the History tab. A Shelter History may be absent (no file on disk), in which case the editor is replaced by a prompt to create it.
@@ -72,6 +76,10 @@ The explicit user action (button in the right column, formerly labelled "Import 
 
 The phase that begins when the operator clicks "Publish to web" and ends when the Publish Diff modal is ready to show. Consists of two operations run before any Drive upload: (1) building the local manifest via `buildManifest()` into `.publish-tmp/`, and (2) fetching the prior Drive manifest. The pre-flight result is held in main-process memory until the operator confirms or cancels.
 
+## Publish Session
+
+The operator-scoped unit of work that begins with Publish Pre-flight and ends when the operator cancels or completes Publish from the Publish Diff Modal. A Publish Session carries the reviewed Publish Diff and the pending publish state through confirmation or cancellation.
+
 ## Publish Diff
 
 The categorised comparison between the new local manifest and the prior Drive manifest. Four buckets: **new** (photos in local manifest with no prior Drive entry), **updated** (photos whose `updated` timestamp is newer than the prior manifest entry), **deleted** (photos in the prior manifest whose `fileName` is absent from the new local manifest — i.e. removed from `include_in_post`), and **unchanged** (skipped — no Drive call). The diff also carries the total shelter count and total map marker count from the new local manifest. History files (`.md`) are uploaded only when `history.updated` is newer than the prior manifest's `history.updated` (or no prior entry exists); the diff carries `historyToUploadCount` and `historyUnchangedCount` separately. History files are not shown as per-item diff entries. All photo operations are unconditional: every photo in each bucket is processed automatically on Publish with no per-item override.
@@ -79,4 +87,3 @@ The categorised comparison between the new local manifest and the prior Drive ma
 ## Publish Diff Modal
 
 The backdrop-locked modal that displays a summary of the Publish Diff before any Drive upload occurs. Shows counts only: N new · N updated · N to delete · N unchanged · N shelters · N map markers · N history files (when > 0). The operator confirms or aborts — there are no per-item checkboxes. Two exit paths: **Cancel** (aborts, cleans up `.publish-tmp/`) and **Publish** (executes all operations unconditionally). Cancel is available throughout — including during an active upload — but Drive files already written before Cancel are left as-is. The modal owns the full publish lifecycle: loading state, summary review, upload progress, and completion or error.
-

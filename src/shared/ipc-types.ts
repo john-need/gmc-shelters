@@ -26,6 +26,7 @@ export const CHANNELS = {
   PHOTOS_UPDATE: 'photos:update',
   PHOTOS_DELETE: 'photos:delete',
   PHOTOS_SET_DEFAULT: 'photos:setDefault',
+  PHOTOS_REORDER: 'photos:reorder',
   PHOTOS_UPLOAD: 'photos:upload',
   PHOTOS_READ_METADATA: 'photos:readMetadata',
   PHOTOS_READ_FILE_METADATA: 'photos:readFileMetadata',
@@ -230,6 +231,11 @@ export interface UntrackedFile {
   fileName: string;
 }
 
+export interface PhotoReorderInput {
+  shelterId: number;
+  photoIds: number[];
+}
+
 export interface OrphanedRecord {
   id: number;
   fileName: string;
@@ -379,6 +385,7 @@ export interface ElectronAPI {
     update: (input: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) => Promise<Photo>;
     delete: (id: number, sheltersRoot: string) => Promise<void>;
     setDefault: (shelterId: number, photoId: number) => Promise<void>;
+    reorder: (input: PhotoReorderInput) => Promise<void>;
     upload: (input: PhotoUploadInput) => Promise<Photo>;
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<Partial<Photo>>;
     readFileMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<FileMetadataTag[]>;
