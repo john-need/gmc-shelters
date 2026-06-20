@@ -88,18 +88,18 @@ const PhotoCardBody = memo(function PhotoCardBody({ p, idx, isDefault, onToggleI
         ) : (
           <span className="placeholder-glyph" style={{ color: 'rgba(255,247,225,0.7)' }}>{initial}</span>
         )}
+        {isDefault && (
+          <span className="photo-default-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            default
+          </span>
+        )}
       </div>
       <div className="photo-info">
         <span className="photo-title">{p.title || 'Untitled'}</span>
         <div className="photo-meta">
-          {isDefault && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              default
-            </span>
-          )}
           <label
             style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: 10 }}
             onClick={(e) => e.stopPropagation()}
@@ -114,7 +114,7 @@ const PhotoCardBody = memo(function PhotoCardBody({ p, idx, isDefault, onToggleI
               onChange={(e) => onToggleInclude(p.id, e.target.checked)}
               style={{ cursor: 'pointer', margin: 0 }}
             />
-            pub
+            Post on web
           </label>
         </div>
       </div>
@@ -168,6 +168,15 @@ function PhotoCardOverlay({ p, idx, isDefault, photoUrl }: PhotoCardBodyProps) {
 }
 
 const LIST_ROW_GRID = '40px 1.5fr 1fr 110px 80px 90px';
+const LIST_ROW_PAD = '6px 12px 6px 52px'; // left pad clears the 40px absolute drag handle
+
+const DragHandleGrip = () => (
+  <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor" aria-hidden="true">
+    <circle cx="2" cy="2" r="1.2" /><circle cx="6" cy="2" r="1.2" />
+    <circle cx="2" cy="7" r="1.2" /><circle cx="6" cy="7" r="1.2" />
+    <circle cx="2" cy="12" r="1.2" /><circle cx="6" cy="12" r="1.2" />
+  </svg>
+);
 
 interface ListRowBodyProps {
   p: Photo;
@@ -243,11 +252,11 @@ const ListRow = memo(function ListRow({ p, idx, isDefault, isSelected, onSelect,
       onClick={() => onSelect(p.id)}
       onDoubleClick={() => onOpenEditor(p.id)}
       style={{
+        position: 'relative',
         display: 'grid',
         gridTemplateColumns: LIST_ROW_GRID,
         alignItems: 'center',
-        padding: '6px 12px',
-        cursor: 'grab',
+        padding: LIST_ROW_PAD,
         borderBottom: '1px solid var(--line)',
         background: isSelected ? 'var(--selected)' : 'transparent',
         fontSize: 12.5,
@@ -255,9 +264,16 @@ const ListRow = memo(function ListRow({ p, idx, isDefault, isSelected, onSelect,
         transition,
         opacity: isDragging ? 0.4 : 1,
       }}
-      {...attributes}
-      {...listeners}
     >
+      <span
+        className="list-drag-handle"
+        aria-label="Drag to reorder"
+        onClick={(e) => e.stopPropagation()}
+        {...attributes}
+        {...listeners}
+      >
+        <DragHandleGrip />
+      </span>
       <ListRowBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={onToggleInclude} photoUrl={photoUrl} />
     </div>
   );
@@ -267,10 +283,11 @@ function ListRowOverlay({ p, idx, isDefault, photoUrl }: ListRowBodyProps) {
   return (
     <div
       style={{
+        position: 'relative',
         display: 'grid',
         gridTemplateColumns: LIST_ROW_GRID,
         alignItems: 'center',
-        padding: '6px 12px',
+        padding: LIST_ROW_PAD,
         background: 'var(--surface)',
         fontSize: 12.5,
         outline: '2px solid var(--forest)',
@@ -279,6 +296,7 @@ function ListRowOverlay({ p, idx, isDefault, photoUrl }: ListRowBodyProps) {
         cursor: 'grabbing',
       }}
     >
+      <span className="list-drag-handle"><DragHandleGrip /></span>
       <ListRowBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={noop} photoUrl={photoUrl} />
     </div>
   );
@@ -836,7 +854,7 @@ export default function PhotosTab() {
                 <div style={{ background: 'var(--surface)', border: '1px solid var(--line-2)', borderRadius: 6, overflow: 'hidden' }}>
                   <div style={{
                     display: 'grid', gridTemplateColumns: LIST_ROW_GRID,
-                    padding: '8px 12px',
+                    padding: '8px 12px 8px 52px',
                     fontFamily: 'var(--font-mono)', fontSize: 9.5,
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     color: 'var(--ink-3)',

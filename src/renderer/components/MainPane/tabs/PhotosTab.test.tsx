@@ -413,7 +413,8 @@ describe('include_in_post quick-toggle checkbox', () => {
       expect(rows.map((r) => r.getAttribute('data-testid'))).toEqual([
         'list-row-1', 'list-row-2', 'list-row-3',
       ]);
-      expect(rows[0]).toHaveAttribute('aria-roledescription', 'sortable');
+      // Sortable attributes live on the dedicated drag handle, not the whole row.
+      expect(rows[0].querySelector('.list-drag-handle')).toHaveAttribute('aria-roledescription', 'sortable');
     });
   });
 
@@ -508,5 +509,62 @@ describe('US1 — Sync from File button', () => {
     await waitFor(() => {
       expect(screen.queryByText('Import from File')).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('default photo badge (grid view)', () => {
+  it('renders the default badge as an overlay inside the photo thumb', async () => {
+    const photo = makePhoto({ id: 1 });
+    const store = makeStore(makeShelter({ default_photo_id: 1 }), [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const card = await screen.findByTestId('photo-card-1');
+    const badge = card.querySelector('.photo-thumb .photo-default-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge?.textContent?.toLowerCase()).toContain('default');
+    expect(badge?.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('does not render the badge in the meta row below the thumb', async () => {
+    const photo = makePhoto({ id: 1 });
+    const store = makeStore(makeShelter({ default_photo_id: 1 }), [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const card = await screen.findByTestId('photo-card-1');
+    expect(card.querySelector('.photo-meta .photo-default-badge')).toBeNull();
+  });
+
+  it('renders no badge when the photo is not the default', async () => {
+    const photo = makePhoto({ id: 1 });
+    const store = makeStore(makeShelter({ default_photo_id: null }), [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const card = await screen.findByTestId('photo-card-1');
+    expect(card.querySelector('.photo-default-badge')).toBeNull();
+  });
+
+  it('labels the include-in-post toggle "Post on web"', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1 })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const card = await screen.findByTestId('photo-card-1');
+    expect(within(card).getByText('Post on web')).toBeInTheDocument();
+    expect(within(card).queryByText('pub')).toBeNull();
+  });
+});
+
+describe('list view drag handle', () => {
+  it('renders a dedicated drag handle as the first cell of each row', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1 })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    const row = await screen.findByTestId('list-row-1');
+    const handle = row.querySelector('.list-drag-handle');
+    expect(handle).toBeInTheDocument();
+    expect(row.firstElementChild).toBe(handle);
+  });
+
+  it('does not set a grab cursor on the whole row', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1 })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    const row = await screen.findByTestId('list-row-1');
+    expect(row.style.cursor).not.toBe('grab');
   });
 });

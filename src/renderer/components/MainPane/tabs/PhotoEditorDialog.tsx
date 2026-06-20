@@ -184,17 +184,42 @@ export default function PhotoEditorDialog({
 
   const initial = photo.title ? photo.title.charAt(0) : photo.file_name.charAt(0).toUpperCase();
 
-  const cropPreviewStyle: React.CSSProperties | null = (crop && !cropping && naturalSize && frameSize)
-    ? (() => {
-        const { w: fw, h: fh } = frameSize;
-        const fitScale = Math.min(fw / crop.width, fh / crop.height);
-        const totalW = naturalSize.w * fitScale;
-        const totalH = naturalSize.h * fitScale;
-        const left = (fw - crop.width * fitScale) / 2 - crop.x * fitScale;
-        const top = (fh - crop.height * fitScale) / 2 - crop.y * fitScale;
-        return { position: 'absolute' as const, left, top, width: totalW, height: totalH };
-      })()
-    : null;
+  // After Done, preview only the cropped region. A clip box sized to the crop's
+  // fitted rect (centred in the frame) masks everything outside the crop, while
+  // the full image inside is scaled and offset so the crop's top-left aligns to
+  // the box origin. Sizing the clip box to the crop — not the frame — is what
+  // keeps surrounding pixels from bleeding in along the letterbox axis.
+  const cropPreview: { clip: React.CSSProperties; img: React.CSSProperties } | null =
+    (crop && !cropping && naturalSize && frameSize)
+      ? (() => {
+          const { w: fw, h: fh } = frameSize;
+          const fitScale = Math.min(fw / crop.width, fh / crop.height);
+          const clipW = crop.width * fitScale;
+          const clipH = crop.height * fitScale;
+          return {
+            // Centre via translate, not measured-pixel offsets: the frame size is
+            // snapshotted in onLoad and may be captured mid-entrance-animation
+            // (scale 0.96), so deriving the position from it lands the crop up-and-
+            // left of true centre. Translate keeps it centred whatever the snapshot.
+            clip: {
+              position: 'absolute' as const,
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: clipW,
+              height: clipH,
+              overflow: 'hidden',
+            },
+            img: {
+              position: 'absolute' as const,
+              left: -crop.x * fitScale,
+              top: -crop.y * fitScale,
+              width: naturalSize.w * fitScale,
+              height: naturalSize.h * fitScale,
+            },
+          };
+        })()
+      : null;
 
   return (
     <div
@@ -236,13 +261,15 @@ export default function PhotoEditorDialog({
               }}
             >
               {photoUrl ? (
-                cropPreviewStyle ? (
-                  <img
-                    key={`${photoUrl}-crop`}
-                    src={photoUrl}
-                    alt={photo.alt_text || photo.title || photo.file_name}
-                    style={cropPreviewStyle}
-                  />
+                cropPreview ? (
+                  <div className="crop-preview-clip" style={cropPreview.clip}>
+                    <img
+                      key={`${photoUrl}-crop`}
+                      src={photoUrl}
+                      alt={photo.alt_text || photo.title || photo.file_name}
+                      style={cropPreview.img}
+                    />
+                  </div>
                 ) : (
                   <PhotoPreviewImage
                     key={photoUrl}
@@ -252,8 +279,11 @@ export default function PhotoEditorDialog({
                     onLoad={(img) => {
                       setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
                       if (frameRef.current) {
-                        const fr = frameRef.current.getBoundingClientRect();
-                        setFrameSize({ w: fr.width, h: fr.height });
+                        // offsetWidth/Height give the untransformed layout box. The
+                        // dialog's `pop` entrance animation scales the frame, so a
+                        // getBoundingClientRect here would report a shrunken size and
+                        // misplace the crop overlay and preview.
+                        setFrameSize({ w: frameRef.current.offsetWidth, h: frameRef.current.offsetHeight });
                       }
                     }}
                   />
