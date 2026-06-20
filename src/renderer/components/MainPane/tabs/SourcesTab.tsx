@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
-import type { Source, SourceInput, SourceType } from '../../../../shared/ipc-types';
+import type { Source, SourceInput, SourceType, SourceRef } from '../../../../shared/ipc-types';
 import { createSource, updateSource, deleteSource } from '../../../store/sourcesSlice';
 import { citeChicago } from '../../../../shared/cite-chicago';
 
@@ -25,6 +25,32 @@ const SOURCE_GLYPH: Record<string, string> = {
   magazine: 'M', website: 'W', archive: 'A', manuscript: 'M',
   interview: 'I', map: 'P', report: 'R', other: '?',
 };
+
+// Fields surfaced (and searchable) in the browse-existing picker, by type.
+type PickerField = { key: keyof SourceRef; label: string };
+const PICKER_FIELDS: Record<SourceType, PickerField[]> = {
+  book:       [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'edition', label: 'Edition' }, { key: 'year', label: 'Year' }],
+  chapter:    [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'edition', label: 'Edition' }, { key: 'year', label: 'Year' }],
+  journal:    [{ key: 'container_title', label: 'Journal / Magazine' }, { key: 'volume', label: 'Volume' }, { key: 'issue', label: 'Issue' }, { key: 'year', label: 'Year' }],
+  newspaper:  [{ key: 'container_title', label: 'Newspaper' }],
+  magazine:   [{ key: 'container_title', label: 'Journal / Magazine' }, { key: 'volume', label: 'Volume' }, { key: 'issue', label: 'Issue' }, { key: 'year', label: 'Year' }],
+  website:    [{ key: 'container_title', label: 'Website Name' }],
+  archive:    [{ key: 'archive', label: 'Archive Repository' }, { key: 'container_title', label: 'Collection' }],
+  manuscript: [{ key: 'archive', label: 'Archive Repository' }, { key: 'archive_location', label: 'Box / folder / call number' }],
+  interview:  [{ key: 'archive', label: 'Archive Repository' }, { key: 'archive_location', label: 'Box / folder / call number' }],
+  map:        [{ key: 'title', label: 'Title' }, { key: 'year', label: 'Year' }],
+  report:     [{ key: 'title', label: 'Title' }, { key: 'edition', label: 'Edition' }, { key: 'volume', label: 'Volume' }, { key: 'year', label: 'Year' }],
+  other:      [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'year', label: 'Year' }],
+};
+
+// Bibliographic keys copied into the form when a picker row is selected.
+const BIB_KEYS: (keyof SourceRef)[] = [
+  'type', 'author', 'title', 'container_title', 'editor', 'edition', 'volume',
+  'issue', 'pages', 'publisher', 'place', 'year', 'date', 'url', 'access_date',
+  'archive', 'archive_location',
+];
+
+const cell = (v: SourceRef[keyof SourceRef]): string => (v == null ? '' : String(v));
 
 function prettyUrl(u: string): string {
   try { return new URL(u).hostname.replace(/^www\./, ''); }
@@ -156,6 +182,90 @@ function SourceCard({ s, selected, onClick, onToggleInclude, onEdit, onDelete }:
   );
 }
 
+interface SourcePickerProps {
+  open: boolean;
+  type: SourceType;
+  sources: SourceRef[];
+  onPick: (ref: SourceRef) => void;
+  onClose: () => void;
+}
+
+function SourcePicker({ open, type, sources, onPick, onClose }: SourcePickerProps) {
+  const fields = useMemo(() => PICKER_FIELDS[type] ?? [], [type]);
+  const [queries, setQueries] = useState<Record<string, string>>({});
+
+  // Reset searches whenever the picker is re-opened or the type changes.
+  useEffect(() => { if (open) setQueries({}); }, [open, type]);
+
+  const rows = useMemo(() => {
+    const matching = sources.filter((r) => r.type === type);
+    // De-duplicate by the visible field signature.
+    const seen = new Set<string>();
+    const unique = matching.filter((r) => {
+      const sig = fields.map((f) => cell(r[f.key])).join('');
+      if (seen.has(sig)) return false;
+      seen.add(sig);
+      return true;
+    });
+    const filtered = unique.filter((r) =>
+      fields.every((f) => {
+        const q = (queries[f.key] ?? '').trim().toLowerCase();
+        return q === '' || cell(r[f.key]).toLowerCase().includes(q);
+      }),
+    );
+    const sortKey = fields[0]?.key ?? 'title';
+    return filtered.sort((a, b) => cell(a[sortKey]).localeCompare(cell(b[sortKey]), undefined, { sensitivity: 'base' }));
+  }, [sources, type, fields, queries]);
+
+  return (
+    <div className={`source-picker${open ? ' open' : ''}`} aria-hidden={!open}>
+      {open && (
+      <>
+      <div className="modal-head">
+        <h2>Reuse an existing source</h2>
+        <div className="sub">Pick a {type} already on record to fill in the form</div>
+      </div>
+      <div className="source-picker-grid" style={{ gridTemplateColumns: `repeat(${fields.length}, 1fr)` }}>
+        {fields.map((f) => (
+          <input
+            key={f.key}
+            className="input"
+            aria-label={`Search ${f.label}`}
+            placeholder={f.label}
+            value={queries[f.key] ?? ''}
+            onChange={(e) => setQueries((q) => ({ ...q, [f.key]: e.target.value }))}
+          />
+        ))}
+      </div>
+      <div className="source-picker-rows">
+        {rows.length === 0 ? (
+          <div className="sources-empty"><div style={{ fontSize: 12, color: 'var(--ink-3)' }}>No matching sources.</div></div>
+        ) : (
+          rows.map((r) => (
+            <button
+              type="button"
+              key={r.id}
+              data-testid={`picker-row-${r.id}`}
+              className="source-picker-row"
+              style={{ gridTemplateColumns: `repeat(${fields.length}, 1fr)` }}
+              onClick={() => onPick(r)}
+            >
+              {fields.map((f) => (
+                <span key={f.key} className="cell">{cell(r[f.key]) || '—'}</span>
+              ))}
+            </button>
+          ))
+        )}
+      </div>
+      <div className="modal-foot">
+        <button type="button" className="btn" onClick={onClose}>Back</button>
+      </div>
+      </>
+      )}
+    </div>
+  );
+}
+
 interface SourceModalProps {
   source: Partial<Source> & { shelter_id: number };
   creating: boolean;
@@ -165,6 +275,23 @@ interface SourceModalProps {
 
 function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
   const [s, setS] = useState({ ...source });
+  const [picking, setPicking] = useState(false);
+  const [allSources, setAllSources] = useState<SourceRef[]>([]);
+
+  const openPicker = async () => {
+    if (!s.type) return;
+    if (window.api) setAllSources(await window.api.sources.getAll());
+    setPicking(true);
+  };
+
+  const handlePick = (ref: SourceRef) => {
+    setS((cur) => {
+      const next = { ...cur };
+      for (const k of BIB_KEYS) (next as Record<string, unknown>)[k] = ref[k];
+      return next;
+    });
+    setPicking(false);
+  };
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const v = e.target.type === 'number'
@@ -215,7 +342,7 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
 
   return (
     <div className="modal-bg" onClick={onCancel}>
-      <form className="modal wide" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+      <form className="modal wide" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <div className="modal-head">
           <h2>{creating ? 'Add a new source' : 'Edit source'}</h2>
           <div className="sub">Chicago Manual of Style · notes-bibliography</div>
@@ -224,9 +351,23 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
           <div className="field-grid" style={{ marginBottom: 0 }}>
             <div className="field">
               <label className="label">Type</label>
-              <select className="select" value={s.type} onChange={set('type')}>
-                {SOURCE_TYPES.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}
-              </select>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <select className="select" value={s.type} onChange={set('type')} style={{ flex: 1 }}>
+                  {SOURCE_TYPES.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}
+                </select>
+                <button
+                  type="button"
+                  className="btn icon"
+                  title="Browse existing sources"
+                  aria-label="Browse existing sources"
+                  disabled={!s.type}
+                  onClick={openPicker}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div className="field">
               <label className="label">Year</label>
@@ -399,6 +540,14 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
             )}
           </button>
         </div>
+
+        <SourcePicker
+          open={picking}
+          type={s.type as SourceType}
+          sources={allSources}
+          onPick={handlePick}
+          onClose={() => setPicking(false)}
+        />
       </form>
     </div>
   );

@@ -44,6 +44,12 @@ The relationship between a Source and a Shelter, carried by the `shelter_sources
 
 An image associated with exactly one Shelter. A Shelter designates one Photo as its `default_photo`. A Map Marker may reference a Photo to show representative imagery for that historical location.
 
+Deleting a Photo always succeeds regardless of whether its file is present on disk. Deletion clears every inbound reference to it: any Map Marker using it as representative imagery has its image cleared, and if it was a Shelter's default it is no longer the default. These references are conveniences, not core data, so they are cleared silently rather than blocking the delete.
+
+## Orphaned Photo Record
+
+A Photo whose database record exists but whose underlying file is missing from disk (its preview fails to load — "404"). Surfaced in the Reconcile flow as "Database records with no file." An Orphaned Photo Record is still a fully deletable Photo; the missing file does not impede deletion.
+
 ## Photo Order
 
 The operator-defined sequence of Photos within a single Shelter. Photo Order is edited in the Photos tab by dragging photos, persists with the Shelter's photo records, and determines the order of photos in the Shelter Manifest and downstream publish outputs.

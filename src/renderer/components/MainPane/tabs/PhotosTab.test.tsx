@@ -40,7 +40,7 @@ function makeStore(shelter: Shelter, photos: Photo[] = []) {
         loading: false,
         uploading: false,
       },
-    } as any,
+    } as unknown as ReturnType<typeof reducer>,
   });
 }
 
@@ -60,10 +60,10 @@ const mockReorderPhotos = jest.fn();
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (window as any).api = {
+  (window as { api: unknown }).api = {
     app: { getRepoRoot: jest.fn().mockResolvedValue('/repo') },
     photos: {
-      update: jest.fn().mockImplementation((photo: any) => Promise.resolve({
+      update: jest.fn().mockImplementation((photo: Partial<Photo>) => Promise.resolve({
         file_name: 'test.jpg', created: '2024-01-01', shelter_id: 10,
         ...photo, updated: '2024-01-01',
       })),
@@ -73,12 +73,14 @@ beforeEach(() => {
       readFileMetadata: jest.fn().mockReturnValue(new Promise(() => {})),
       writeFileMetadata: jest.fn().mockResolvedValue(undefined),
       readMetadata: jest.fn().mockResolvedValue({}),
+      export: jest.fn().mockResolvedValue(null),
+      delete: jest.fn().mockResolvedValue(undefined),
     },
   };
 });
 
 afterEach(() => {
-  (window as any).api = undefined;
+  (window as { api: unknown }).api = undefined;
 });
 
 describe('ReconcileModal', () => {
@@ -369,7 +371,65 @@ describe('US1 — Metadata icon button', () => {
       expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
-    expect((window as any).api.photos.readFileMetadata).toHaveBeenCalledWith('test-shelter', 'shot.jpg', expect.any(String));
+    expect(window.api.photos.readFileMetadata).toHaveBeenCalledWith('test-shelter', 'shot.jpg', expect.any(String));
+  });
+
+  it('export icon button is present in photo-detail-head when a photo is selected', async () => {
+    const store = makeStore(makeShelter(), [makePhoto()]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export photo/i })).toBeInTheDocument();
+    });
+  });
+
+  it('clicking the export button calls photos.export with the slug, file name and title', async () => {
+    const shelter = makeShelter({ slug: 'test-shelter' });
+    const photo = makePhoto({ file_name: 'shot.jpg', title: 'Town Hall' });
+    const store = makeStore(shelter, [photo]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export photo/i })).toBeInTheDocument();
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /export photo/i }));
+    });
+    expect(window.api.photos.export).toHaveBeenCalledWith('test-shelter', 'shot.jpg', 'Town Hall', expect.any(String));
+  });
+
+  it('clicking delete opens a confirm dialog without deleting immediately', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /delete photo/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /delete photo/i }));
+    expect(screen.getByRole('dialog', { name: /confirm/i })).toBeInTheDocument();
+    expect(window.api.photos.delete).not.toHaveBeenCalled();
+  });
+
+  it('confirming the delete dialog calls photos.delete', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'shot.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /delete photo/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /delete photo/i }));
+    await act(async () => {
+      fireEvent.click(within(screen.getByRole('dialog', { name: /confirm/i })).getByRole('button', { name: /^delete$/i }));
+    });
+    expect(window.api.photos.delete).toHaveBeenCalledWith(1, expect.any(String));
+  });
+
+  it('cancelling the delete dialog does not call photos.delete', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /delete photo/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /delete photo/i }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: /confirm/i })).getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('dialog', { name: /confirm/i })).not.toBeInTheDocument();
+    expect(window.api.photos.delete).not.toHaveBeenCalled();
   });
 });
 
@@ -432,7 +492,7 @@ describe('include_in_post quick-toggle checkbox', () => {
     await waitFor(() => expect(screen.getByTestId('photo-card-1')).toBeInTheDocument());
     const cb = within(screen.getByTestId('photo-card-1')).getByRole('checkbox', { name: /include in post/i });
     await act(async () => { fireEvent.click(cb); });
-    expect((window as any).api.photos.update).toHaveBeenCalledWith(
+    expect(window.api.photos.update).toHaveBeenCalledWith(
       expect.objectContaining({ include_in_post: true }),
     );
   });
@@ -462,7 +522,7 @@ describe('include_in_post quick-toggle checkbox', () => {
     await waitFor(() => expect(screen.getByTestId('list-row-1')).toBeInTheDocument());
     const cb = within(screen.getByTestId('list-row-1')).getByRole('checkbox', { name: /include in post/i });
     await act(async () => { fireEvent.click(cb); });
-    expect((window as any).api.photos.update).toHaveBeenCalledWith(
+    expect(window.api.photos.update).toHaveBeenCalledWith(
       expect.objectContaining({ include_in_post: true }),
     );
   });
@@ -494,7 +554,7 @@ describe('US1 — Sync from File button', () => {
       });
 
       await waitFor(() => {
-        expect((window as any).api.photos.update).toHaveBeenCalledWith(
+        expect(window.api.photos.update).toHaveBeenCalledWith(
           expect.objectContaining({ date_taken: '1984' }),
         );
       });

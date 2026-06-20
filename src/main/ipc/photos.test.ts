@@ -5,7 +5,7 @@ jest.mock('../fs/photos');
 jest.mock('../db/connection');
 jest.mock('fs/promises');
 
-import { ipcMain } from 'electron';
+import { ipcMain, dialog, BrowserWindow } from 'electron';
 import * as fsp from 'fs/promises';
 import * as dbPhotos from '../db/photos';
 import * as dbShelters from '../db/shelters';
@@ -13,12 +13,12 @@ import * as fsPhotos from '../fs/photos';
 import { getDb } from '../db/connection';
 import { registerPhotoHandlers } from './photos';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ReconcileApplyInput } from '@shared/ipc-types';
+import type { ReconcileApplyInput, ReconcileScanResult, ReconcileApplyResult } from '@shared/ipc-types';
 
-function getHandler(channel: string) {
+function getHandler<T = unknown>(channel: string) {
   const call = (ipcMain.handle as jest.Mock).mock.calls.find(([ch]) => ch === channel);
   if (!call) throw new Error(`No handler registered for ${channel}`);
-  return call[1] as (...args: unknown[]) => unknown;
+  return call[1] as (...args: unknown[]) => T;
 }
 
 beforeEach(() => {
@@ -127,6 +127,51 @@ describe('ipc/photos', () => {
     expect(result).toBe(metadata);
   });
 
+  describe('PHOTOS_EXPORT', () => {
+    it('copies the photo to the chosen path using the title as the default name', async () => {
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/test-shelter/photos/shot.jpg');
+      (BrowserWindow.fromWebContents as jest.Mock).mockReturnValue({ id: 1 });
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({ canceled: false, filePath: '/Users/me/Desktop/Town Hall.jpg' });
+
+      const handler = getHandler(CHANNELS.PHOTOS_EXPORT);
+      const result = await handler({ sender: {} }, { slug: 'test-shelter', fileName: 'shot.jpg', title: 'Town Hall', sheltersRoot: '/base' });
+
+      expect(fsPhotos.photoFilePath).toHaveBeenCalledWith('test-shelter', 'shot.jpg', '/base');
+      expect(dialog.showSaveDialog).toHaveBeenCalledWith(
+        { id: 1 },
+        expect.objectContaining({ defaultPath: 'Town Hall.jpg' }),
+      );
+      expect(fsp.copyFile).toHaveBeenCalledWith('/base/test-shelter/photos/shot.jpg', '/Users/me/Desktop/Town Hall.jpg');
+      expect(result).toBe('/Users/me/Desktop/Town Hall.jpg');
+    });
+
+    it('falls back to the file basename when no title is set', async () => {
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/test-shelter/photos/shot-123.jpg');
+      (BrowserWindow.fromWebContents as jest.Mock).mockReturnValue({ id: 1 });
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({ canceled: false, filePath: '/out/shot-123.jpg' });
+
+      const handler = getHandler(CHANNELS.PHOTOS_EXPORT);
+      await handler({ sender: {} }, { slug: 'test-shelter', fileName: 'shot-123.jpg', title: '', sheltersRoot: '/base' });
+
+      expect(dialog.showSaveDialog).toHaveBeenCalledWith(
+        { id: 1 },
+        expect.objectContaining({ defaultPath: 'shot-123.jpg' }),
+      );
+    });
+
+    it('does not copy when the user cancels', async () => {
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/test-shelter/photos/shot.jpg');
+      (BrowserWindow.fromWebContents as jest.Mock).mockReturnValue({ id: 1 });
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({ canceled: true, filePath: undefined });
+
+      const handler = getHandler(CHANNELS.PHOTOS_EXPORT);
+      const result = await handler({ sender: {} }, { slug: 'test-shelter', fileName: 'shot.jpg', title: 'Town Hall', sheltersRoot: '/base' });
+
+      expect(fsp.copyFile).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+    });
+  });
+
   it('PHOTOS_READ_FILE_METADATA calls readPhotoFileMetadata and returns result', async () => {
     const tags = [{ group: 'EXIF', key: 'Title', label: 'Title', value: 'Hall', writable: true }];
     (fsPhotos.readPhotoFileMetadata as jest.Mock).mockResolvedValue(tags);
@@ -159,8 +204,8 @@ describe('ipc/photos', () => {
       (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue(['new-file.jpg', 'another.png']);
       (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(2);
       expect(result.untrackedFiles[0].fileName).toBe('test-shelter/photos/new-file.jpg');
@@ -173,8 +218,8 @@ describe('ipc/photos', () => {
       (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
       (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue(['root-photo.jpg']);
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(1);
       expect(result.untrackedFiles[0].fileName).toBe('test-shelter/root-photo.jpg');
@@ -190,8 +235,8 @@ describe('ipc/photos', () => {
       (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
       (fsp.access as jest.Mock).mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.orphanedRecords).toHaveLength(1);
       expect(result.orphanedRecords[0].id).toBe(10);
@@ -208,8 +253,8 @@ describe('ipc/photos', () => {
       (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
       (fsp.access as jest.Mock).mockResolvedValue(undefined);
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(0);
       expect(result.orphanedRecords).toHaveLength(0);
@@ -221,8 +266,8 @@ describe('ipc/photos', () => {
       (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
       (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(0);
       expect(result.orphanedRecords).toHaveLength(0);
@@ -240,8 +285,8 @@ describe('ipc/photos', () => {
         .mockResolvedValueOnce(undefined)        // id 20 exists
         .mockRejectedValueOnce(new Error('ENOENT')); // id 21 gone
 
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.orphanedRecords).toHaveLength(1);
       expect(result.orphanedRecords[0].id).toBe(21);
@@ -263,8 +308,8 @@ describe('ipc/photos', () => {
         shelterId: 1, sheltersRoot: '/shelters',
         filesToAdd: ['test-shelter/photos/new.jpg'], recordIdsToDelete: [],
       };
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
-      const result = await handler(null, input) as any;
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
 
       expect(dbPhotos.insertPhoto).toHaveBeenCalledWith(1, 'test-shelter/photos/new.jpg', 'new');
       expect(result.added).toBe(1);
@@ -281,8 +326,8 @@ describe('ipc/photos', () => {
         shelterId: 1, sheltersRoot: '/shelters',
         filesToAdd: ['test-shelter/root-photo.jpg'], recordIdsToDelete: [],
       };
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
-      const result = await handler(null, input) as any;
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
 
       expect(dbPhotos.insertPhoto).toHaveBeenCalledWith(1, 'test-shelter/root-photo.jpg', 'root-photo');
       expect(result.added).toBe(1);
@@ -296,8 +341,8 @@ describe('ipc/photos', () => {
         shelterId: 1, sheltersRoot: '/shelters',
         filesToAdd: [], recordIdsToDelete: [10, 11],
       };
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
-      const result = await handler(null, input) as any;
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
 
       expect(dbPhotos.clearDefaultPhoto).toHaveBeenCalledWith(1, 10);
       expect(dbPhotos.clearDefaultPhoto).toHaveBeenCalledWith(1, 11);
@@ -318,8 +363,8 @@ describe('ipc/photos', () => {
         shelterId: 1, sheltersRoot: '/shelters',
         filesToAdd: ['test-shelter/photos/ok.jpg', 'test-shelter/photos/bad.jpg'], recordIdsToDelete: [],
       };
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
-      const result = await handler(null, input) as any;
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
 
       expect(result.added).toBe(1);
       expect(result.failed).toBe(1);
@@ -334,7 +379,7 @@ describe('ipc/photos', () => {
         shelterId: 99, sheltersRoot: '/shelters',
         filesToAdd: ['shelter-99/photos/x.jpg'], recordIdsToDelete: [],
       };
-      const handler = getHandler(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
       await expect(handler(null, input)).resolves.toBeDefined();
     });
   });
@@ -350,8 +395,8 @@ describe('ipc/photos', () => {
         { id: 5, file_name: 'test-shelter/photos/registered.jpg', title: 'Registered' },
       ]);
 
-      const scanHandler = getHandler(CHANNELS.PHOTOS_RECONCILE_SCAN);
-      const result = await scanHandler(null, { shelterId: 1, sheltersRoot: '/shelters' }) as any;
+      const scanHandler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await scanHandler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(0);
     });

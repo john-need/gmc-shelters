@@ -36,6 +36,7 @@ import {
 } from './photos';
 import type { FileMetadataTag } from '../../shared/ipc-types';
 import type { Photo } from '../../shared/ipc-types';
+import { log } from '../logger';
 
 import sharp from 'sharp';
 
@@ -178,7 +179,7 @@ describe('fs/photos', () => {
 
 describe('writePhotoXmp', () => {
   it('calls exiftool.write with correct mapping', async () => {
-    const photo: any = {
+    const photo: Partial<Photo> = {
       id: 6007,
       title: 'My Title',
       photographer: 'Author Name',
@@ -204,7 +205,7 @@ describe('writePhotoXmp', () => {
   });
 
   it('omits CreateDate when date_taken is year-only', async () => {
-    const photo: any = {
+    const photo: Partial<Photo> = {
       id: 6007,
       title: 'My Title',
       photographer: 'Author Name',
@@ -322,7 +323,6 @@ describe('writePhotoFileMetadata', () => {
   });
 
   it('throws and logs on write error', async () => {
-    const { log } = require('../logger');
     mockExifToolInstance.write.mockRejectedValue(new Error('write failed'));
     await expect(writePhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters', { Title: 'X' })).rejects.toThrow('write failed');
     expect(log.error).toHaveBeenCalled();

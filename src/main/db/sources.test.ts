@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { getSourcesByShelter, createSource, updateSource, deleteSource } from './sources';
+import { getSourcesByShelter, getAllSources, createSource, updateSource, deleteSource } from './sources';
 
 jest.mock('./connection');
 import { getDb } from './connection';
@@ -70,6 +70,15 @@ describe('db/sources', () => {
 
   it('getSourcesByShelter returns empty array when no sources', () => {
     expect(getSourcesByShelter(shelterId)).toEqual([]);
+  });
+
+  it('getAllSources returns every bibliographic source across shelters, no association fields', () => {
+    createSource({ ...blank, shelter_id: shelterId, title: 'Beta', author: 'Yale' });
+    createSource({ ...blank, shelter_id: shelterId, title: 'Alpha', author: 'Adams' });
+    const all = getAllSources();
+    expect(all.map((s) => s.title)).toEqual(['Alpha', 'Beta']); // ORDER BY author
+    expect(all[0]).not.toHaveProperty('shelter_id');
+    expect(all[0]).not.toHaveProperty('annotation');
   });
 
   it('createSource inserts and returns source', () => {

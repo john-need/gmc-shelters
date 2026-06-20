@@ -101,7 +101,14 @@ export function updatePhoto(input: PhotoUpdateInput & { id: number; shelter_id: 
 
 export function deletePhoto(id: number): void {
   const db = getDb();
-  db.prepare('DELETE FROM photos WHERE id = ?').run(id);
+  // Null every inbound reference before deleting so FK constraints don't block
+  // and no dangling soft pointers remain. Both columns are "convenience" fields
+  // (representative imagery / default thumbnail), not core data.
+  db.transaction(() => {
+    db.prepare('UPDATE map_markers SET photo_id = NULL WHERE photo_id = ?').run(id);
+    db.prepare('UPDATE shelters SET default_photo_id = NULL WHERE default_photo_id = ?').run(id);
+    db.prepare('DELETE FROM photos WHERE id = ?').run(id);
+  })();
 }
 
 export function setDefaultPhoto(shelterId: number, photoId: number): void {
