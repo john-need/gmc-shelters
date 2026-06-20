@@ -188,7 +188,11 @@ export async function transformPhoto(
 ): Promise<void> {
   log.info(`Transforming photo: ${filePath}`, transform);
   try {
-    let pipeline = sharp(filePath);
+    // Bake any EXIF orientation into the pixels first. The browser honors the
+    // Orientation tag when displaying, but sharp.rotate(angle) operates on raw
+    // pixels and strips the tag — without this, the saved image would not match
+    // the rotation the user applied on screen (and crop coords would be off).
+    let pipeline = sharp(filePath).autoOrient();
 
     if (transform.rotation) {
       pipeline = pipeline.rotate(transform.rotation);
