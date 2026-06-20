@@ -1,5 +1,5 @@
 import { getDb } from './connection';
-import type { Source, SourceInput } from '../../shared/ipc-types';
+import type { Source, SourceInput, SourceRef } from '../../shared/ipc-types';
 
 const SELECT_SOURCE = `
   SELECT s.*,
@@ -24,6 +24,23 @@ export function getSourcesByShelter(shelterId: number): Source[] {
   return (db
     .prepare(`${SELECT_SOURCE} WHERE ss.shelter_id = ? ORDER BY s.author, s.year`)
     .all(shelterId) as Source[]).map(hydrateSource);
+}
+
+/**
+ * All bibliographic sources across every shelter (no association fields).
+ * Backs the "browse existing sources" picker for fast data re-entry.
+ */
+export function getAllSources(): SourceRef[] {
+  const db = getDb();
+  return db
+    .prepare(
+      `SELECT id, type, author, title, container_title, editor, edition,
+              volume, issue, pages, publisher, place, year, date, url,
+              access_date, archive, archive_location
+       FROM sources
+       ORDER BY author, title`,
+    )
+    .all() as SourceRef[];
 }
 
 export function createSource(input: SourceInput): Source {

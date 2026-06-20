@@ -54,7 +54,7 @@ const mockUpdate = jest.fn();
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (window as any).api = {
+  (window as { api: unknown }).api = {
     app: { getRepoRoot: jest.fn().mockResolvedValue('/repo') },
     photos: {
       update: mockUpdate,
@@ -68,7 +68,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  (window as any).api = undefined;
+  (window as { api: unknown }).api = undefined;
 });
 
 // ─── T003: US1 — dialog renders with all controls ───────────────────────────

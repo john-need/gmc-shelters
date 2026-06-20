@@ -154,11 +154,11 @@ describe('photosSlice extraReducers', () => {
     const mockReconcileApply = jest.fn();
 
     beforeEach(() => {
-      (window as any).api = { photos: { reconcileApply: mockReconcileApply } };
+      (window as { api: unknown }).api = { photos: { reconcileApply: mockReconcileApply } };
     });
 
     afterEach(() => {
-      (window as any).api = undefined;
+      (window as { api: unknown }).api = undefined;
     });
 
     it('calls window.api.photos.reconcileApply with correct input', async () => {
@@ -179,7 +179,7 @@ describe('photosSlice extraReducers', () => {
     });
 
     it('rejects when api not available', async () => {
-      (window as any).api = undefined;
+      (window as { api: unknown }).api = undefined;
       const store = configureStore({ reducer: { photos: photosReducer } });
       const input: ReconcileApplyInput = {
         shelterId: 1, sheltersRoot: '/shelters', filesToAdd: [], recordIdsToDelete: [],
@@ -194,11 +194,11 @@ describe('photosSlice extraReducers', () => {
     const mockGetByShelter = jest.fn();
 
     beforeEach(() => {
-      (window as any).api = { photos: { reorder: mockReorder, getByShelter: mockGetByShelter } };
+      (window as { api: unknown }).api = { photos: { reorder: mockReorder, getByShelter: mockGetByShelter } };
     });
 
     afterEach(() => {
-      (window as any).api = undefined;
+      (window as { api: unknown }).api = undefined;
     });
 
     const storeWith = (ids: number[]) =>

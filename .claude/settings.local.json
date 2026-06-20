@@ -81,7 +81,12 @@
       "Bash(npx electron *)",
       "Bash(echo \"exit: $?\")",
       "Bash(awk '/\\\\.modal-bg ?\\\\{/,/\\\\}/' src/renderer/index.css)",
-      "Bash(echo \"exit $?\")"
+      "Bash(echo \"exit $?\")",
+      "Bash(sed -n '55,70p' src/main/preload.ts)",
+      "Bash(sed -n '398,410p' src/shared/ipc-types.ts)",
+      "Bash(echo \"===EXIT $?===\")",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"tsc exit: $?\")"
     ]
   }
 }

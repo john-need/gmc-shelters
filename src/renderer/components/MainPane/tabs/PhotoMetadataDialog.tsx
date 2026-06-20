@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Photo, FileMetadataTag } from '../../../../shared/ipc-types';
 
 export interface PhotoMetadataDialogProps {
@@ -55,7 +55,7 @@ export default function PhotoMetadataDialog({ photo, shelterId: _shelterId, slug
     });
   };
 
-  const loadTags = () => {
+  const loadTags = useCallback(() => {
     setLoading(true);
     setLoadError(null);
     window.api.photos.readFileMetadata(slug, photo.file_name, sheltersRoot)
@@ -70,11 +70,11 @@ export default function PhotoMetadataDialog({ photo, shelterId: _shelterId, slug
         setLoadError(err?.message ?? 'Failed to read metadata');
         setLoading(false);
       });
-  };
+  }, [slug, photo.file_name, sheltersRoot]);
 
   useEffect(() => {
     loadTags();
-  }, []);
+  }, [loadTags]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

@@ -64,7 +64,7 @@ beforeEach(() => {
   Object.assign(navigator, {
     clipboard: { writeText: jest.fn().mockResolvedValue(undefined) },
   });
-  (window as any).api = {
+  (window as { api: unknown }).api = {
     photos: {
       readFileMetadata: jest.fn().mockReturnValue(new Promise(() => {})),
       writeFileMetadata: jest.fn().mockResolvedValue(undefined),
@@ -73,7 +73,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  (window as any).api = undefined;
+  (window as { api: unknown }).api = undefined;
 });
 
 // ─── US1: View Photo File Metadata ───────────────────────────────────────────
@@ -85,14 +85,14 @@ describe('US1 — View Photo File Metadata', () => {
   });
 
   it('T009b: shows loading spinner while IPC is in flight', () => {
-    (window as any).api.photos.readFileMetadata = jest.fn().mockReturnValue(new Promise(() => {}));
+    window.api.photos.readFileMetadata = jest.fn().mockReturnValue(new Promise(() => {}));
     renderDialog();
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   it('T009c: renders tag rows with label and value after IPC resolves', async () => {
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('EXIF'));
     fireEvent.click(screen.getByText('EXIF'));
@@ -104,7 +104,7 @@ describe('US1 — View Photo File Metadata', () => {
 
   it('T009d: tags are grouped by tag.group (group header rendered)', async () => {
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => {
       expect(screen.getByText('EXIF')).toBeInTheDocument();
@@ -118,7 +118,7 @@ describe('US1 — View Photo File Metadata', () => {
     const tags: FileMetadataTag[] = [
       { group: 'EXIF', key: 'Title', label: 'Title', value: 'x', writable: true },
     ];
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => {
       expect(screen.getByText('File')).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('US1 — View Photo File Metadata', () => {
     const tags: FileMetadataTag[] = [
       { group: 'EXIF', key: 'Title', label: 'Title', value: 'x', writable: true },
     ];
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('GPS'));
     // File, GPS, Composite, XMP have no data → 4 "No data" labels
@@ -148,7 +148,7 @@ describe('US1 — View Photo File Metadata', () => {
     const tags: FileMetadataTag[] = [
       { group: 'EXIF', key: 'Title', label: 'Title', value: null, writable: true },
     ];
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('EXIF'));
     fireEvent.click(screen.getByText('EXIF'));
@@ -158,7 +158,7 @@ describe('US1 — View Photo File Metadata', () => {
   });
 
   it('T009f: shows error message and Retry button on IPC rejection', async () => {
-    (window as any).api.photos.readFileMetadata = jest.fn().mockRejectedValue(new Error('read failed'));
+    window.api.photos.readFileMetadata = jest.fn().mockRejectedValue(new Error('read failed'));
     renderDialog();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
@@ -167,7 +167,7 @@ describe('US1 — View Photo File Metadata', () => {
 
   it('T009g: clicking Retry re-calls readFileMetadata', async () => {
     const mockRead = jest.fn().mockRejectedValue(new Error('read failed'));
-    (window as any).api.photos.readFileMetadata = mockRead;
+    window.api.photos.readFileMetadata = mockRead;
     renderDialog();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe('US1 — View Photo File Metadata', () => {
 describe('US2 — Copy Metadata Field to Clipboard', () => {
   it('T015a: each tag row has a copy button with title="Copy"', async () => {
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('File'));
     // Expand all groups so all copy buttons are visible
@@ -199,7 +199,7 @@ describe('US2 — Copy Metadata Field to Clipboard', () => {
 
   it('T015b: clicking a copy button calls clipboard.writeText with tag.value', async () => {
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('File'));
     // File is first in group order; expand it and click its first copy button
@@ -212,7 +212,7 @@ describe('US2 — Copy Metadata Field to Clipboard', () => {
 
   it('T015c: copy button shows "Copied" title after click', async () => {
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('File'));
     fireEvent.click(screen.getByText('File'));
@@ -224,7 +224,7 @@ describe('US2 — Copy Metadata Field to Clipboard', () => {
   it('T015d: copy icon reverts after ~1.5s', async () => {
     jest.useFakeTimers();
     const tags = makeTags();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await act(async () => {});
     fireEvent.click(screen.getByText('File'));
@@ -240,7 +240,7 @@ describe('US2 — Copy Metadata Field to Clipboard', () => {
     const tags: FileMetadataTag[] = [
       { group: 'EXIF', key: 'Title', label: 'Title', value: null, writable: true },
     ];
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     renderDialog();
     await waitFor(() => screen.getByText('EXIF'));
     fireEvent.click(screen.getByText('EXIF'));
@@ -254,7 +254,7 @@ describe('US2 — Copy Metadata Field to Clipboard', () => {
 
 describe('US3 — Edit Metadata Fields and Save to File', () => {
   async function renderWithTags(tags = makeTags()) {
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(tags);
     const result = renderDialog();
     await waitFor(() => screen.getByRole('button', { name: /edit/i }));
     return result;
@@ -293,14 +293,14 @@ describe('US3 — Edit Metadata Fields and Save to File', () => {
     const input = screen.getByDisplayValue('Main Hall');
     fireEvent.change(input, { target: { value: 'New Title' } });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /save/i })); });
-    expect((window as any).api.photos.writeFileMetadata).toHaveBeenCalledWith(
+    expect(window.api.photos.writeFileMetadata).toHaveBeenCalledWith(
       'test-shelter', 'shelter.jpg', '/shelters', { Title: 'New Title' }
     );
   });
 
   it('T017e: Save closes the dialog', async () => {
     const onClose = jest.fn();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
     renderDialog(makePhoto(), { onClose });
     await waitFor(() => screen.getByRole('button', { name: /edit/i }));
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
@@ -314,13 +314,13 @@ describe('US3 — Edit Metadata Fields and Save to File', () => {
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /save/i })); });
     const calls = dispatchSpy.mock.calls.map((c) => c[0]);
-    const updateCall = calls.find((c: any) => c?.type === 'photos/updatePhotoLocal');
+    const updateCall = calls.find((c: { type?: string } | undefined) => c?.type === 'photos/updatePhotoLocal');
     expect(updateCall).toBeUndefined();
   });
 
   it('T017g: Save does not call window.api.photos.update', async () => {
     const mockUpdate = jest.fn();
-    (window as any).api.photos.update = mockUpdate;
+    window.api.photos.update = mockUpdate;
     await renderWithTags();
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /save/i })); });
@@ -328,9 +328,9 @@ describe('US3 — Edit Metadata Fields and Save to File', () => {
   });
 
   it('T017h: write failure shows inline error without closing dialog', async () => {
-    (window as any).api.photos.writeFileMetadata = jest.fn().mockRejectedValue(new Error('write failed'));
+    window.api.photos.writeFileMetadata = jest.fn().mockRejectedValue(new Error('write failed'));
     const onClose = jest.fn();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
     renderDialog(makePhoto(), { onClose });
     await waitFor(() => screen.getByRole('button', { name: /edit/i }));
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
@@ -343,13 +343,13 @@ describe('US3 — Edit Metadata Fields and Save to File', () => {
 
   it('T017i: Cancel closes dialog without calling writeFileMetadata', async () => {
     const onClose = jest.fn();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
     renderDialog(makePhoto(), { onClose });
     await waitFor(() => screen.getByRole('button', { name: /edit/i }));
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect((window as any).api.photos.writeFileMetadata).not.toHaveBeenCalled();
+    expect(window.api.photos.writeFileMetadata).not.toHaveBeenCalled();
   });
 });
 
@@ -388,13 +388,13 @@ describe('US4 — Cancel / Dismiss Without Editing', () => {
 
   it('T019e: Escape in edit mode calls onClose without writeFileMetadata', async () => {
     const onClose = jest.fn();
-    (window as any).api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
+    window.api.photos.readFileMetadata = jest.fn().mockResolvedValue(makeTags());
     renderDialog(makePhoto(), { onClose });
     await waitFor(() => screen.getByRole('button', { name: /edit/i }));
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect((window as any).api.photos.writeFileMetadata).not.toHaveBeenCalled();
+    expect(window.api.photos.writeFileMetadata).not.toHaveBeenCalled();
   });
 
   it('T019f: Tab key traps focus within the dialog', () => {

@@ -19,6 +19,15 @@ const SCHEMA = `
     description TEXT DEFAULT '', include_in_post INTEGER DEFAULT 0, sort_order INTEGER,
     created TEXT, updated TEXT
   );
+  CREATE TABLE map_markers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shelter_id INTEGER NOT NULL REFERENCES shelters(id),
+    photo_id INTEGER REFERENCES photos(id),
+    latitude REAL, longitude REAL, name TEXT,
+    start_year INTEGER, end_year INTEGER, change_type TEXT,
+    notes TEXT, is_extant INTEGER, created TEXT, updated TEXT
+  );
+  PRAGMA foreign_keys = ON;
 `;
 
 describe('db/photos', () => {
@@ -104,6 +113,31 @@ describe('db/photos', () => {
   it('deletePhoto removes the photo', () => {
     const photo = insertPhoto(shelterId, 'del.jpg');
     deletePhoto(photo.id);
+    expect(getPhotosByShelter(shelterId)).toHaveLength(0);
+  });
+
+  it('deletePhoto nulls map_markers.photo_id referencing the deleted photo', () => {
+    const photo = insertPhoto(shelterId, 'marker-ref.jpg');
+    db.prepare(
+      `INSERT INTO map_markers (shelter_id, photo_id, latitude, longitude, name, start_year, change_type, notes, is_extant, created, updated)
+       VALUES (?, ?, 44.0, -72.0, 'Test Marker', 1930, 'Original', '', 1, '2020-01-01', '2020-01-01')`,
+    ).run(shelterId, photo.id);
+    deletePhoto(photo.id);
+    const marker = db.prepare('SELECT photo_id FROM map_markers WHERE shelter_id = ?').get(shelterId) as { photo_id: number | null };
+    expect(marker.photo_id).toBeNull();
+  });
+
+  it('deletePhoto nulls shelters.default_photo_id when it references the deleted photo', () => {
+    const photo = insertPhoto(shelterId, 'default-ref.jpg');
+    db.prepare('UPDATE shelters SET default_photo_id = ? WHERE id = ?').run(photo.id, shelterId);
+    deletePhoto(photo.id);
+    const shelter = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+    expect(shelter.default_photo_id).toBeNull();
+  });
+
+  it('deletePhoto succeeds when the photo file is missing (Orphaned Photo Record)', () => {
+    const photo = insertPhoto(shelterId, 'orphan.jpg');
+    expect(() => deletePhoto(photo.id)).not.toThrow();
     expect(getPhotosByShelter(shelterId)).toHaveLength(0);
   });
 

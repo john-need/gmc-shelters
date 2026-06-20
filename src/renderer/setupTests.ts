@@ -43,6 +43,7 @@ const mockApi: ElectronAPI = {
     reorder: noop,
     upload: noop,
     readMetadata: jest.fn().mockResolvedValue({}),
+    export: jest.fn().mockResolvedValue(null),
     readFileMetadata: jest.fn().mockResolvedValue([]),
     writeFileMetadata: noop,
     reconcileScan: jest.fn().mockResolvedValue({ untrackedFiles: [], orphanedRecords: [] }),
@@ -54,6 +55,7 @@ const mockApi: ElectronAPI = {
   },
   sources: {
     getByShelter: jest.fn().mockResolvedValue([]),
+    getAll: jest.fn().mockResolvedValue([]),
     create: noop,
     update: noop,
     delete: noop,

@@ -56,7 +56,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns NO_CREDENTIALS when credentials file is missing', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(false);
       registerPublishHandlers();
       const handler = getHandler(CHANNELS.PUBLISH_PREFLIGHT);
       const result = await handler(fakeEvent, validInput);
@@ -66,7 +66,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns the diff and stores preflight state on success', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       const diff = { newCount: 3, updatedCount: 0, deleteCount: 0, unchangedCount: 0 };
       mockRunPreflight.mockResolvedValue({ diff, state: { tmpDir: '/tmp/x' } });
 
@@ -80,7 +80,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns ALREADY_RUNNING when a preflight has already produced state', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
 
       registerPublishHandlers();
@@ -110,7 +110,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns a PublishResult on success after preflight', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
       const expectedResult = { shelterCount: 5, photosUploaded: 10, photosUpdated: 2, photosSkipped: 3, photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 1, manifestWritten: true };
       mockRunPublish.mockResolvedValue(expectedResult);
@@ -123,7 +123,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns ALREADY_RUNNING when a publish is already in progress', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       mockRunPreflight.mockResolvedValue({ diff: { newCount: 0 }, state: { tmpDir: '/tmp/x' } });
 
       // controllable promise so the first publish stays in-progress
@@ -162,7 +162,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns ok: true with folder name when connection succeeds', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       registerPublishHandlers();
       const handler = getHandler(CHANNELS.PUBLISH_TEST_CONNECTION);
       const result = await handler(fakeEvent, { rootFolderId: 'folder-id', scopes: validInput.scopes });
@@ -172,7 +172,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns ok: false when folder is unreachable', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       mockClient.testConnection.mockResolvedValue({ ok: false, message: 'Access denied' });
       registerPublishHandlers();
       const handler = getHandler(CHANNELS.PUBLISH_TEST_CONNECTION);
@@ -182,7 +182,7 @@ describe('registerPublishHandlers', () => {
     });
 
     it('returns ok: false with credentials message when credentials.json is missing', async () => {
-      const mockFsExists = jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
+      const mockFsExists = jest.spyOn(fs, 'existsSync').mockReturnValue(false);
       registerPublishHandlers();
       const handler = getHandler(CHANNELS.PUBLISH_TEST_CONNECTION);
       const result = await handler(fakeEvent, { rootFolderId: 'folder-id', scopes: validInput.scopes });

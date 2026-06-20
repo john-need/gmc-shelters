@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   DndContext,
@@ -302,6 +302,41 @@ function ListRowOverlay({ p, idx, isDefault, photoUrl }: ListRowBodyProps) {
   );
 }
 
+interface ConfirmDialogProps {
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+// Non-blocking replacement for window.confirm(). The native confirm() blocks the
+// main thread for as long as the dialog is open, which Chromium flags as a
+// multi-second "click handler took …ms" violation.
+function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel }: ConfirmDialogProps) {
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed', inset: 0, zIndex: 1000,
+    background: 'rgba(0,0,0,0.45)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  };
+  const dialogStyle: React.CSSProperties = {
+    background: 'var(--surface)', borderRadius: 8,
+    border: '1px solid var(--line-2)',
+    padding: '24px 28px', minWidth: 360, maxWidth: 440,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+  };
+  return (
+    <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div style={dialogStyle} role="dialog" aria-modal="true" aria-label="Confirm">
+        <p style={{ margin: 0, marginBottom: 20, color: 'var(--ink)', lineHeight: 1.5 }}>{message}</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button className="btn ghost" onClick={onCancel}>Cancel</button>
+          <button className="btn danger" onClick={onConfirm}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface ReconcileModalProps {
   shelterId: number;
   sheltersRoot: string;
@@ -506,6 +541,7 @@ export default function PhotosTab() {
   const [detailWidth, setDetailWidth] = useState(380);
   const [resizing, setResizing] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
 
@@ -530,7 +566,7 @@ export default function PhotosTab() {
       setSelectedId(photos[0].id);
     }
     if (photos.length === 0) setSelectedId(null);
-  }, [photos]);
+  }, [photos, selectedId]);
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -616,15 +652,32 @@ export default function PhotosTab() {
   };
 
   const handleDeletePhoto = async (id: number) => {
-    if (!confirm('Are you sure you want to permanently delete this photograph? This will also remove the file from your computer.')) return;
+    setPendingDeleteId(null);
     try {
       if (typeof window !== 'undefined' && window.api) {
         await window.api.photos.delete(id, sheltersRoot);
       }
       dispatch(removePhotoLocal({ shelterId: s.id, photoId: id }));
-      dispatch(showToast({ id: Date.now().toString(), message: 'Photo deleted from database and disk.' }));
+      if (s.default_photo_id === id) {
+        dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId: null, fileName: '' }));
+      }
+      dispatch(showToast({ id: Date.now().toString(), message: 'Photo deleted.' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Delete failed.' }));
+    }
+  };
+
+  const handleExportPhoto = async () => {
+    if (!selected || !s) return;
+    try {
+      if (typeof window !== 'undefined' && window.api) {
+        const savedPath = await window.api.photos.export(s.slug, selected.file_name, selected.title || '', sheltersRoot);
+        if (savedPath) {
+          dispatch(showToast({ id: Date.now().toString(), message: 'Photo exported.' }));
+        }
+      }
+    } catch {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Export failed.' }));
     }
   };
 
@@ -905,6 +958,15 @@ export default function PhotosTab() {
         )}
       </div>
 
+      {pendingDeleteId !== null && (
+        <ConfirmDialog
+          message="Are you sure you want to permanently delete this photograph? This will also remove the file from your computer."
+          confirmLabel="Delete"
+          onConfirm={() => handleDeletePhoto(pendingDeleteId)}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
+
       {reconcileOpen && (
         <ReconcileModal
           shelterId={s.id}
@@ -947,7 +1009,12 @@ export default function PhotosTab() {
                   </svg>
                 )}
               </button>
-              <button className="btn icon sm" title="Delete photo" onClick={() => handleDeletePhoto(selected.id)}>
+              <button className="btn icon sm" aria-label="Export photo" title="Export photo" onClick={handleExportPhoto}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>
+                </svg>
+              </button>
+              <button className="btn icon sm" title="Delete photo" onClick={() => setPendingDeleteId(selected.id)}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                 </svg>

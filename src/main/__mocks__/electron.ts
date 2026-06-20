@@ -63,6 +63,7 @@ const shell = {
 
 const dialog = {
   showOpenDialog: jest.fn().mockResolvedValue({ canceled: false, filePaths: [] }),
+  showSaveDialog: jest.fn().mockResolvedValue({ canceled: false, filePath: '' }),
 };
 
 const protocol = {

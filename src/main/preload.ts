@@ -40,6 +40,8 @@ const api: ElectronAPI = {
     upload: (input: PhotoUploadInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPLOAD, input),
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_READ_METADATA, { slug, fileName, sheltersRoot }),
+    export: (slug: string, fileName: string, title: string, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_EXPORT, { slug, fileName, title, sheltersRoot }),
     readFileMetadata: (slug: string, fileName: string, sheltersRoot: string): Promise<FileMetadataTag[]> =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_READ_FILE_METADATA, { slug, fileName, sheltersRoot }),
     writeFileMetadata: (slug: string, fileName: string, sheltersRoot: string, tags: Record<string, string>): Promise<void> =>
@@ -58,6 +60,7 @@ const api: ElectronAPI = {
   sources: {
     getByShelter: (shelterId: number) =>
       ipcRenderer.invoke(CHANNELS.SOURCES_GET_BY_SHELTER, { shelterId }),
+    getAll: () => ipcRenderer.invoke(CHANNELS.SOURCES_GET_ALL),
     create: (input: SourceInput) => ipcRenderer.invoke(CHANNELS.SOURCES_CREATE, input),
     update: (source: Source) => ipcRenderer.invoke(CHANNELS.SOURCES_UPDATE, source),
     delete: (id: number) => ipcRenderer.invoke(CHANNELS.SOURCES_DELETE, { id }),

@@ -2132,6 +2132,57 @@ html, body {
 }
 .modal.wide { width: 760px; }
 .modal-body.scroll { overflow-y: auto; flex: 1; min-height: 0; }
+
+/* Browse-existing-sources slide-in panel (overlays the source form) */
+.source-picker {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: 10px;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  pointer-events: none;
+}
+.source-picker.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.source-picker-grid {
+  display: grid;
+  gap: 8px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.source-picker-rows {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 6px 0;
+}
+.source-picker-row {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 22px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink-1);
+}
+.source-picker-row:hover { background: var(--hover); }
+.source-picker-row .cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 @keyframes pop {
   from { transform: scale(0.96) translateY(8px); opacity: 0; }
   to   { transform: scale(1) translateY(0); opacity: 1; }

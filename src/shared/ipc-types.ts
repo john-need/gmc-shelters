@@ -29,6 +29,7 @@ export const CHANNELS = {
   PHOTOS_REORDER: 'photos:reorder',
   PHOTOS_UPLOAD: 'photos:upload',
   PHOTOS_READ_METADATA: 'photos:readMetadata',
+  PHOTOS_EXPORT: 'photos:export',
   PHOTOS_READ_FILE_METADATA: 'photos:readFileMetadata',
   PHOTOS_WRITE_FILE_METADATA: 'photos:writeFileMetadata',
   PHOTOS_RECONCILE_SCAN: 'photos:reconcileScan',
@@ -36,6 +37,7 @@ export const CHANNELS = {
   HISTORY_READ: 'history:read',
   HISTORY_WRITE: 'history:write',
   SOURCES_GET_BY_SHELTER: 'sources:getByShelter',
+  SOURCES_GET_ALL: 'sources:getAll',
   SOURCES_CREATE: 'sources:create',
   SOURCES_UPDATE: 'sources:update',
   SOURCES_DELETE: 'sources:delete',
@@ -210,6 +212,15 @@ export interface Source {
 }
 
 export type SourceInput = Omit<Source, 'id' | 'created' | 'updated'>;
+
+/**
+ * Bibliographic-only view of a Source (no shelter association fields).
+ * Used by the "browse existing sources" picker to reuse data across shelters.
+ */
+export type SourceRef = Pick<Source,
+  | 'id' | 'type' | 'author' | 'title' | 'container_title' | 'editor' | 'edition'
+  | 'volume' | 'issue' | 'pages' | 'publisher' | 'place' | 'year' | 'date'
+  | 'url' | 'access_date' | 'archive' | 'archive_location'>;
 
 export interface ShelterCreateInput {
   name: string;
@@ -388,6 +399,7 @@ export interface ElectronAPI {
     reorder: (input: PhotoReorderInput) => Promise<void>;
     upload: (input: PhotoUploadInput) => Promise<Photo>;
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<Partial<Photo>>;
+    export: (slug: string, fileName: string, title: string, sheltersRoot: string) => Promise<string | null>;
     readFileMetadata: (slug: string, fileName: string, sheltersRoot: string) => Promise<FileMetadataTag[]>;
     writeFileMetadata: (slug: string, fileName: string, sheltersRoot: string, tags: Record<string, string>) => Promise<void>;
     reconcileScan: (shelterId: number, sheltersRoot: string) => Promise<ReconcileScanResult>;
@@ -399,6 +411,7 @@ export interface ElectronAPI {
   };
   sources: {
     getByShelter: (shelterId: number) => Promise<Source[]>;
+    getAll: () => Promise<SourceRef[]>;
     create: (input: SourceInput) => Promise<Source>;
     update: (source: Source) => Promise<Source>;
     delete: (id: number) => Promise<void>;

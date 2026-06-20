@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { ipcMain, app } from 'electron';
+import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
@@ -37,6 +37,31 @@ export function registerPhotoHandlers(): void {
   );
 
   ipcMain.handle(
+    CHANNELS.PHOTOS_EXPORT,
+    async (event, { slug, fileName, title, sheltersRoot }: { slug: string; fileName: string; title: string; sheltersRoot: string }) => {
+      const sourcePath = photoFilePath(slug, fileName, sheltersRoot);
+      const ext = path.extname(fileName);
+      // Prefer the editorial title for the suggested name, falling back to the on-disk basename.
+      const safeTitle = title?.trim().replace(/[/\\:*?"<>|]/g, '-');
+      const defaultName = `${safeTitle || path.basename(fileName, ext)}${ext}`;
+
+      const senderWindow = BrowserWindow.fromWebContents(event.sender);
+      const options = {
+        title: 'Export Photo',
+        defaultPath: defaultName,
+        filters: [{ name: 'Image', extensions: [ext.replace(/^\./, '') || 'jpg'] }],
+      };
+      const result = senderWindow
+        ? await dialog.showSaveDialog(senderWindow, options)
+        : await dialog.showSaveDialog(options);
+
+      if (result.canceled || !result.filePath) return null;
+      await fs.copyFile(sourcePath, result.filePath);
+      return result.filePath;
+    },
+  );
+
+  ipcMain.handle(
     CHANNELS.PHOTOS_READ_FILE_METADATA,
     (_e, { slug, fileName, sheltersRoot }: { slug: string; fileName: string; sheltersRoot: string }) =>
       readPhotoFileMetadata(slug, fileName, sheltersRoot),
@@ -49,20 +74,29 @@ export function registerPhotoHandlers(): void {
   );
 
   ipcMain.handle(CHANNELS.PHOTOS_DELETE, async (_e, { id, sheltersRoot }: { id: number; sheltersRoot: string }) => {
-    // fetch the photo to get its file_name and shelter_id before deleting
     const { getDb } = await import('../db/connection');
     const db = getDb();
     const photo = db.prepare('SELECT shelter_id, file_name FROM photos WHERE id = ?').get(id) as
       | { shelter_id: number; file_name: string }
       | undefined;
 
-    if (photo) {
-      const shelter = getShelterById(photo.shelter_id);
-      if (shelter) {
-        await deletePhotoFile(shelter.slug, photo.file_name, sheltersRoot);
-      }
-    }
+    // Remove the DB record and clear inbound references first so a missing or
+    // unreadable file can never block record removal (Orphaned Photo Record case).
     deletePhoto(id);
+
+    // Best-effort file removal — wrapped here in addition to deletePhotoFile's
+    // own try-catch so that any unexpected error in path resolution cannot
+    // reject the IPC call after the record is already gone.
+    try {
+      if (photo) {
+        const shelter = getShelterById(photo.shelter_id);
+        if (shelter) {
+          await deletePhotoFile(shelter.slug, photo.file_name, sheltersRoot);
+        }
+      }
+    } catch (err) {
+      console.warn('Photo file deletion failed after record was removed:', err);
+    }
   });
 
   ipcMain.handle(

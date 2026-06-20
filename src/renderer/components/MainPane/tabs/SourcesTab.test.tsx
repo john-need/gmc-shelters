@@ -177,3 +177,77 @@ describe('SourcesTab', () => {
     });
   });
 });
+
+describe('SourceModal — browse existing sources picker', () => {
+  type Ref = Awaited<ReturnType<typeof window.api.sources.getAll>>[number];
+  const ref = (o: Partial<Ref>): Ref => ({
+    id: 0, type: 'book', author: '', title: '', container_title: '', editor: '',
+    edition: '', volume: '', issue: '', pages: '', publisher: '', place: '',
+    year: null, date: '', url: '', access_date: '', archive: '', archive_location: '',
+    ...o,
+  });
+
+  function openCreateModal() {
+    const store = makeStore(makeShelter());
+    render(<Provider store={store}><SourcesTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /add first source/i }));
+    return store;
+  }
+
+  it('shows a browse button next to Type, enabled when a type is set', () => {
+    openCreateModal();
+    const btn = screen.getByRole('button', { name: /browse existing sources/i });
+    expect(btn).toBeInTheDocument();
+    expect(btn).not.toBeDisabled();
+  });
+
+  it('opens the picker and lists only sources matching the selected type, alphabetically', async () => {
+    window.api.sources.getAll = jest.fn().mockResolvedValue([
+      ref({ id: 1, type: 'book', title: 'Beta', author: 'Yale, B' }),
+      ref({ id: 2, type: 'book', title: 'Alpha', author: 'Zed, A' }),
+      ref({ id: 3, type: 'journal', container_title: 'Nature' }),
+    ]);
+    openCreateModal(); // type defaults to 'book'
+    fireEvent.click(screen.getByRole('button', { name: /browse existing sources/i }));
+
+    await waitFor(() => expect(screen.getByText('Alpha')).toBeInTheDocument());
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.queryByText('Nature')).toBeNull(); // journal filtered out
+
+    const rows = screen.getAllByTestId(/^picker-row-/);
+    expect(rows.map((r) => r.getAttribute('data-testid'))).toEqual([
+      'picker-row-2', 'picker-row-1', // Alpha before Beta
+    ]);
+  });
+
+  it('filters rows via the per-field search boxes', async () => {
+    window.api.sources.getAll = jest.fn().mockResolvedValue([
+      ref({ id: 1, type: 'book', title: 'Alpha', author: 'Zed, A' }),
+      ref({ id: 2, type: 'book', title: 'Beta', author: 'Yale, B' }),
+    ]);
+    openCreateModal();
+    fireEvent.click(screen.getByRole('button', { name: /browse existing sources/i }));
+    await waitFor(() => expect(screen.getByText('Alpha')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText(/search title/i), { target: { value: 'bet' } });
+    expect(screen.queryByText('Alpha')).toBeNull();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+  });
+
+  it('selecting a row populates the modal fields and closes the picker', async () => {
+    window.api.sources.getAll = jest.fn().mockResolvedValue([
+      ref({ id: 1, type: 'book', title: 'Alpha', author: 'Zed, A', edition: '3rd', year: 1991 }),
+    ]);
+    openCreateModal();
+    fireEvent.click(screen.getByRole('button', { name: /browse existing sources/i }));
+    await waitFor(() => expect(screen.getByTestId('picker-row-1')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('picker-row-1'));
+
+    // picker closed
+    expect(screen.queryByTestId('picker-row-1')).toBeNull();
+    // fields populated
+    expect((screen.getByPlaceholderText('A Hearth on Birch Glen') as HTMLInputElement).value).toBe('Alpha');
+    expect((screen.getByPlaceholderText('Calloway, Henry') as HTMLInputElement).value).toBe('Zed, A');
+  });
+});

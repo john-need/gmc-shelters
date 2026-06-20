@@ -42,7 +42,7 @@ function makeStore(markers: MapMarker[] = [], shelterId = 10) {
         byShelter: markers.length > 0 ? { [shelterId]: markers } : {},
         loading: false, error: null,
       },
-    } as any,
+    } as unknown as ReturnType<typeof reducer>,
   });
 }
 
@@ -317,7 +317,7 @@ describe('MapMarkersTab', () => {
 
   describe('Add Marker form', () => {
     beforeEach(() => {
-      (window as any).api = {
+      (window as { api: unknown }).api = {
         mapMarkers: {
           create: jest.fn().mockResolvedValue([makeMarker({ id: 99 })]),
           delete: jest.fn().mockResolvedValue([]),
@@ -366,7 +366,7 @@ describe('MapMarkersTab', () => {
     const marker = makeMarker({ id: 1, name: 'Original Site', latitude: 44.1, longitude: -71.5 });
 
     beforeEach(() => {
-      (window as any).api = {
+      (window as { api: unknown }).api = {
         mapMarkers: {
           update: jest.fn().mockResolvedValue({ ...marker, name: 'Updated Site' }),
           delete: jest.fn().mockResolvedValue([]),
@@ -389,7 +389,7 @@ describe('MapMarkersTab', () => {
       fireEvent.click(screen.getByRole('button', { name: /edit/i }));
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
       expect(screen.queryByLabelText(/latitude/i)).not.toBeInTheDocument();
-      expect((window as any).api.mapMarkers.update).not.toHaveBeenCalled();
+      expect(window.api.mapMarkers.update).not.toHaveBeenCalled();
     });
   });
 
@@ -403,7 +403,7 @@ describe('MapMarkersTab', () => {
     });
 
     it('removes marker from store when delete succeeds', async () => {
-      (window as any).api = {
+      (window as { api: unknown }).api = {
         mapMarkers: {
           delete: jest.fn().mockResolvedValue([]),
           create: jest.fn(),

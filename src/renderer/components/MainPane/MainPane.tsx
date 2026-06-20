@@ -36,6 +36,9 @@ export default function MainPane() {
     dispatch(loadPhotos(s.id));
     dispatch(loadSources(s.id));
     dispatch(loadMapMarkers(s.id));
+    // Reload associated data only when the selected record changes — not on every
+    // edit to the shelter object (which would re-fire on each keystroke). dispatch is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   if (!s) {
