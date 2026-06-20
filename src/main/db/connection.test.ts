@@ -18,7 +18,7 @@ describe('db/connection', () => {
       pragma: jest.fn(),
       prepare: jest.fn().mockReturnValue({ all: jest.fn().mockReturnValue([]) }),
     };
-    (Database as jest.Mock).mockReturnValue(mockDb);
+    (Database as unknown as jest.Mock).mockReturnValue(mockDb);
 
     const { getDb } = await import('./connection');
     getDb();
@@ -37,7 +37,7 @@ describe('db/connection', () => {
       pragma: jest.fn(),
       prepare: jest.fn().mockReturnValue({ all: jest.fn().mockReturnValue([]) }),
     };
-    (Database as jest.Mock).mockReturnValue(mockDb);
+    (Database as unknown as jest.Mock).mockReturnValue(mockDb);
 
     const { getDb } = await import('./connection');
     const a = getDb();
@@ -57,7 +57,7 @@ describe('db/connection', () => {
       pragma: jest.fn(),
       prepare: jest.fn().mockReturnValue({ all: jest.fn().mockReturnValue([]) }),
     };
-    (Database as jest.Mock).mockReturnValue(mockDb);
+    (Database as unknown as jest.Mock).mockReturnValue(mockDb);
 
     const { getDb } = await import('./connection');
     getDb();

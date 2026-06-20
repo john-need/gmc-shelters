@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -35,6 +35,8 @@ const api: ElectronAPI = {
     delete: (id: number, sheltersRoot: string) => ipcRenderer.invoke(CHANNELS.PHOTOS_DELETE, { id, sheltersRoot }),
     setDefault: (shelterId: number, photoId: number) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_SET_DEFAULT, { shelterId, photoId }),
+    reorder: (input: PhotoReorderInput) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_REORDER, input),
     upload: (input: PhotoUploadInput) => ipcRenderer.invoke(CHANNELS.PHOTOS_UPLOAD, input),
     readMetadata: (slug: string, fileName: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_READ_METADATA, { slug, fileName, sheltersRoot }),

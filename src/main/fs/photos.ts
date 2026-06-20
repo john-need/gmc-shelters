@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { app } from 'electron';
 import { ExifTool } from 'exiftool-vendored';
+import type { WriteTags } from 'exiftool-vendored';
 import sharp from 'sharp';
 import { log } from '../logger';
 import type { Photo, PhotoTransformInput, FileMetadataTag } from '../../shared/ipc-types';
@@ -81,9 +82,11 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
       Description: photo.caption,
       Headline: photo.alt_text,
       Subject: photo.description,
+      // `Instructions` (XMP-photoshop) is a valid exiftool tag but absent from
+      // the vendored WriteTags type, so write it via a cast.
       Instructions: photo.notes,
       Identifier: photo.id.toString(),
-    });
+    } as WriteTags);
     log.info(`XMP written successfully to ${filePath}`);
   } catch (err) {
     log.error(`Failed to write XMP to ${filePath}`, err);
@@ -91,8 +94,8 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
   }
 }
 
-function getString(val: unknown): string | null {
-  if (!val) return null;
+function getString(val: unknown): string | undefined {
+  if (!val) return undefined;
   if (Array.isArray(val)) return val.join(', ');
   if (typeof val === 'object') {
     const rawValue = (val as { rawValue?: unknown }).rawValue;
@@ -115,7 +118,7 @@ export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot:
       caption: getString(tags.Description),
       alt_text: getString(tags.Headline),
       description: getString(tags.Subject),
-      notes: getString(tags.Instructions),
+      notes: getString((tags as Record<string, unknown>).Instructions),
     };
   } catch (err) {
     log.error(`Failed to read XMP from ${filePath}`, err);
@@ -154,7 +157,7 @@ export async function readPhotoFileMetadata(slug: string, fileName: string, shel
       const raw = (tags as Record<string, unknown>)[key];
       if (raw === null || raw === undefined) continue;
       const value = getString(raw);
-      if (value === null) continue;
+      if (value === undefined) continue;
       const writable = !FILE_INTRINSIC_KEYS.has(key) && key !== 'Identifier';
       result.push({ group: inferGroup(key), key, label: humanizeKey(key), value, writable });
     }

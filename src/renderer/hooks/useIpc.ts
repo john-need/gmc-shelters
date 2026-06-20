@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import type { ElectronAPI, HistoryReadResult } from '../../shared/ipc-types';
+import type { AppPathValidation, ElectronAPI, HistoryReadResult } from '../../shared/ipc-types';
 import type { AppDispatch } from '../store';
 import { showToast } from '../store/uiSlice';
 
 const noop = () => Promise.resolve(undefined as never);
 const noopHistoryRead = () => Promise.resolve({ content: '', missing: false } as HistoryReadResult);
+const noopPathValidation = () => Promise.resolve({
+  input: '',
+  resolvedPath: '',
+  exists: false,
+  isFile: false,
+  isDirectory: false,
+} as AppPathValidation);
 
 const noopApi: ElectronAPI = {
   categories: { getAll: noop, create: noop, update: noop, delete: noop },
   architectures: { getAll: noop, create: noop, update: noop, delete: noop },
   shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop },
-  photos: { getByShelter: noop, update: noop, delete: noop, setDefault: noop, upload: noop },
+  photos: { getByShelter: noop, update: noop, delete: noop, setDefault: noop, reorder: noop, upload: noop, readMetadata: noop, readFileMetadata: noop, writeFileMetadata: noop, reconcileScan: noop, reconcileApply: noop },
   history: { read: noopHistoryRead, write: noop },
   sources: { getByShelter: noop, create: noop, update: noop, delete: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
@@ -21,11 +28,15 @@ const noopApi: ElectronAPI = {
   app: {
     getVersion: noop,
     getRepoRoot: noop,
+    browseForDatabasePath: noop,
+    browseForDirectoryPath: noop,
     browseForHistoryFile: noop,
+    validatePath: noopPathValidation,
     closeWindow: noop,
     minimizeWindow: noop,
     toggleFullscreen: noop,
     isFullscreen: noop,
+    getFilePath: () => '',
   },
 };
 

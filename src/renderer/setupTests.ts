@@ -40,7 +40,13 @@ const mockApi: ElectronAPI = {
     update: noop,
     delete: noop,
     setDefault: noop,
+    reorder: noop,
     upload: noop,
+    readMetadata: jest.fn().mockResolvedValue({}),
+    readFileMetadata: jest.fn().mockResolvedValue([]),
+    writeFileMetadata: noop,
+    reconcileScan: jest.fn().mockResolvedValue({ untrackedFiles: [], orphanedRecords: [] }),
+    reconcileApply: jest.fn().mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [] }),
   },
   history: {
     read: jest.fn().mockResolvedValue(defaultHistoryRead),
@@ -80,6 +86,7 @@ const mockApi: ElectronAPI = {
     minimizeWindow: noop,
     toggleFullscreen: noop,
     isFullscreen: jest.fn().mockResolvedValue(false),
+    getFilePath: jest.fn().mockReturnValue('/tmp/mock-file.jpg'),
   },
 };
 

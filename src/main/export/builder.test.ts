@@ -54,7 +54,8 @@ const SCHEMA = `
     alt_text TEXT DEFAULT '',
     title TEXT DEFAULT '',
     description TEXT DEFAULT '',
-    include_in_post INTEGER DEFAULT 0
+    include_in_post INTEGER DEFAULT 0,
+    sort_order INTEGER
   );
   CREATE TABLE IF NOT EXISTS map_markers (
     id INTEGER PRIMARY KEY,
@@ -174,10 +175,11 @@ describe('buildManifest', () => {
       title: '',
       description: '',
       include_in_post: 1,
+      sort_order: 1,
       ...overrides,
     };
-    db.prepare(`INSERT INTO photos (photographer,file_name,caption,date_taken,notes,created,updated,shelter_id,alt_text,title,description,include_in_post)
-      VALUES (@photographer,@file_name,@caption,@date_taken,@notes,@created,@updated,@shelter_id,@alt_text,@title,@description,@include_in_post)`).run(defaults);
+    db.prepare(`INSERT INTO photos (photographer,file_name,caption,date_taken,notes,created,updated,shelter_id,alt_text,title,description,include_in_post,sort_order)
+     VALUES (@photographer,@file_name,@caption,@date_taken,@notes,@created,@updated,@shelter_id,@alt_text,@title,@description,@include_in_post,@sort_order)`).run(defaults);
   }
 
   function insertMapMarker(shelterId: number, overrides: Record<string, unknown> = {}) {
@@ -230,6 +232,26 @@ describe('buildManifest', () => {
     expect(result.manifest.shelters[0].photos).toHaveLength(1);
     expect(result.photoCount).toBe(1);
     expect(result.manifest.shelters[0].photos[0].updated).toBe('2026-05-01');
+  });
+
+  it('orders manifest photos by shelter photo order', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/third.jpg', include_in_post: 1, sort_order: 3 });
+    insertPhoto(shelterId, { file_name: 'test-shelter/first.jpg', include_in_post: 1, sort_order: 1 });
+    insertPhoto(shelterId, { file_name: 'test-shelter/second.jpg', include_in_post: 1, sort_order: 2 });
+
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'first.jpg'), 'first');
+    fs.writeFileSync(path.join(shelterDir, 'second.jpg'), 'second');
+    fs.writeFileSync(path.join(shelterDir, 'third.jpg'), 'third');
+
+    const result = await buildManifest(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos.map((photo) => photo.fileName)).toEqual([
+      'test-shelter/first.jpg',
+      'test-shelter/second.jpg',
+      'test-shelter/third.jpg',
+    ]);
   });
 
   it('excludes photo with include_in_post=0 even if file exists', async () => {

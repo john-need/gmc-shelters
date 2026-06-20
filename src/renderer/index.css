@@ -1552,11 +1552,13 @@ html, body {
   border-radius: 6px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.15s;
+  /* Do NOT transition transform: dnd-kit drives it inline every frame while
+     dragging; a CSS transform transition makes the dragged item lag the cursor. */
+  transition: border-color 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
 }
-.photo-card:hover { border-color: var(--line-strong); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.photo-card:hover { border-color: var(--line-strong); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .photo-card.selected { border-color: var(--rust); box-shadow: 0 0 0 2px rgba(181,77,44,0.2); }
 
 .photo-thumb {

@@ -33,6 +33,7 @@ describe('ipc/photos', () => {
     expect(registered).toContain(CHANNELS.PHOTOS_UPDATE);
     expect(registered).toContain(CHANNELS.PHOTOS_DELETE);
     expect(registered).toContain(CHANNELS.PHOTOS_SET_DEFAULT);
+    expect(registered).toContain(CHANNELS.PHOTOS_REORDER);
     expect(registered).toContain(CHANNELS.PHOTOS_UPLOAD);
     expect(registered).toContain(CHANNELS.PHOTOS_READ_METADATA);
   });
@@ -87,6 +88,12 @@ describe('ipc/photos', () => {
     const handler = getHandler(CHANNELS.PHOTOS_SET_DEFAULT);
     handler(null, { shelterId: 3, photoId: 7 });
     expect(dbPhotos.setDefaultPhoto).toHaveBeenCalledWith(3, 7);
+  });
+
+  it('PHOTOS_REORDER calls reorderPhotos', () => {
+    const handler = getHandler(CHANNELS.PHOTOS_REORDER);
+    handler(null, { shelterId: 3, photoIds: [9, 7, 8] });
+    expect(dbPhotos.reorderPhotos).toHaveBeenCalledWith(3, [9, 7, 8]);
   });
 
   it('PHOTOS_UPLOAD copies file and inserts photo record', async () => {

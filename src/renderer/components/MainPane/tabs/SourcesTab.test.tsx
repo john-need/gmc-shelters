@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import sheltersReducer from '../../../store/sheltersSlice';
 import sourcesReducer from '../../../store/sourcesSlice';
-import uiReducer from '../../../store/uiSlice';
+import uiReducer, { type UiState } from '../../../store/uiSlice';
 import SourcesTab from './SourcesTab';
 import type { Shelter, Source } from '../../../../shared/ipc-types';
 
@@ -100,7 +100,7 @@ function makeStore(shelter: Shelter, sources: Source[] = []) {
           showOnWeb: 'any',
         },
         toast: null,
-      },
+      } as UiState,
     },
   });
 }

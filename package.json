@@ -4,18 +4,22 @@
   "description": "GMC Shelters desktop application",
   "main": ".vite/build/index.js",
   "scripts": {
-    "prestart": "electron-rebuild -f -w better-sqlite3",
-    "start": "electron-forge start",
-    "pretest": "npm rebuild better-sqlite3",
-    "test": "jest",
-    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "make": "electron-forge make",
+    "package": "electron-forge package",
+    "prestart": "electron-rebuild -f -w better-sqlite3",
+    "pretest": "npm rebuild better-sqlite3",
     "publish": "electron-forge publish",
-    "package": "electron-forge package"
+    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
+    "start": "electron-forge start",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@fontsource/geist": "^5.2.8",

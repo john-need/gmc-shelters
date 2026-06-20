@@ -23,6 +23,7 @@ const defaultSource: Source = {
   archive: '',
   archive_location: '',
   annotation: '',
+  quote: '',
   notes: '',
   created: '2026-05-15',
   updated: '2026-05-15',

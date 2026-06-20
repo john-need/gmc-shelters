@@ -129,4 +129,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 008-add-include-in-history-to-shelter-sources.sql');
     }
   }
+
+  // Apply 009-add-photo-sort-order.sql if photos.sort_order column doesn't exist
+  const photoSortOrderCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('photos') WHERE name='sort_order'")
+    .get() as { n: number };
+
+  if (photoSortOrderCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '009-add-photo-sort-order.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 009-add-photo-sort-order.sql');
+    }
+  }
 }

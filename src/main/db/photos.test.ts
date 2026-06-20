@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto } from './photos';
+import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from './photos';
 
 jest.mock('./connection');
 import { getDb } from './connection';
@@ -16,7 +16,7 @@ const SCHEMA = `
     shelter_id INTEGER, file_name TEXT, title TEXT,
     photographer TEXT DEFAULT '', caption TEXT DEFAULT '',
     date_taken TEXT, notes TEXT DEFAULT '', alt_text TEXT DEFAULT '',
-    description TEXT DEFAULT '', include_in_post INTEGER DEFAULT 0,
+    description TEXT DEFAULT '', include_in_post INTEGER DEFAULT 0, sort_order INTEGER,
     created TEXT, updated TEXT
   );
 `;
@@ -50,6 +50,20 @@ describe('db/photos', () => {
     insertPhoto(shelterId, 'a.jpg');
     insertPhoto(shelterId, 'b.jpg');
     expect(getPhotosByShelter(shelterId)).toHaveLength(2);
+  });
+
+  it('reorderPhotos persists shelter photo order', () => {
+    const first = insertPhoto(shelterId, 'a.jpg');
+    const second = insertPhoto(shelterId, 'b.jpg');
+    const third = insertPhoto(shelterId, 'c.jpg');
+
+    reorderPhotos(shelterId, [third.id, first.id, second.id]);
+
+    expect(getPhotosByShelter(shelterId).map((photo) => photo.id)).toEqual([
+      third.id,
+      first.id,
+      second.id,
+    ]);
   });
 
   it('insertPhoto converts include_in_post to boolean', () => {
