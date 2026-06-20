@@ -11,6 +11,7 @@ jest.mock('exiftool-vendored', () => {
   };
 });
 const mockSharp = {
+  autoOrient: jest.fn().mockReturnThis(),
   rotate: jest.fn().mockReturnThis(),
   flop: jest.fn().mockReturnThis(),
   extract: jest.fn().mockReturnThis(),
@@ -344,6 +345,25 @@ describe('transformPhoto', () => {
     expect(mockSharp.flop).toHaveBeenCalled();
     expect(mockSharp.extract).toHaveBeenCalledWith({ left: 10, top: 10, width: 100, height: 100 });
     expect(fsp.writeFile).toHaveBeenCalledWith('/path/to/img.jpg', expect.any(Buffer));
+  });
+
+  it('bakes EXIF orientation before applying user rotation', async () => {
+    // Source JPEGs often carry an EXIF Orientation tag the browser honors when
+    // displaying. sharp.rotate(angle) rotates raw pixels and ignores that tag,
+    // so the saved image would not match what the user rotated on screen.
+    // autoOrient() must run first so transforms operate on the visible pixels.
+    jest.clearAllMocks();
+    const orderOfCalls: string[] = [];
+    mockSharp.autoOrient.mockImplementation(() => { orderOfCalls.push('autoOrient'); return mockSharp; });
+    mockSharp.rotate.mockImplementation(() => { orderOfCalls.push('rotate'); return mockSharp; });
+
+    await transformPhoto('/path/to/img.jpg', { rotation: 90 });
+
+    expect(mockSharp.autoOrient).toHaveBeenCalled();
+    expect(orderOfCalls).toEqual(['autoOrient', 'rotate']);
+
+    mockSharp.autoOrient.mockReturnThis();
+    mockSharp.rotate.mockReturnThis();
   });
 
   it('skips missing transformations', async () => {
