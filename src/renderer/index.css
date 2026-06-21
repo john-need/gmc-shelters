@@ -2863,6 +2863,46 @@ html, body {
   font-size: 16px;
   font-weight: 400;
 }
+.mm-pin.mm-pin--editing {
+  background: #4a7fa5;
+  border-color: #2d5f80;
+}
+.mm-pin.mm-pin--other {
+  width: 18px;
+  height: 18px;
+  background: var(--forest);
+  border-color: var(--forest-deep);
+}
+.mm-pin.mm-pin--other.mm-pin--gone {
+  background: transparent;
+  border: 2px dashed var(--forest);
+  color: var(--forest);
+}
+
+/* All-shelters map toggle */
+.mm-map-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  white-space: nowrap;
+}
+.mm-map-toggle:hover { background: var(--surface-2); }
+.mm-map-toggle.active {
+  background: var(--forest);
+  color: #fff;
+  border-color: var(--forest-deep);
+}
 
 /* Shelter reference pin */
 .mm-shelter-pin {

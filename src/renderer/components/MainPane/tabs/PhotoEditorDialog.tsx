@@ -4,6 +4,7 @@ import type { AppDispatch } from '../../../store';
 import type { Photo } from '../../../../shared/ipc-types';
 import { savePhotoMetadata } from '../../../store/photosSlice';
 import { showToast } from '../../../store/uiSlice';
+import { screenToLocalDelta } from '../../../utils/cropUtils';
 
 interface Props {
   photo: Photo;
@@ -27,6 +28,86 @@ function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: s
       onError={() => setImgError(true)}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
     />
+  );
+}
+
+interface TransformSidebarProps {
+  rotation: number;
+  flipped: boolean;
+  cropping: boolean;
+  naturalSize: { w: number; h: number } | null;
+  cropRect: { x: number; y: number; w: number; h: number };
+  zoom: number;
+  onRotateLeft: () => void;
+  onRotateRight: () => void;
+  onFlip: () => void;
+  onToggleCrop: () => void;
+  onZoomOut: () => void;
+  onZoomIn: () => void;
+  setCropRect: React.Dispatch<React.SetStateAction<{ x: number; y: number; w: number; h: number }>>;
+  setCrop: (v: { x: number; y: number; width: number; height: number } | null) => void;
+  setCropping: (v: boolean) => void;
+}
+
+function TransformSidebar({
+  rotation: _rotation, flipped, cropping, naturalSize, cropRect, zoom,
+  onRotateLeft, onRotateRight, onFlip, onToggleCrop,
+  onZoomOut, onZoomIn,
+}: TransformSidebarProps) {
+  return (
+    <div className="photo-editor-sidebar">
+      <div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+          Transform
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button className="btn icon sm" title="Rotate 90° left" onClick={onRotateLeft}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.5 2.6L3 8"/><path d="M3 3v5h5"/>
+              </svg>
+            </button>
+            <button className="btn icon sm" title="Rotate 90° right" onClick={onRotateRight}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/>
+              </svg>
+            </button>
+            <button className="btn icon sm" title="Flip horizontal" aria-pressed={flipped} onClick={onFlip}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v18"/><path d="M16 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"/><path d="M8 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+          </div>
+          <button
+            className={`btn sm ${cropping ? 'primary' : ''}`}
+            onClick={() => onToggleCrop()}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+            </svg>
+            {' '}{cropping ? 'Done' : 'Crop'}
+          </button>
+          {cropping && naturalSize && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-4)', marginTop: 2 }}>
+              {Math.round(naturalSize.w * cropRect.w / 100)}×{Math.round(naturalSize.h * cropRect.h / 100)}px
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+          Zoom
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button className="btn icon sm" onClick={onZoomOut}>−</button>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', minWidth: 36, textAlign: 'center' }}>
+            {Math.round(zoom * 100)}%
+          </span>
+          <button className="btn icon sm" onClick={onZoomIn}>+</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -109,8 +190,9 @@ export default function PhotoEditorDialog({
       const MIN = 5;
 
       const onMove = (me: MouseEvent) => {
-        const dx = ((me.clientX - startX) / r.width) * 100;
-        const dy = ((me.clientY - startY) / r.height) * 100;
+        const sdx = ((me.clientX - startX) / r.width) * 100;
+        const sdy = ((me.clientY - startY) / r.height) * 100;
+        const { dx, dy } = screenToLocalDelta(sdx, sdy, rotation, flipped);
         let { x, y, w, h } = startRect;
         if (type === 'move') {
           x = Math.max(0, Math.min(100 - startRect.w, startRect.x + dx));
@@ -142,7 +224,7 @@ export default function PhotoEditorDialog({
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     },
-    [cropRect],
+    [cropRect, rotation, flipped],
   );
 
   // FR-004: Save persists only image edits; zero-delta is a no-op close (FR-009)
@@ -343,75 +425,39 @@ export default function PhotoEditorDialog({
           </div>
 
           {/* Tool sidebar */}
-          <div className="photo-editor-sidebar">
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
-                Transform
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button className="btn icon sm" title="Rotate 90° left" onClick={() => setRotation((r) => r - 90)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.5 2.6L3 8"/><path d="M3 3v5h5"/>
-                    </svg>
-                  </button>
-                  <button className="btn icon sm" title="Rotate 90° right" onClick={() => setRotation((r) => r + 90)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/>
-                    </svg>
-                  </button>
-                  <button
-                    className="btn icon sm"
-                    title="Flip horizontal"
-                    aria-pressed={flipped}
-                    onClick={() => setFlipped((x) => !x)}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 3v18"/><path d="M16 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"/><path d="M8 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h3"/>
-                    </svg>
-                  </button>
-                </div>
-                <button
-                  className={`btn sm ${cropping ? 'primary' : ''}`}
-                  onClick={() => {
-                    if (cropping) {
-                      if (naturalSize) {
-                        setCrop({
-                          x: Math.round(naturalSize.w * cropRect.x / 100),
-                          y: Math.round(naturalSize.h * cropRect.y / 100),
-                          width: Math.round(naturalSize.w * cropRect.w / 100),
-                          height: Math.round(naturalSize.h * cropRect.h / 100),
-                        });
-                      }
-                      setCropping(false);
-                    } else {
-                      setCropRect({ x: 12, y: 14, w: 70, h: 68 });
-                      setCrop(null);
-                      setCropping(true);
-                    }
-                  }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
-                  </svg>
-                  {' '}{cropping ? 'Done' : 'Crop'}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
-                Zoom
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <button className="btn icon sm" onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}>−</button>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', minWidth: 36, textAlign: 'center' }}>
-                  {Math.round(zoom * 100)}%
-                </span>
-                <button className="btn icon sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>+</button>
-              </div>
-            </div>
-          </div>
+          <TransformSidebar
+            rotation={rotation}
+            flipped={flipped}
+            cropping={cropping}
+            naturalSize={naturalSize}
+            cropRect={cropRect}
+            zoom={zoom}
+            onRotateLeft={() => setRotation((r) => r - 90)}
+            onRotateRight={() => setRotation((r) => r + 90)}
+            onFlip={() => setFlipped((x) => !x)}
+            onToggleCrop={() => {
+              if (cropping) {
+                if (naturalSize) {
+                  setCrop({
+                    x: Math.round(naturalSize.w * cropRect.x / 100),
+                    y: Math.round(naturalSize.h * cropRect.y / 100),
+                    width: Math.round(naturalSize.w * cropRect.w / 100),
+                    height: Math.round(naturalSize.h * cropRect.h / 100),
+                  });
+                }
+                setCropping(false);
+              } else {
+                setCropRect({ x: 12, y: 14, w: 70, h: 68 });
+                setCrop(null);
+                setCropping(true);
+              }
+            }}
+            onZoomOut={() => setZoom((z) => Math.max(0.5, z - 0.1))}
+            onZoomIn={() => setZoom((z) => Math.min(2, z + 0.1))}
+            setCropRect={setCropRect}
+            setCrop={setCrop}
+            setCropping={setCropping}
+          />
         </div>
 
         {/* Footer: Save + Cancel (FR-004, FR-005, FR-010) */}

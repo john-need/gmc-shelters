@@ -173,43 +173,184 @@ export async function runPreflight(
   }
 }
 
+async function ensureShelterFolder(
+  slug: string,
+  shelterFolderIds: Map<string, string>,
+  client: GDriveClient,
+  rootFolderId: string,
+): Promise<string> {
+  let folderId = shelterFolderIds.get(slug) ?? null;
+  if (!folderId) {
+    folderId = await client.createFolder(slug, rootFolderId);
+    shelterFolderIds.set(slug, folderId);
+  }
+  return folderId;
+}
+
+async function processAllPhotos(
+  localManifest: ManifestJson,
+  priorPhotoIndex: Map<string, PhotoEntry>,
+  uploadSet: Set<string>,
+  updateSet: Set<string>,
+  shelterFolderIds: Map<string, string>,
+  client: GDriveClient,
+  config: PublishPreflightInput,
+  tmpDir: string,
+  totalUploads: number,
+  uploaded: { count: number },
+  result: PublishResult,
+  isCancelled: () => boolean,
+  onProgress?: (p: PublishProgress) => void,
+): Promise<void> {
+  outer: for (const shelter of localManifest.shelters) {
+    for (const photo of shelter.photos) {
+      if (isCancelled()) break outer;
+      const localPath = path.join(tmpDir, photo.fileName);
+      const prior = priorPhotoIndex.get(photo.fileName);
+
+      if (uploadSet.has(photo.fileName)) {
+        uploaded.count++;
+        onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'photo', action: 'create', fileName: photo.fileName });
+        if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
+        try {
+          const folderId = await ensureShelterFolder(shelter.slug, shelterFolderIds, client, config.rootFolderId);
+          photo.driveFileId = await client.uploadFile(localPath, photo.fileName.split('/').slice(1).join('/'), folderId, 'image/jpeg');
+          result.photosUploaded++;
+        } catch { result.photosFailed++; }
+
+      } else if (updateSet.has(photo.fileName)) {
+        uploaded.count++;
+        onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'photo', action: 'update', fileName: photo.fileName });
+        if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
+        const driveFileId = prior?.driveFileId;
+        if (!driveFileId) { result.photosFailed++; continue; }
+        try {
+          await client.updateFile(driveFileId, localPath, 'image/jpeg');
+          photo.driveFileId = driveFileId;
+          result.photosUpdated++;
+        } catch (err) {
+          if (!isNotFoundError(err)) { result.photosFailed++; continue; }
+          // Drive file removed out-of-band — re-upload as new.
+          try {
+            const folderId = await ensureShelterFolder(shelter.slug, shelterFolderIds, client, config.rootFolderId);
+            photo.driveFileId = await client.uploadFile(localPath, photo.fileName.split('/').slice(1).join('/'), folderId, 'image/jpeg');
+            result.photosUploaded++;
+          } catch { result.photosFailed++; }
+        }
+      } else {
+        photo.driveFileId = prior?.driveFileId ?? null;
+        result.photosSkipped++;
+      }
+    }
+  }
+}
+
+async function uploadHistoryFiles(
+  localManifest: ManifestJson,
+  state: PreflightState,
+  shelterFolderIds: Map<string, string>,
+  client: GDriveClient,
+  tmpDir: string,
+  totalUploads: number,
+  uploaded: { count: number },
+  isCancelled: () => boolean,
+  onProgress?: (p: PublishProgress) => void,
+): Promise<void> {
+  for (const shelter of localManifest.shelters) {
+    if (isCancelled()) break;
+    if (!shelter.history) continue;
+    const prior = state.priorHistoryIndex.get(shelter.slug);
+    if (prior && shelter.history.updated <= prior.updated) {
+      shelter.history.driveFileId = prior.driveFileId;
+      continue;
+    }
+    uploaded.count++;
+    const mdFileName = shelter.history.filePath.split('/').pop()!;
+    onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'history', action: prior?.driveFileId ? 'update' : 'create', fileName: mdFileName });
+    const localMdPath = path.join(tmpDir, shelter.slug, mdFileName);
+    if (!fs.existsSync(localMdPath)) continue;
+    try {
+      const folderId = await ensureShelterFolder(shelter.slug, shelterFolderIds, client, state.config.rootFolderId);
+      let updatedTracked = false;
+      if (prior?.driveFileId) {
+        try {
+          await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
+          shelter.history.driveFileId = prior.driveFileId;
+          updatedTracked = true;
+        } catch (err) {
+          if (!isNotFoundError(err)) throw err; // tracked file gone on Drive — fall through
+        }
+      }
+      if (!updatedTracked) {
+        const existingId = (await client.listFolder(folderId)).get(mdFileName) ?? null;
+        if (existingId) {
+          await client.updateFile(existingId, localMdPath, 'text/markdown');
+          shelter.history.driveFileId = existingId;
+        } else {
+          shelter.history.driveFileId = await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
+        }
+      }
+    } catch { /* non-fatal */ }
+  }
+}
+
+async function writeManifestToGDrive(
+  state: PreflightState,
+  client: GDriveClient,
+  localManifest: ManifestJson,
+  tmpDir: string,
+  totalUploads: number,
+  result: PublishResult,
+  onProgress?: (p: PublishProgress) => void,
+): Promise<void> {
+  const manifestName = 'shelter-manifest.json';
+  onProgress?.({ stage: 'manifest', current: totalUploads, total: totalUploads, itemKind: 'manifest' });
+  const updatedManifestPath = path.join(tmpDir, manifestName);
+  fs.writeFileSync(updatedManifestPath, JSON.stringify(localManifest, null, 2));
+  try {
+    if (state.manifestFileId) {
+      try {
+        await client.updateFile(state.manifestFileId, updatedManifestPath, 'application/json');
+      } catch (err) {
+        if (!isNotFoundError(err)) throw err; // tracked manifest gone — re-create
+        await client.uploadFile(updatedManifestPath, manifestName, state.config.rootFolderId, 'application/json');
+      }
+    } else {
+      await client.uploadFile(updatedManifestPath, manifestName, state.config.rootFolderId, 'application/json');
+    }
+    result.manifestWritten = true;
+  } catch (err) {
+    result.manifestWritten = false;
+    result.manifestError = err instanceof Error ? err.message : String(err);
+  }
+}
+
 export async function runPublish(
   state: PreflightState,
   onProgress?: (p: PublishProgress) => void,
   isCancelled: () => boolean = () => false,
 ): Promise<PublishResult> {
   const { tmpDir, localManifest, priorPhotoIndex, client, config } = state;
-  const manifestName = 'shelter-manifest.json';
   const diff = state.diff;
 
   const result: PublishResult = {
     shelterCount: localManifest.shelters.length,
-    photosUploaded: 0,
-    photosUpdated: 0,
-    photosSkipped: 0,
-    photosFailed: 0,
-    photosMissing: 0,
-    skippedBuildPhotos: 0,
+    photosUploaded: 0, photosUpdated: 0, photosSkipped: 0,
+    photosFailed: 0, photosMissing: 0, skippedBuildPhotos: 0,
     manifestWritten: false,
   };
 
-  // Pre-build slug→folderId map from the already-fetched root folder listing
   const shelterFolderIds = new Map<string, string>(state.rootFolderFiles);
-
   const uploadSet = new Set(diff.toUpload.map(i => i.fileName));
   const updateSet = new Set(diff.toUpdate.map(i => i.fileName));
-
-  // The progress bar counts actual uploads only: new + updated photos, changed
-  // history files, and the single manifest write. Unchanged photos and deletes
-  // are not uploads and are excluded from the denominator.
+  // Progress denominator: new + updated photos + changed history files + 1 manifest write.
   const totalUploads = diff.newCount + diff.updatedCount + diff.historyToUploadCount + 1;
-  let uploaded = 0;
+  const uploaded = { count: 0 };
 
   try {
-    // (1) Delete removed photos from Drive first (unconditional). Not an upload —
-    //     surfaced as its own stated phase so the upload bar runs uninterrupted.
+    // (1) Delete removed photos first — not an upload, shown as its own stage.
     if (diff.toDelete.length > 0) {
-      onProgress?.({ stage: 'deleting', current: uploaded, total: totalUploads, deleteCount: diff.toDelete.length });
+      onProgress?.({ stage: 'deleting', current: uploaded.count, total: totalUploads, deleteCount: diff.toDelete.length });
       for (const item of diff.toDelete) {
         if (isCancelled()) break;
         if (item.driveFileId) {
@@ -218,130 +359,22 @@ export async function runPublish(
       }
     }
 
-    // (2) Process photos in local manifest
-    outer: for (const shelter of localManifest.shelters) {
-      for (const photo of shelter.photos) {
-        if (isCancelled()) break outer;
+    // (2) Upload / update / skip photos.
+    await processAllPhotos(
+      localManifest, priorPhotoIndex, uploadSet, updateSet,
+      shelterFolderIds, client, config, tmpDir,
+      totalUploads, uploaded, result, isCancelled, onProgress,
+    );
 
-        const localPath = path.join(tmpDir, photo.fileName);
-        const prior = priorPhotoIndex.get(photo.fileName);
+    // (3) Upload changed history markdown files.
+    await uploadHistoryFiles(
+      localManifest, state, shelterFolderIds, client,
+      tmpDir, totalUploads, uploaded, isCancelled, onProgress,
+    );
 
-        if (uploadSet.has(photo.fileName)) {
-          uploaded++;
-          onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'photo', action: 'create', fileName: photo.fileName });
-          if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
-          try {
-            let folderId = shelterFolderIds.get(shelter.slug) ?? null;
-            if (!folderId) {
-              folderId = await client.createFolder(shelter.slug, config.rootFolderId);
-              shelterFolderIds.set(shelter.slug, folderId);
-            }
-            const bareFileName = photo.fileName.split('/').slice(1).join('/');
-            photo.driveFileId = await client.uploadFile(localPath, bareFileName, folderId, 'image/jpeg');
-            result.photosUploaded++;
-          } catch { result.photosFailed++; }
-        } else if (updateSet.has(photo.fileName)) {
-          uploaded++;
-          onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'photo', action: 'update', fileName: photo.fileName });
-          if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
-          const driveFileId = prior?.driveFileId;
-          if (!driveFileId) { result.photosFailed++; continue; }
-          try {
-            await client.updateFile(driveFileId, localPath, 'image/jpeg');
-            photo.driveFileId = driveFileId;
-            result.photosUpdated++;
-          } catch (err) {
-            if (!isNotFoundError(err)) { result.photosFailed++; continue; }
-            // Drive file was removed out-of-band — re-upload as new.
-            try {
-              let folderId = shelterFolderIds.get(shelter.slug) ?? null;
-              if (!folderId) {
-                folderId = await client.createFolder(shelter.slug, config.rootFolderId);
-                shelterFolderIds.set(shelter.slug, folderId);
-              }
-              const bareFileName = photo.fileName.split('/').slice(1).join('/');
-              photo.driveFileId = await client.uploadFile(localPath, bareFileName, folderId, 'image/jpeg');
-              result.photosUploaded++;
-            } catch { result.photosFailed++; }
-          }
-        } else {
-          // Unchanged — carry forward driveFileId, not counted in the upload bar
-          photo.driveFileId = prior?.driveFileId ?? null;
-          result.photosSkipped++;
-        }
-      }
-    }
-
-    // (3) Upload history files — skip if unchanged (same updated timestamp as prior)
-    for (const shelter of localManifest.shelters) {
-      if (isCancelled()) break;
-      if (!shelter.history) continue;
-      const prior = state.priorHistoryIndex.get(shelter.slug);
-      if (prior && shelter.history.updated <= prior.updated) {
-        shelter.history.driveFileId = prior.driveFileId;
-        continue;
-      }
-      // Slated for upload (matches diff.historyToUploadCount). Count it before the
-      // existence check so the bar stays aligned with the denominator.
-      uploaded++;
-      const mdFileName = shelter.history.filePath.split('/').pop()!;
-      onProgress?.({ stage: 'uploading', current: uploaded, total: totalUploads, itemKind: 'history', action: prior?.driveFileId ? 'update' : 'create', fileName: mdFileName });
-      const localMdPath = path.join(tmpDir, shelter.slug, mdFileName);
-      if (!fs.existsSync(localMdPath)) continue;
-      try {
-        let folderId = shelterFolderIds.get(shelter.slug) ?? null;
-        if (!folderId) {
-          folderId = await client.createFolder(shelter.slug, config.rootFolderId);
-          shelterFolderIds.set(shelter.slug, folderId);
-        }
-        let updatedTracked = false;
-        if (prior?.driveFileId) {
-          try {
-            await client.updateFile(prior.driveFileId, localMdPath, 'text/markdown');
-            shelter.history.driveFileId = prior.driveFileId;
-            updatedTracked = true;
-          } catch (err) {
-            // Tracked file is gone on Drive — fall through to existing-or-upload.
-            if (!isNotFoundError(err)) throw err;
-          }
-        }
-        if (!updatedTracked) {
-          // No usable tracked driveFileId — check Drive for an existing file (schema migration, first upload, or stale id)
-          const folderFiles = await client.listFolder(folderId);
-          const existingId = folderFiles.get(mdFileName) ?? null;
-          if (existingId) {
-            await client.updateFile(existingId, localMdPath, 'text/markdown');
-            shelter.history.driveFileId = existingId;
-          } else {
-            shelter.history.driveFileId = await client.uploadFile(localMdPath, mdFileName, folderId, 'text/markdown');
-          }
-        }
-      } catch { /* non-fatal */ }
-    }
-
+    // (4) Write updated manifest — final upload, pins bar to 100%.
     if (!isCancelled()) {
-      // (4) Write updated manifest to Drive. Final upload — pin current to total
-      //     so the bar reads 100% even if a slated file was missing locally.
-      onProgress?.({ stage: 'manifest', current: totalUploads, total: totalUploads, itemKind: 'manifest' });
-      const updatedManifestPath = path.join(tmpDir, manifestName);
-      fs.writeFileSync(updatedManifestPath, JSON.stringify(localManifest, null, 2));
-      try {
-        if (state.manifestFileId) {
-          try {
-            await client.updateFile(state.manifestFileId, updatedManifestPath, 'application/json');
-          } catch (err) {
-            // Tracked manifest file is gone on Drive — re-create it instead of failing.
-            if (!isNotFoundError(err)) throw err;
-            await client.uploadFile(updatedManifestPath, manifestName, config.rootFolderId, 'application/json');
-          }
-        } else {
-          await client.uploadFile(updatedManifestPath, manifestName, config.rootFolderId, 'application/json');
-        }
-        result.manifestWritten = true;
-      } catch (err) {
-        result.manifestWritten = false;
-        result.manifestError = err instanceof Error ? err.message : String(err);
-      }
+      await writeManifestToGDrive(state, client, localManifest, tmpDir, totalUploads, result, onProgress);
     }
   } finally {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });

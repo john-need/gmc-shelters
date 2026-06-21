@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import type { AppDispatch, RootState } from '../../../store';
 import type { MapMarker, MapMarkerCreateInput, MapMarkerUpdateInput, Shelter } from '../../../../shared/ipc-types';
 import { CHANGE_TYPES } from '../../../../shared/ipc-types';
-import { createMarker, updateMarker, deleteMarker } from '../../../store/mapMarkersSlice';
+import { createMarker, updateMarker, deleteMarker, loadMapMarkers } from '../../../store/mapMarkersSlice';
+import { setSelectedId as setShelterSelectedId } from '../../../store/sheltersSlice';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -57,8 +58,17 @@ function makeNumberedIcon(num: number, selected: boolean, extant: boolean): L.Di
   return new L.DivIcon({ className: '', html: `<div class="${cls}">${num}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
 }
 
+function makeEditingIcon(num: number): L.DivIcon {
+  return new L.DivIcon({ className: '', html: `<div class="mm-pin mm-pin--editing">${num}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
+}
+
 function makeDraftIcon(): L.DivIcon {
   return new L.DivIcon({ className: '', html: `<div class="mm-pin mm-pin--draft">+</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
+}
+
+function makeOtherShelterIcon(extant: boolean): L.DivIcon {
+  const cls = extant ? 'mm-pin mm-pin--other' : 'mm-pin mm-pin--other mm-pin--gone';
+  return new L.DivIcon({ className: '', html: `<div class="${cls}"></div>`, iconSize: [18, 18], iconAnchor: [9, 9] });
 }
 
 // ─── map viewport ─────────────────────────────────────────────────────────
@@ -82,6 +92,208 @@ function fitMapToBounds(map: L.Map, markers: MapMarker[]): void {
   map.flyToBounds(bounds, { maxZoom: 15, padding: [30, 30] as unknown as L.PointExpression });
 }
 
+// ─── detail panel (idle mode) ─────────────────────────────────────────────────
+
+interface MarkerDetailPanelProps {
+  selectedMarker: MapMarker | undefined;
+  selectedIndex: number;
+  onEdit: (m: MapMarker) => void;
+  onDelete: (id: number) => void;
+}
+
+function MarkerDetailPanel({ selectedMarker, selectedIndex, onEdit, onDelete }: MarkerDetailPanelProps) {
+  return (
+    <div className={`markers-detail${!selectedMarker ? ' empty' : ''}`}>
+      {!selectedMarker ? (
+        'Select a marker to view details'
+      ) : (
+        <>
+          <div className="markers-detail-head">
+            <div className="markers-detail-name-block">
+              <span className="markers-detail-name">{selectedMarker.name || '(unnamed)'}</span>
+              <span className="markers-detail-id">
+                #{selectedIndex + 1} · {selectedMarker.start_year}–{selectedMarker.end_year != null ? selectedMarker.end_year : 'PRESENT'} · {selectedMarker.change_type.toUpperCase()}
+              </span>
+            </div>
+            <div className="markers-detail-actions">
+              <button className="btn sm ghost icon" aria-label="Edit" title="Edit" onClick={() => onEdit(selectedMarker)}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button className="btn sm ghost icon" aria-label="Delete" title="Delete" onClick={() => onDelete(selectedMarker.id)}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="markers-detail-fields">
+            <div className="markers-detail-field">
+              <span className="markers-detail-field-label">Latitude</span>
+              <span className="markers-detail-field-value">{selectedMarker.latitude.toFixed(6)}</span>
+            </div>
+            <div className="markers-detail-field">
+              <span className="markers-detail-field-label">Longitude</span>
+              <span className="markers-detail-field-value">{selectedMarker.longitude.toFixed(6)}</span>
+            </div>
+            <div className="markers-detail-field">
+              <span className="markers-detail-field-label">Start year</span>
+              <span className="markers-detail-field-value">{selectedMarker.start_year}</span>
+            </div>
+            <div className="markers-detail-field">
+              <span className="markers-detail-field-label">End year</span>
+              <span className="markers-detail-field-value">{selectedMarker.end_year != null ? selectedMarker.end_year : 'present'}</span>
+            </div>
+            <div className="markers-detail-field span4">
+              <span className="markers-detail-field-label">Change type</span>
+              <span className="markers-detail-field-value">{selectedMarker.change_type}</span>
+            </div>
+            {selectedMarker.notes && (
+              <div className="markers-detail-field span4">
+                <span className="markers-detail-field-label">Notes</span>
+                <span className="markers-detail-field-value display">{selectedMarker.notes}</span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── add/edit form panel ──────────────────────────────────────────────────────
+
+interface MarkerFormPanelProps {
+  mode: 'add' | 'edit';
+  editingMarker: MapMarker | undefined;
+  form: FormState;
+  setForm: React.Dispatch<React.SetStateAction<FormState>>;
+  errorMsg: string | null;
+  endYearDisplay: string;
+  canSave: boolean;
+  saving: boolean;
+  shelterStartYear: number;
+  shelterEndYear: number | null | undefined;
+  onSave: () => void;
+}
+
+function MarkerFormPanel({ mode, editingMarker, form, setForm, errorMsg, endYearDisplay, canSave, saving, shelterStartYear, shelterEndYear, onSave }: MarkerFormPanelProps) {
+  return (
+    <div className="mm-detail">
+      <div className="mm-detail-head">
+        <span className="mm-detail-title">
+          {mode === 'add' ? 'New marker' : (editingMarker?.name || 'Edit marker')}
+        </span>
+        {mode === 'add' && (
+          <span className="mm-detail-hint">
+            {form.latitude && form.longitude ? 'Location set' : 'Click map to set location'}
+          </span>
+        )}
+      </div>
+
+      {errorMsg && <div className="mm-error">{errorMsg}</div>}
+
+      <div className="mm-detail-body">
+        <div className="mm-field-grid">
+          <div className="mm-field mm-col2">
+            <label className="mm-label">Name</label>
+            <input
+              className="input"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Original site"
+            />
+          </div>
+
+          <div className="mm-field">
+            <label className="mm-label" htmlFor="mm-lat">Latitude</label>
+            <input
+              id="mm-lat"
+              aria-label="Latitude"
+              className="input mono"
+              type="number"
+              step="0.000001"
+              value={form.latitude}
+              onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
+              placeholder="44.0000"
+            />
+          </div>
+          <div className="mm-field">
+            <label className="mm-label" htmlFor="mm-lng">Longitude</label>
+            <input
+              id="mm-lng"
+              aria-label="Longitude"
+              className="input mono"
+              type="number"
+              step="0.000001"
+              value={form.longitude}
+              onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
+              placeholder="-71.0000"
+            />
+          </div>
+
+          <div className="mm-field">
+            <label className="mm-label">Start year</label>
+            {mode === 'add' ? (
+              <input
+                className="input mono"
+                type="number"
+                value={form.start_year}
+                onChange={(e) => setForm((f) => ({ ...f, start_year: e.target.value }))}
+                min={shelterStartYear}
+                max={shelterEndYear ?? undefined}
+              />
+            ) : (
+              <input className="input mono" value={form.start_year} disabled title="Start year cannot be changed after creation" />
+            )}
+          </div>
+          <div className="mm-field">
+            <label className="mm-label">
+              End year
+              <span className="mm-label-hint">auto</span>
+            </label>
+            <input className="input mono" value={endYearDisplay} disabled title="Computed automatically from adjacent markers" />
+          </div>
+
+          <div className="mm-field mm-col2">
+            <label className="mm-label" htmlFor="mm-type">Change type</label>
+            <select
+              id="mm-type"
+              aria-label="Change Type"
+              className="select"
+              value={form.changeTypeBase}
+              onChange={(e) => setForm((f) => ({ ...f, changeTypeBase: e.target.value }))}
+            >
+              {CHANGE_TYPES.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+            </select>
+          </div>
+
+          <div className="mm-field mm-col2">
+            <label className="mm-label">Notes</label>
+            <textarea
+              className="textarea"
+              value={form.notes}
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mm-detail-foot">
+        <button className="btn primary" onClick={onSave} disabled={!canSave || saving}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -92,6 +304,8 @@ interface Props {
 export default function MapMarkersTab({ shelterId, shelter }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const rawMarkers = useSelector((state: RootState) => state.mapMarkers.byShelter[shelterId] ?? EMPTY_MARKERS);
+  const allMarkersByShelter = useSelector((state: RootState) => state.mapMarkers.byShelter);
+  const allShelters = useSelector((state: RootState) => state.shelters.list);
   const markers = useMemo(
     () => [...rawMarkers].sort((a, b) => a.start_year - b.start_year),
     [rawMarkers],
@@ -104,11 +318,14 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   const [hoverCoords, setHoverCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const pinLayerRef = useRef<Map<number, L.Marker>>(new Map());
   const draftPinRef = useRef<L.Marker | null>(null);
+  const otherPinLayerRef = useRef<L.Marker[]>([]);
+  const loadedShelterIdsRef = useRef<Set<number>>(new Set());
   const modeRef = useRef<'idle' | 'add' | 'edit'>('idle');
 
   useEffect(() => { modeRef.current = mode; }, [mode]);
@@ -152,6 +369,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
     pinLayerRef.current.clear();
 
     markers.forEach((m, idx) => {
+      if (mode === 'edit' && m.id === editId) return;
       const pin = new L.Marker([m.latitude, m.longitude] as L.LatLngExpression, {
         icon: makeNumberedIcon(idx + 1, m.id === selectedId, m.is_extant),
       }).addTo(map).on('click', () => {
@@ -159,7 +377,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
       });
       pinLayerRef.current.set(m.id, pin);
     });
-  }, [markers, selectedId]);
+  }, [markers, selectedId, mode, editId]);
 
   // ── fit map to markers ────────────────────────────────────────────────────
   useEffect(() => {
@@ -177,21 +395,70 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
 
     const lat = parseFloat(form.latitude);
     const lng = parseFloat(form.longitude);
-    if (mode === 'add' && !isNaN(lat) && !isNaN(lng)) {
-      draftPinRef.current = new L.Marker([lat, lng] as L.LatLngExpression, { icon: makeDraftIcon(), draggable: true })
+    if ((mode === 'add' || mode === 'edit') && !isNaN(lat) && !isNaN(lng)) {
+      const editIdx = mode === 'edit' ? markers.findIndex((m) => m.id === editId) : -1;
+      const icon = mode === 'edit' ? makeEditingIcon(editIdx + 1) : makeDraftIcon();
+      draftPinRef.current = new L.Marker([lat, lng] as L.LatLngExpression, { icon, draggable: true })
         .addTo(map)
         .on('dragend', function (this: L.Marker) {
           const pos = this.getLatLng();
           setForm((f) => ({ ...f, latitude: pos.lat.toFixed(6), longitude: pos.lng.toFixed(6) }));
         });
     }
-  }, [mode, form.latitude, form.longitude]);
+  }, [mode, form.latitude, form.longitude, editId, markers]);
 
   // ── map cursor ────────────────────────────────────────────────────────────
   useEffect(() => {
     const container = mapRef.current?.getContainer();
     if (container) container.style.cursor = (mode === 'add' || mode === 'edit') ? 'crosshair' : '';
   }, [mode]);
+
+  // ── load other shelters' markers when showAll is on ───────────────────────
+  useEffect(() => {
+    if (!showAll) return;
+    allShelters.forEach((s) => {
+      if (s.id !== shelterId && !loadedShelterIdsRef.current.has(s.id)) {
+        loadedShelterIdsRef.current.add(s.id);
+        dispatch(loadMapMarkers(s.id));
+      }
+    });
+  }, [showAll, allShelters, shelterId, dispatch]);
+
+  // ── render other-shelter pins ─────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    otherPinLayerRef.current.forEach((p) => p.remove());
+    otherPinLayerRef.current = [];
+
+    if (!showAll) return;
+
+    const shelterLookup = new Map(allShelters.map((s) => [s.id, s]));
+
+    Object.entries(allMarkersByShelter).forEach(([sidStr, sMarkers]) => {
+      const sid = Number(sidStr);
+      if (sid === shelterId) return;
+      const s = shelterLookup.get(sid);
+      if (!s) return;
+
+      const endDisplay = s.end_year != null ? String(s.end_year) : '--';
+      const tooltipHtml = `<strong>${s.name}</strong><br>${s.start_year}–${endDisplay}`;
+
+      sMarkers.forEach((m) => {
+        const pin = new L.Marker([m.latitude, m.longitude] as L.LatLngExpression, {
+          icon: makeOtherShelterIcon(m.is_extant),
+        })
+          .addTo(map)
+          .bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -10] })
+          .on('click', () => {
+            if (modeRef.current !== 'idle') return;
+            dispatch(setShelterSelectedId(sid));
+          });
+        otherPinLayerRef.current.push(pin);
+      });
+    });
+  }, [showAll, allMarkersByShelter, allShelters, shelterId, dispatch]);
 
   // ── actions ───────────────────────────────────────────────────────────────
   function startAdd() {
@@ -368,189 +635,26 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
 
         {/* read-only detail panel (idle) or add/edit form */}
         {mode === 'idle' ? (
-          <div className={`markers-detail${!selectedMarker ? ' empty' : ''}`}>
-            {!selectedMarker ? (
-              'Select a marker to view details'
-            ) : (
-              <>
-                <div className="markers-detail-head">
-                  <div className="markers-detail-name-block">
-                    <span className="markers-detail-name">{selectedMarker.name || '(unnamed)'}</span>
-                    <span className="markers-detail-id">
-                      #{selectedIndex + 1} · {selectedMarker.start_year}–{selectedMarker.end_year != null ? selectedMarker.end_year : 'PRESENT'} · {selectedMarker.change_type.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="markers-detail-actions">
-                    <button
-                      className="btn sm ghost icon"
-                      aria-label="Edit"
-                      title="Edit"
-                      onClick={() => startEdit(selectedMarker)}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
-                    </button>
-                    <button
-                      className="btn sm ghost icon"
-                      aria-label="Delete"
-                      title="Delete"
-                      onClick={() => handleDelete(selectedMarker.id)}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6"/>
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div className="markers-detail-fields">
-                  <div className="markers-detail-field">
-                    <span className="markers-detail-field-label">Latitude</span>
-                    <span className="markers-detail-field-value">{selectedMarker.latitude.toFixed(6)}</span>
-                  </div>
-                  <div className="markers-detail-field">
-                    <span className="markers-detail-field-label">Longitude</span>
-                    <span className="markers-detail-field-value">{selectedMarker.longitude.toFixed(6)}</span>
-                  </div>
-                  <div className="markers-detail-field">
-                    <span className="markers-detail-field-label">Start year</span>
-                    <span className="markers-detail-field-value">{selectedMarker.start_year}</span>
-                  </div>
-                  <div className="markers-detail-field">
-                    <span className="markers-detail-field-label">End year</span>
-                    <span className="markers-detail-field-value">{selectedMarker.end_year != null ? selectedMarker.end_year : 'present'}</span>
-                  </div>
-                  <div className="markers-detail-field span4">
-                    <span className="markers-detail-field-label">Change type</span>
-                    <span className="markers-detail-field-value">{selectedMarker.change_type}</span>
-                  </div>
-                  {selectedMarker.notes && (
-                    <div className="markers-detail-field span4">
-                      <span className="markers-detail-field-label">Notes</span>
-                      <span className="markers-detail-field-value display">{selectedMarker.notes}</span>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <MarkerDetailPanel
+            selectedMarker={selectedMarker}
+            selectedIndex={selectedIndex}
+            onEdit={startEdit}
+            onDelete={handleDelete}
+          />
         ) : (
-          <div className="mm-detail">
-            <div className="mm-detail-head">
-              <span className="mm-detail-title">
-                {mode === 'add' ? 'New marker' : (editingMarker?.name || 'Edit marker')}
-              </span>
-              {mode === 'add' && (
-                <span className="mm-detail-hint">
-                  {form.latitude && form.longitude ? 'Location set' : 'Click map to set location'}
-                </span>
-              )}
-            </div>
-
-            {errorMsg && <div className="mm-error">{errorMsg}</div>}
-
-            <div className="mm-detail-body">
-              <div className="mm-field-grid">
-                {/* name — full width */}
-                <div className="mm-field mm-col2">
-                  <label className="mm-label">Name</label>
-                  <input
-                    className="input"
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="e.g. Original site"
-                  />
-                </div>
-
-                {/* coordinates */}
-                <div className="mm-field">
-                  <label className="mm-label" htmlFor="mm-lat">Latitude</label>
-                  <input
-                    id="mm-lat"
-                    aria-label="Latitude"
-                    className="input mono"
-                    type="number"
-                    step="0.000001"
-                    value={form.latitude}
-                    onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
-                    placeholder="44.0000"
-                  />
-                </div>
-                <div className="mm-field">
-                  <label className="mm-label" htmlFor="mm-lng">Longitude</label>
-                  <input
-                    id="mm-lng"
-                    aria-label="Longitude"
-                    className="input mono"
-                    type="number"
-                    step="0.000001"
-                    value={form.longitude}
-                    onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
-                    placeholder="-71.0000"
-                  />
-                </div>
-
-                {/* years */}
-                <div className="mm-field">
-                  <label className="mm-label">Start year</label>
-                  {mode === 'add' ? (
-                    <input
-                      className="input mono"
-                      type="number"
-                      value={form.start_year}
-                      onChange={(e) => setForm((f) => ({ ...f, start_year: e.target.value }))}
-                      min={shelter.start_year}
-                      max={shelter.end_year ?? undefined}
-                    />
-                  ) : (
-                    <input className="input mono" value={form.start_year} disabled title="Start year cannot be changed after creation" />
-                  )}
-                </div>
-                <div className="mm-field">
-                  <label className="mm-label">
-                    End year
-                    <span className="mm-label-hint">auto</span>
-                  </label>
-                  <input className="input mono" value={endYearDisplay} disabled title="Computed automatically from adjacent markers" />
-                </div>
-
-                {/* change type — full width */}
-                <div className="mm-field mm-col2">
-                  <label className="mm-label" htmlFor="mm-type">Change type</label>
-                  <select
-                    id="mm-type"
-                    aria-label="Change Type"
-                    className="select"
-                    value={form.changeTypeBase}
-                    onChange={(e) => setForm((f) => ({ ...f, changeTypeBase: e.target.value }))}
-                  >
-                    {CHANGE_TYPES.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
-                  </select>
-                </div>
-
-                {/* notes — full width */}
-                <div className="mm-field mm-col2">
-                  <label className="mm-label">Notes</label>
-                  <textarea
-                    className="textarea"
-                    value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                    rows={2}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mm-detail-foot">
-              <button className="btn primary" onClick={handleSave} disabled={!canSave || saving}>
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          </div>
+          <MarkerFormPanel
+            mode={mode}
+            editingMarker={editingMarker}
+            form={form}
+            setForm={setForm}
+            errorMsg={errorMsg}
+            endYearDisplay={endYearDisplay}
+            canSave={canSave}
+            saving={saving}
+            shelterStartYear={shelter.start_year}
+            shelterEndYear={shelter.end_year}
+            onSave={handleSave}
+          />
         )}
       </div>
 
@@ -564,6 +668,21 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
             Click the map to place this marker
           </div>
         )}
+        {mode === 'edit' && (
+          <div className="mm-placing-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            Click map or drag pin to relocate
+          </div>
+        )}
+        <button
+          className={`mm-map-toggle${showAll ? ' active' : ''}`}
+          onClick={() => setShowAll((v) => !v)}
+          title={showAll ? 'Showing all shelters — click to show current only' : 'Show all shelters'}
+        >
+          All shelters
+        </button>
         {hoverCoords && (
           <div className="mm-map-coords">
             {hoverCoords.lat.toFixed(4)}°N,{' '}

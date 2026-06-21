@@ -91,6 +91,79 @@ export function stripMarkdown(md: string): string {
     .trim();
 }
 
+function buildHistoryEntry(
+  dbHistory: string | null,
+  slug: string,
+  shelterFilesDir: string,
+  tmpShelterDir: string,
+): HistoryEntry | null {
+  const mdFileName = dbHistory ? dbHistory.split('/').pop()! : `${slug}.md`;
+  const mdPath = path.join(shelterFilesDir, mdFileName);
+  try {
+    const stat = fs.statSync(mdPath);
+    fs.mkdirSync(tmpShelterDir, { recursive: true });
+    fs.copyFileSync(mdPath, path.join(tmpShelterDir, mdFileName));
+    return { filePath: dbHistory ?? `${slug}/${slug}.md`, updated: stat.mtime.toISOString(), driveFileId: null };
+  } catch {
+    return null; // ENOENT — no history file
+  }
+}
+
+function buildPhotoEntries(
+  shelterPhotos: Record<string, unknown>[],
+  resolvedSheltersRoot: string,
+  tmpShelterDir: string,
+  tmpDir: string,
+  shelterId: number,
+): { entries: PhotoEntry[]; skipped: number } {
+  const entries: PhotoEntry[] = [];
+  let skipped = 0;
+  for (const p of shelterPhotos) {
+    const fileName = p.file_name as string;
+    if (!fs.existsSync(path.join(resolvedSheltersRoot, fileName))) { skipped++; continue; }
+    fs.mkdirSync(tmpShelterDir, { recursive: true });
+    fs.copyFileSync(path.join(resolvedSheltersRoot, fileName), path.join(tmpDir, fileName));
+    entries.push({
+      id: p.id as number,
+      photographer: (p.photographer as string) ?? '',
+      fileName,
+      driveFileId: null,
+      caption: (p.caption as string) ?? '',
+      dateTaken: (p.date_taken as string) ?? '',
+      notes: (p.notes as string) ?? '',
+      created: (p.created as string) ?? '',
+      updated: (p.updated as string) ?? '',
+      shelterId,
+      altText: (p.alt_text as string) ?? '',
+      title: (p.title as string) ?? '',
+      description: (p.description as string) ?? '',
+    });
+  }
+  return { entries, skipped };
+}
+
+function buildMarkerEntries(
+  markersByShelter: Map<number, Record<string, unknown>[]>,
+  shelterId: number,
+  slug: string,
+  shelterDefaultPhotoId: number | null,
+): MapMarkerEntry[] {
+  return (markersByShelter.get(shelterId) ?? []).map((m) => ({
+    id: m.id as number | null,
+    name: (m.name as string) ?? '',
+    latitude: m.latitude as number,
+    longitude: m.longitude as number,
+    notes: (m.notes as string | null) ?? null,
+    shelterId,
+    startYear: m.start_year as number,
+    endYear: (m.end_year as number | null) ?? null,
+    changeType: (m.change_type as string) ?? 'Original',
+    isExtant: Boolean(m.is_extant),
+    slug,
+    defaultPhotoId: shelterDefaultPhotoId,
+  }));
+}
+
 export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRoot = 'shelters/'): Promise<BuildResult> {
   const db = getDb();
 
@@ -122,7 +195,6 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
   `).all() as Record<string, unknown>[];
 
   // Queries map_markers, not timelines — timelines was removed in migration 004.
-  // scripts/build_dist_package.py still references timelines and is broken against current schema.
   const markerRows = db.prepare(`
     SELECT id, shelter_id, latitude, longitude, name, start_year, end_year,
            change_type, is_extant, notes
@@ -130,7 +202,6 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
     ORDER BY shelter_id, start_year
   `).all() as Record<string, unknown>[];
 
-  // Group photos and markers by shelter_id
   const photosByShelter = new Map<number, typeof photoRows>();
   for (const p of photoRows) {
     const sid = p.shelter_id as number;
@@ -152,75 +223,27 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
   for (const row of shelterRows) {
     const slug = row.slug as string;
     const shelterId = row.id as number;
-    const shelterFilesDir = path.join(resolvedSheltersRoot, slug);
+    const shelterDefaultPhotoId = row.default_photo_id as number | null;
     const tmpShelterDir = path.join(tmpDir, slug);
 
-    // History file — use DB history column as the relative path reference
-    const dbHistory = (row.history as string | null) ?? null;
-    const mdFileName = dbHistory ? dbHistory.split('/').pop()! : `${slug}.md`;
-    const mdPath = path.join(shelterFilesDir, mdFileName);
-    let history: HistoryEntry | null = null;
-    try {
-      const stat = fs.statSync(mdPath);
-      history = {
-        filePath: dbHistory ?? `${slug}/${slug}.md`,
-        updated: stat.mtime.toISOString(),
-        driveFileId: null,
-      };
-      fs.mkdirSync(tmpShelterDir, { recursive: true });
-      fs.copyFileSync(mdPath, path.join(tmpShelterDir, mdFileName));
-    } catch {
-      // ENOENT — no history file
-    }
-
-    // Photos
-    const shelterPhotos = photosByShelter.get(shelterId) ?? [];
-    const photoEntries: PhotoEntry[] = [];
-    for (const p of shelterPhotos) {
-      const fileName = p.file_name as string;
-      const photoPath = path.join(resolvedSheltersRoot, fileName);
-      if (!fs.existsSync(photoPath)) {
-        skippedPhotos++;
-        continue;
-      }
-      fs.mkdirSync(tmpShelterDir, { recursive: true });
-      fs.copyFileSync(photoPath, path.join(tmpDir, fileName));
-      totalPhotos++;
-      photoEntries.push({
-        id: p.id as number,
-        photographer: (p.photographer as string) ?? '',
-        fileName,
-        driveFileId: null,
-        caption: (p.caption as string) ?? '',
-        dateTaken: (p.date_taken as string) ?? '',
-        notes: (p.notes as string) ?? '',
-        created: (p.created as string) ?? '',
-        updated: (p.updated as string) ?? '',
-        shelterId,
-        altText: (p.alt_text as string) ?? '',
-        title: (p.title as string) ?? '',
-        description: (p.description as string) ?? '',
-      });
-    }
-
-    // Map markers — denormalise slug + defaultPhotoId from shelter
-    const shelterDefaultPhotoId = row.default_photo_id as number | null;
-    const markers: MapMarkerEntry[] = (markersByShelter.get(shelterId) ?? []).map((m) => ({
-      id: m.id as number | null,
-      name: (m.name as string) ?? '',
-      latitude: m.latitude as number,
-      longitude: m.longitude as number,
-      notes: (m.notes as string | null) ?? null,
-      shelterId,
-      startYear: m.start_year as number,
-      endYear: (m.end_year as number | null) ?? null,
-      changeType: (m.change_type as string) ?? 'Original',
-      isExtant: Boolean(m.is_extant),
+    const history = buildHistoryEntry(
+      (row.history as string | null) ?? null,
       slug,
-      defaultPhotoId: shelterDefaultPhotoId,
-    }));
+      path.join(resolvedSheltersRoot, slug),
+      tmpShelterDir,
+    );
 
-    // Primary lat/lon from first marker
+    const { entries: photoEntries, skipped } = buildPhotoEntries(
+      photosByShelter.get(shelterId) ?? [],
+      resolvedSheltersRoot,
+      tmpShelterDir,
+      tmpDir,
+      shelterId,
+    );
+    totalPhotos += photoEntries.length;
+    skippedPhotos += skipped;
+
+    const markers = buildMarkerEntries(markersByShelter, shelterId, slug, shelterDefaultPhotoId);
     const firstMarker = markers[0] ?? null;
 
     shelters.push({
@@ -247,12 +270,7 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
     });
   }
 
-  const manifest: ManifestJson = {
-    created: new Date().toISOString(),
-    shelters,
-  };
-
+  const manifest: ManifestJson = { created: new Date().toISOString(), shelters };
   fs.writeFileSync(path.join(tmpDir, 'shelter-manifest.json'), JSON.stringify(manifest, null, 2));
-
   return { manifest, shelterCount: shelters.length, photoCount: totalPhotos, skippedPhotos };
 }
