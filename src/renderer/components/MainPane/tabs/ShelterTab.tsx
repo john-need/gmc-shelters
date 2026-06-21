@@ -37,6 +37,217 @@ function FlagCheck({
   );
 }
 
+interface DefaultPhotoModalProps {
+  s: Shelter;
+  photos: ReturnType<typeof Array.prototype.filter>;
+  dppIndex: number;
+  dppImgError: boolean;
+  dppBackground: (idx: number) => string;
+  repoRoot: string;
+  sheltersRoot: string;
+  onClose: () => void;
+  onSetDefault: (photoId: number) => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelectIndex: (i: number) => void;
+  onImgError: () => void;
+}
+
+function DefaultPhotoModal({
+  s, photos, dppIndex, dppImgError, dppBackground,
+  repoRoot, sheltersRoot, onClose, onSetDefault, onPrev, onNext, onSelectIndex, onImgError,
+}: DefaultPhotoModalProps) {
+  const dppPhoto = photos.length > 0 ? photos[dppIndex] : null;
+  const dppPhotoUrl = repoRoot && dppPhoto ? buildPhotoUrl(repoRoot, sheltersRoot, dppPhoto.file_name) : '';
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div
+        className="modal wide"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Choose Default Photo"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-head">
+          <h2>Choose default <em>photo</em></h2>
+          <div className="sub">{s.name} · {photos.length} photograph{photos.length !== 1 ? 's' : ''}</div>
+        </div>
+
+        <div className="dpp-body">
+          <button type="button" className="dpp-nav" aria-label="Previous photo" disabled={photos.length <= 1} onClick={onPrev}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+
+          <div className="dpp-stage">
+            <div className="dpp-frame" style={{ background: dppBackground(dppIndex) }}>
+              {dppPhotoUrl && !dppImgError ? (
+                <img
+                  key={dppPhotoUrl}
+                  src={dppPhotoUrl}
+                  alt={dppPhoto?.alt_text || dppPhoto?.title || s.name}
+                  onError={onImgError}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                />
+              ) : (
+                <span className="dpp-glyph">{s.name.charAt(0).toUpperCase()}</span>
+              )}
+              {dppPhoto && s.default_photo_id === dppPhoto.id && (
+                <div className="dpp-current-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Current default
+                </div>
+              )}
+              <div className="dpp-counter">{dppIndex + 1} / {photos.length}</div>
+            </div>
+
+            {dppPhoto && (
+              <div className="dpp-meta">
+                <div className="dpp-title">{dppPhoto.title || 'Untitled'}</div>
+                <div className="dpp-sub">
+                  {dppPhoto.photographer && <span><strong>By</strong>{dppPhoto.photographer}</span>}
+                  {dppPhoto.date_taken && <span><strong>Date</strong>{dppPhoto.date_taken}</span>}
+                  <span><strong>ID</strong>photo_{dppPhoto.id}</span>
+                </div>
+                {dppPhoto.caption && <div className="dpp-caption">{dppPhoto.caption}</div>}
+              </div>
+            )}
+          </div>
+
+          <button type="button" className="dpp-nav" aria-label="Next photo" disabled={photos.length <= 1} onClick={onNext}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="dpp-strip">
+          {photos.map((p, i) => {
+            const thumbUrl = repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : '';
+            return (
+              <button
+                key={p.id}
+                type="button"
+                className={`dpp-thumb ${i === dppIndex ? 'active' : ''}`}
+                onClick={() => onSelectIndex(i)}
+                aria-label={p.title || p.file_name}
+                style={{ background: dppBackground(i) }}
+              >
+                {thumbUrl && (
+                  <img src={thumbUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+                {s.default_photo_id === p.id && (
+                  <div className="dpp-thumb-star">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="none">
+                      <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="modal-foot">
+          <button type="button" className="btn" onClick={onClose}>Cancel</button>
+          <button
+            type="button"
+            className="btn primary"
+            disabled={!dppPhoto || s.default_photo_id === dppPhoto.id}
+            onClick={() => dppPhoto && onSetDefault(dppPhoto.id)}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            {' '}Set as Default
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface DeleteShelterModalProps {
+  s: Shelter;
+  photos: { length: number };
+  deleteSlug: string;
+  isDeleting: boolean;
+  onClose: () => void;
+  onSlugChange: (v: string) => void;
+  onConfirm: () => void;
+}
+
+function DeleteShelterModal({ s, photos, deleteSlug, isDeleting, onClose, onSlugChange, onConfirm }: DeleteShelterModalProps) {
+  return (
+    <div className="modal-bg" onClick={() => !isDeleting && onClose()}>
+      <div
+        className="modal delete-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Delete shelter"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-head">
+          <h2>Delete <em>shelter</em></h2>
+          <div className="sub">{s.name}</div>
+        </div>
+
+        <div className="delete-modal-body">
+          <div className="delete-warning">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>This action is <strong>permanent and cannot be undone.</strong></span>
+          </div>
+
+          <p className="delete-detail">Deleting <strong>{s.name}</strong> will permanently remove:</p>
+          <ul className="delete-list">
+            <li>The shelter record and all metadata from the database</li>
+            <li>All {photos.length > 0 ? `${photos.length} photograph file${photos.length !== 1 ? 's' : ''}` : 'photograph files'} and photo records</li>
+            <li>All map markers</li>
+            <li>All source citations</li>
+            <li>The history file and the <code>{s.slug}/</code> folder</li>
+          </ul>
+
+          <div className="delete-confirm-field">
+            <label className="label">
+              Type <strong className="delete-slug-hint">{s.slug}</strong> to confirm
+            </label>
+            <input
+              className="input"
+              value={deleteSlug}
+              onChange={(e) => onSlugChange(e.target.value)}
+              placeholder={s.slug}
+              autoComplete="off"
+              spellCheck={false}
+              disabled={isDeleting}
+            />
+          </div>
+        </div>
+
+        <div className="modal-foot">
+          <button type="button" className="btn" onClick={onClose} disabled={isDeleting}>Cancel</button>
+          <button
+            type="button"
+            className="btn danger"
+            disabled={deleteSlug !== s.slug || isDeleting}
+            onClick={onConfirm}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            {isDeleting ? 'Deleting…' : 'Delete permanently'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ShelterTab() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer) as Shelter;
@@ -167,11 +378,6 @@ export default function ShelterTab() {
     : '';
   const photoCount = photos.length || s.photo_count || 0;
   const photoSummary = defaultPhoto ? (defaultPhoto.title || defaultPhoto.file_name) : 'No default photo selected';
-
-  const dppPhoto = photos.length > 0 ? photos[dppIndex] : null;
-  const dppPhotoUrl = repoRoot && dppPhoto
-    ? buildPhotoUrl(repoRoot, sheltersRoot, dppPhoto.file_name)
-    : '';
 
   return (
     <div className="shelter-tab-wrap">
@@ -406,201 +612,33 @@ export default function ShelterTab() {
     </div>
 
       {isPhotoModalOpen && photos.length > 0 && (
-        <div className="modal-bg" onClick={() => setPhotoModalOpen(false)}>
-          <div
-            className="modal wide"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Choose Default Photo"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-head">
-              <h2>Choose default <em>photo</em></h2>
-              <div className="sub">{s.name} · {photos.length} photograph{photos.length !== 1 ? 's' : ''}</div>
-            </div>
-
-            <div className="dpp-body">
-              <button
-                type="button"
-                className="dpp-nav"
-                aria-label="Previous photo"
-                disabled={photos.length <= 1}
-                onClick={() => setDppIndex((i) => (i - 1 + photos.length) % photos.length)}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 18l-6-6 6-6"/>
-                </svg>
-              </button>
-
-              <div className="dpp-stage">
-                <div className="dpp-frame" style={{ background: dppBackground(dppIndex) }}>
-                  {dppPhotoUrl && !dppImgError ? (
-                    <img
-                      key={dppPhotoUrl}
-                      src={dppPhotoUrl}
-                      alt={dppPhoto?.alt_text || dppPhoto?.title || s.name}
-                      onError={() => setDppImgError(true)}
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <span className="dpp-glyph">{s.name.charAt(0).toUpperCase()}</span>
-                  )}
-                  {dppPhoto && s.default_photo_id === dppPhoto.id && (
-                    <div className="dpp-current-badge">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                        <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                      Current default
-                    </div>
-                  )}
-                  <div className="dpp-counter">{dppIndex + 1} / {photos.length}</div>
-                </div>
-
-                {dppPhoto && (
-                  <div className="dpp-meta">
-                    <div className="dpp-title">{dppPhoto.title || 'Untitled'}</div>
-                    <div className="dpp-sub">
-                      {dppPhoto.photographer && <span><strong>By</strong>{dppPhoto.photographer}</span>}
-                      {dppPhoto.date_taken && <span><strong>Date</strong>{dppPhoto.date_taken}</span>}
-                      <span><strong>ID</strong>photo_{dppPhoto.id}</span>
-                    </div>
-                    {dppPhoto.caption && <div className="dpp-caption">{dppPhoto.caption}</div>}
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                className="dpp-nav"
-                aria-label="Next photo"
-                disabled={photos.length <= 1}
-                onClick={() => setDppIndex((i) => (i + 1) % photos.length)}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18l6-6-6-6"/>
-                </svg>
-              </button>
-            </div>
-
-            <div className="dpp-strip">
-              {photos.map((p, i) => {
-                const thumbUrl = repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : '';
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`dpp-thumb ${i === dppIndex ? 'active' : ''}`}
-                    onClick={() => setDppIndex(i)}
-                    aria-label={p.title || p.file_name}
-                    style={{ background: dppBackground(i) }}
-                  >
-                    {thumbUrl && (
-                      <img
-                        src={thumbUrl}
-                        alt=""
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    )}
-                    {s.default_photo_id === p.id && (
-                      <div className="dpp-thumb-star">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="none">
-                          <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="modal-foot">
-              <button type="button" className="btn" onClick={() => setPhotoModalOpen(false)}>Cancel</button>
-              <button
-                type="button"
-                className="btn primary"
-                disabled={!dppPhoto || s.default_photo_id === dppPhoto.id}
-                onClick={() => dppPhoto && handleSetDefault(dppPhoto.id)}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                  <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                {' '}Set as Default
-              </button>
-            </div>
-          </div>
-        </div>
+        <DefaultPhotoModal
+          s={s}
+          photos={photos}
+          dppIndex={dppIndex}
+          dppImgError={dppImgError}
+          dppBackground={dppBackground}
+          repoRoot={repoRoot}
+          sheltersRoot={sheltersRoot}
+          onClose={() => setPhotoModalOpen(false)}
+          onSetDefault={handleSetDefault}
+          onPrev={() => setDppIndex((i) => (i - 1 + photos.length) % photos.length)}
+          onNext={() => setDppIndex((i) => (i + 1) % photos.length)}
+          onSelectIndex={setDppIndex}
+          onImgError={() => setDppImgError(true)}
+        />
       )}
 
       {isDeleteOpen && (
-        <div className="modal-bg" onClick={() => !isDeleting && setDeleteOpen(false)}>
-          <div
-            className="modal delete-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Delete shelter"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-head">
-              <h2>Delete <em>shelter</em></h2>
-              <div className="sub">{s.name}</div>
-            </div>
-
-            <div className="delete-modal-body">
-              <div className="delete-warning">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                <span>This action is <strong>permanent and cannot be undone.</strong></span>
-              </div>
-
-              <p className="delete-detail">Deleting <strong>{s.name}</strong> will permanently remove:</p>
-              <ul className="delete-list">
-                <li>The shelter record and all metadata from the database</li>
-                <li>All {photos.length > 0 ? `${photos.length} photograph file${photos.length !== 1 ? 's' : ''}` : 'photograph files'} and photo records</li>
-                <li>All map markers</li>
-                <li>All source citations</li>
-                <li>The history file and the <code>{s.slug}/</code> folder</li>
-              </ul>
-
-              <div className="delete-confirm-field">
-                <label className="label">
-                  Type <strong className="delete-slug-hint">{s.slug}</strong> to confirm
-                </label>
-                <input
-                  className="input"
-                  value={deleteSlug}
-                  onChange={(e) => setDeleteSlug(e.target.value)}
-                  placeholder={s.slug}
-                  autoComplete="off"
-                  spellCheck={false}
-                  disabled={isDeleting}
-                />
-              </div>
-            </div>
-
-            <div className="modal-foot">
-              <button
-                type="button"
-                className="btn"
-                onClick={() => { setDeleteOpen(false); setDeleteSlug(''); }}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn danger"
-                disabled={deleteSlug !== s.slug || isDeleting}
-                onClick={handleDeleteConfirm}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                </svg>
-                {isDeleting ? 'Deleting…' : 'Delete permanently'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteShelterModal
+          s={s}
+          photos={photos}
+          deleteSlug={deleteSlug}
+          isDeleting={isDeleting}
+          onClose={() => { setDeleteOpen(false); setDeleteSlug(''); }}
+          onSlugChange={setDeleteSlug}
+          onConfirm={handleDeleteConfirm}
+        />
       )}
     </div>
   );

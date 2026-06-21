@@ -213,8 +213,11 @@ function SourcePicker({ open, type, sources, onPick, onClose }: SourcePickerProp
         return q === '' || cell(r[f.key]).toLowerCase().includes(q);
       }),
     );
-    const sortKey = fields[0]?.key ?? 'title';
-    return filtered.sort((a, b) => cell(a[sortKey]).localeCompare(cell(b[sortKey]), undefined, { sensitivity: 'base' }));
+    return filtered.sort((a, b) => {
+      const titleCmp = cell(a.title).localeCompare(cell(b.title), undefined, { sensitivity: 'base' });
+      if (titleCmp !== 0) return titleCmp;
+      return (a.year ?? 0) - (b.year ?? 0);
+    });
   }, [sources, type, fields, queries]);
 
   return (
@@ -266,6 +269,37 @@ function SourcePicker({ open, type, sources, onPick, onClose }: SourcePickerProp
   );
 }
 
+function showSourceField(key: string, type: SourceType, hasUrl: boolean): boolean {
+  const map: Record<string, boolean | SourceType[]> = {
+    author: true,
+    title: true,
+    container_title: (['chapter', 'journal', 'newspaper', 'magazine', 'website', 'archive'] as SourceType[]).includes(type),
+    editor: (['book', 'chapter', 'report'] as SourceType[]).includes(type),
+    edition: (['book', 'chapter', 'report'] as SourceType[]).includes(type),
+    volume: (['journal', 'magazine', 'report'] as SourceType[]).includes(type),
+    issue: (['journal', 'magazine'] as SourceType[]).includes(type),
+    pages: (['book', 'chapter', 'journal', 'newspaper', 'magazine', 'report'] as SourceType[]).includes(type),
+    publisher: (['book', 'chapter', 'website', 'report', 'map'] as SourceType[]).includes(type),
+    place: (['book', 'chapter', 'report', 'map', 'interview'] as SourceType[]).includes(type),
+    year: true,
+    date: (['newspaper', 'magazine', 'website', 'interview'] as SourceType[]).includes(type),
+    url: true,
+    access_date: (['website', 'journal'] as SourceType[]).includes(type) || hasUrl,
+    archive: (['archive', 'manuscript', 'interview'] as SourceType[]).includes(type),
+    archive_location: (['archive', 'manuscript', 'interview'] as SourceType[]).includes(type),
+  };
+  const v = map[key];
+  return typeof v === 'boolean' ? v : Array.isArray(v) ? v.includes(type) : false;
+}
+
+function containerTitleLabel(type: SourceType | undefined): string {
+  if (type === 'journal' || type === 'magazine') return 'Journal / magazine';
+  if (type === 'newspaper') return 'Newspaper';
+  if (type === 'website') return 'Website name';
+  if (type === 'archive') return 'Collection';
+  return 'Container title';
+}
+
 interface SourceModalProps {
   source: Partial<Source> & { shelter_id: number };
   creating: boolean;
@@ -300,38 +334,8 @@ function SourceModal({ source, creating, onCancel, onSave }: SourceModalProps) {
     setS((cur) => ({ ...cur, [key]: v }));
   };
 
-  const showField = (key: string): boolean => {
-    const t = s.type as SourceType;
-    const map: Record<string, boolean | SourceType[]> = {
-      author: true,
-      title: true,
-      container_title: (['chapter', 'journal', 'newspaper', 'magazine', 'website', 'archive'] as SourceType[]).includes(t),
-      editor: (['book', 'chapter', 'report'] as SourceType[]).includes(t),
-      edition: (['book', 'chapter', 'report'] as SourceType[]).includes(t),
-      volume: (['journal', 'magazine', 'report'] as SourceType[]).includes(t),
-      issue: (['journal', 'magazine'] as SourceType[]).includes(t),
-      pages: (['book', 'chapter', 'journal', 'newspaper', 'magazine', 'report'] as SourceType[]).includes(t),
-      publisher: (['book', 'chapter', 'website', 'report', 'map'] as SourceType[]).includes(t),
-      place: (['book', 'chapter', 'report', 'map', 'interview'] as SourceType[]).includes(t),
-      year: true,
-      date: (['newspaper', 'magazine', 'website', 'interview'] as SourceType[]).includes(t),
-      url: true,
-      access_date: (['website', 'journal'] as SourceType[]).includes(t) || !!s.url,
-      archive: (['archive', 'manuscript', 'interview'] as SourceType[]).includes(t),
-      archive_location: (['archive', 'manuscript', 'interview'] as SourceType[]).includes(t),
-    };
-    const v = map[key];
-    return typeof v === 'boolean' ? v : Array.isArray(v) ? v.includes(t) : false;
-  };
-
-  const containerLabel = () => {
-    const t = s.type;
-    if (t === 'journal' || t === 'magazine') return 'Journal / magazine';
-    if (t === 'newspaper') return 'Newspaper';
-    if (t === 'website') return 'Website name';
-    if (t === 'archive') return 'Collection';
-    return 'Container title';
-  };
+  const showField = (key: string) => showSourceField(key, s.type as SourceType, !!s.url);
+  const containerLabel = () => containerTitleLabel(s.type as SourceType);
 
   const previewHtml = citeChicago(s as Source);
 

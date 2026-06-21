@@ -9,6 +9,105 @@ import { loadStoredPaths } from '../../pathSettings';
 import { useGuardedNav } from '../NavigationGuard/NavigationGuardProvider';
 import ShelterRow from './ShelterRow';
 
+interface AdvancedFilterPanelProps {
+  adv: AdvancedFilters;
+  advActiveCount: number;
+  archOptions: string[];
+  catOptions: string[];
+  setAdvKey: <K extends keyof AdvancedFilters>(key: K) => (value: AdvancedFilters[K]) => void;
+  onClear: () => void;
+}
+
+function AdvancedFilterPanel({ adv, advActiveCount, archOptions, catOptions, setAdvKey, onClear }: AdvancedFilterPanelProps) {
+  return (
+    <div className="adv-panel">
+      <div className="adv-field">
+        <label className="adv-label">Year range</label>
+        <div className="adv-year-row">
+          <input
+            className="filter-input mono"
+            type="number"
+            placeholder="1900"
+            value={adv.yearMin}
+            onChange={(e) => setAdvKey('yearMin')(e.target.value)}
+          />
+          <span className="adv-dash">→</span>
+          <input
+            className="filter-input mono"
+            type="number"
+            placeholder="2025"
+            value={adv.yearMax}
+            onChange={(e) => setAdvKey('yearMax')(e.target.value)}
+          />
+        </div>
+        <span className="adv-hint">overlaps the range, inclusive</span>
+      </div>
+
+      <div className="adv-field">
+        <label className="adv-label">Category</label>
+        <select
+          className="adv-select"
+          value={adv.category}
+          onChange={(e) => setAdvKey('category')(e.target.value)}
+        >
+          <option value="">Any category</option>
+          {catOptions.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="adv-field">
+        <label className="adv-label">Architecture</label>
+        <select
+          className="adv-select"
+          value={adv.architecture}
+          onChange={(e) => setAdvKey('architecture')(e.target.value)}
+        >
+          <option value="">Any architecture</option>
+          {archOptions.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="adv-field">
+        <label className="adv-label">Built by</label>
+        <input
+          className="filter-input"
+          placeholder="e.g. CCC, Hartwell…"
+          value={adv.builtBy}
+          onChange={(e) => setAdvKey('builtBy')(e.target.value)}
+        />
+      </div>
+
+      <div className="adv-field">
+        <label className="adv-label">Show on web</label>
+        <div className="adv-tri">
+          {(['any', 'yes', 'no'] as const).map((v) => (
+            <button
+              key={v}
+              className={`adv-tri-btn ${adv.showOnWeb === v ? 'active' : ''}`}
+              onClick={() => setAdvKey('showOnWeb')(v)}
+            >
+              {v.charAt(0).toUpperCase() + v.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {advActiveCount > 0 && (
+        <button className="adv-clear" onClick={onClear}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 6 18 18M18 6 6 18"/>
+          </svg>{' '}
+          Clear {advActiveCount} filter{advActiveCount === 1 ? '' : 's'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const dispatch = useDispatch<AppDispatch>();
   const shelters = useSelector((s: RootState) => s.shelters.list);
@@ -209,95 +308,14 @@ export default function Sidebar() {
           </button>
 
           {advOpen && (
-            <div className="adv-panel">
-              <div className="adv-field">
-                <label className="adv-label">Year range</label>
-                <div className="adv-year-row">
-                  <input
-                    className="filter-input mono"
-                    type="number"
-                    placeholder="1900"
-                    value={adv.yearMin}
-                    onChange={(e) => setAdvKey('yearMin')(e.target.value)}
-                  />
-                  <span className="adv-dash">→</span>
-                  <input
-                    className="filter-input mono"
-                    type="number"
-                    placeholder="2025"
-                    value={adv.yearMax}
-                    onChange={(e) => setAdvKey('yearMax')(e.target.value)}
-                  />
-                </div>
-                <span className="adv-hint">overlaps the range, inclusive</span>
-              </div>
-
-              <div className="adv-field">
-                <label className="adv-label">Category</label>
-                <select
-                  className="adv-select"
-                  value={adv.category}
-                  onChange={(e) => setAdvKey('category')(e.target.value)}
-                >
-                  <option value="">Any category</option>
-                  {catOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="adv-field">
-                <label className="adv-label">Architecture</label>
-                <select
-                  className="adv-select"
-                  value={adv.architecture}
-                  onChange={(e) => setAdvKey('architecture')(e.target.value)}
-                >
-                  <option value="">Any architecture</option>
-                  {archOptions.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="adv-field">
-                <label className="adv-label">Built by</label>
-                <input
-                  className="filter-input"
-                  placeholder="e.g. CCC, Hartwell…"
-                  value={adv.builtBy}
-                  onChange={(e) => setAdvKey('builtBy')(e.target.value)}
-                />
-              </div>
-
-              <div className="adv-field">
-                <label className="adv-label">Show on web</label>
-                <div className="adv-tri">
-                  {(['any', 'yes', 'no'] as const).map((v) => (
-                    <button
-                      key={v}
-                      className={`adv-tri-btn ${adv.showOnWeb === v ? 'active' : ''}`}
-                      onClick={() => setAdvKey('showOnWeb')(v)}
-                    >
-                      {v.charAt(0).toUpperCase() + v.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {advActiveCount > 0 && (
-                <button className="adv-clear" onClick={clearAdv}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 6 18 18M18 6 6 18"/>
-                  </svg>{' '}
-                  Clear {advActiveCount} filter{advActiveCount === 1 ? '' : 's'}
-                </button>
-              )}
-            </div>
+            <AdvancedFilterPanel
+              adv={adv}
+              advActiveCount={advActiveCount}
+              archOptions={archOptions}
+              catOptions={catOptions}
+              setAdvKey={setAdvKey}
+              onClear={clearAdv}
+            />
           )}
         </div>
       )}

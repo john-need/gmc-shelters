@@ -54,107 +54,125 @@ function longDate(iso: string): string {
   return `${monthName(m)} ${d}, ${y}`;
 }
 
+function fmtBook(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.italic(s.title) + '.');
+  if (s.editor) p.push(`Edited by ${f.escape(s.editor)}.`);
+  if (s.edition && s.edition.toLowerCase() !== '1st') p.push(`${f.escape(s.edition)} ed.`);
+  const pubLine = [[s.place, s.publisher].filter(Boolean).map(f.escape).join(': '), year].filter(Boolean).join(', ');
+  if (pubLine) p.push(pubLine + '.');
+  if (s.pages) p.push(`Pp. ${f.escape(s.pages)}.`);
+  return p;
+}
+
+function fmtJournal(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.quote(s.title));
+  let vol = s.container_title ? f.italic(s.container_title) : '';
+  if (s.volume) vol += ` ${f.escape(s.volume)}`;
+  if (s.issue) vol += `, no. ${f.escape(s.issue)}`;
+  if (year) vol += ` (${year})`;
+  if (s.pages) vol += `: ${f.escape(s.pages)}`;
+  if (vol) p.push(vol + '.');
+  if (s.url) p.push(f.link(s.url) + '.');
+  return p;
+}
+
+function fmtNewspaper(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.quote(s.title));
+  const date = longDate(s.date) || (year ? String(year) : '');
+  const tail = [s.container_title ? f.italic(s.container_title) : '', date].filter(Boolean).join(', ');
+  if (tail) p.push(tail + '.');
+  if (s.pages) p.push(f.escape(s.pages) + '.');
+  if (s.url) p.push(f.link(s.url) + '.');
+  return p;
+}
+
+function fmtMagazine(s: Source, f: CitationFormatter, year: string): string[] {
+  const p: string[] = [];
+  if (s.author) p.push(`${f.escape(s.author)},`);
+  if (s.title) p.push(`"${f.escape(s.title)}."`);
+  const tail = [s.container_title ? f.italic(s.container_title) : '', year].filter(Boolean).join(', ');
+  if (tail) p.push(tail + '.');
+  if (s.pages) p.push(f.escape(s.pages) + '.');
+  if (s.url) p.push(f.link(s.url) + '.');
+  return p;
+}
+
+function fmtWebsite(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.quote(s.title));
+  if (s.container_title) p.push(f.italic(s.container_title) + '.');
+  if (s.publisher) p.push(f.escape(s.publisher) + '.');
+  const date = longDate(s.date) || (year ? String(year) : '');
+  if (date) p.push(`Last modified ${date}.`);
+  if (s.access_date) p.push(`Accessed ${longDate(s.access_date)}.`);
+  if (s.url) p.push(f.link(s.url) + '.');
+  return p;
+}
+
+function fmtArchive(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.italic(s.title) + '.');
+  if (year) p.push(year + '.');
+  if (s.container_title) p.push(f.escape(s.container_title) + '.');
+  if (s.archive) p.push(f.escape(s.archive) + '.');
+  if (s.archive_location) p.push(f.escape(s.archive_location) + '.');
+  return p;
+}
+
+function fmtInterview(s: Source, f: CitationFormatter, year: string): string[] {
+  const p: string[] = [];
+  if (s.author) p.push(f.escape(s.author) + ', interviewer.');
+  if (s.title) p.push(f.italic(s.title) + '.');
+  const date = longDate(s.date) || (year ? String(year) : '');
+  if (s.place || date) p.push([f.escape(s.place), date].filter(Boolean).join(', ') + '.');
+  if (s.archive) p.push(f.escape(s.archive) + '.');
+  if (s.archive_location) p.push(f.escape(s.archive_location) + '.');
+  return p;
+}
+
+function fmtMap(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.italic(s.title) + '.');
+  const line = [[s.place, s.publisher].filter(Boolean).map(f.escape).join(': '), year].filter(Boolean).join(', ');
+  if (line) p.push(line + '.');
+  return p;
+}
+
+function fmtOther(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p: string[] = [];
+  if (author) p.push(author);
+  if (s.title) p.push(f.italic(s.title) + '.');
+  if (s.container_title) p.push(f.escape(s.container_title) + '.');
+  if (year) p.push(year + '.');
+  return p;
+}
+
 function citeChicagoWithFormatter(s: Source, formatter: CitationFormatter): string {
   if (!s) return '';
-  const p: string[] = [];
-
   const author = s.author ? formatter.escape(s.author) + '.' : '';
   const year = s.year ? String(s.year) : '';
-
+  let parts: string[];
   switch (s.type) {
-    case 'book':
-    case 'chapter':
-    case 'report': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.italic(s.title) + '.');
-      if (s.editor) p.push(`Edited by ${formatter.escape(s.editor)}.`);
-      if (s.edition && s.edition.toLowerCase() !== '1st') p.push(`${formatter.escape(s.edition)} ed.`);
-      const pubBits = [s.place, s.publisher].filter(Boolean).map(formatter.escape).join(': ');
-      const pubLine = [pubBits, year].filter(Boolean).join(', ');
-      if (pubLine) p.push(pubLine + '.');
-      if (s.pages) p.push(`Pp. ${formatter.escape(s.pages)}.`);
-      break;
-    }
-    case 'journal': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.quote(s.title));
-      let vol = '';
-      if (s.container_title) vol = formatter.italic(s.container_title);
-      if (s.volume) vol += ` ${formatter.escape(s.volume)}`;
-      if (s.issue) vol += `, no. ${formatter.escape(s.issue)}`;
-      if (year) vol += ` (${year})`;
-      if (s.pages) vol += `: ${formatter.escape(s.pages)}`;
-      if (vol) p.push(vol + '.');
-      if (s.url) p.push(formatter.link(s.url) + '.');
-      break;
-    }
-    case 'newspaper': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.quote(s.title));
-      const ctn = s.container_title ? formatter.italic(s.container_title) : '';
-      const date = longDate(s.date) || (year ? String(year) : '');
-      const tail = [ctn, date].filter(Boolean).join(', ');
-      if (tail) p.push(tail + '.');
-      if (s.pages) p.push(formatter.escape(s.pages) + '.');
-      if (s.url) p.push(formatter.link(s.url) + '.');
-      break;
-    }
-    case 'magazine': {
-      if (s.author) p.push(`${formatter.escape(s.author)},`);
-      if (s.title) p.push(`"${formatter.escape(s.title)}."`);
-      const ctn = s.container_title ? formatter.italic(s.container_title) : '';
-      const tail = [ctn, year].filter(Boolean).join(', ');
-      if (tail) p.push(tail + '.');
-      if (s.pages) p.push(formatter.escape(s.pages) + '.');
-      if (s.url) p.push(formatter.link(s.url) + '.');
-      break;
-    }
-    case 'website': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.quote(s.title));
-      if (s.container_title) p.push(formatter.italic(s.container_title) + '.');
-      if (s.publisher) p.push(formatter.escape(s.publisher) + '.');
-      const date = longDate(s.date) || (year ? String(year) : '');
-      if (date) p.push(`Last modified ${date}.`);
-      if (s.access_date) p.push(`Accessed ${longDate(s.access_date)}.`);
-      if (s.url) p.push(formatter.link(s.url) + '.');
-      break;
-    }
-    case 'archive':
-    case 'manuscript': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.italic(s.title) + '.');
-      if (year) p.push(year + '.');
-      if (s.container_title) p.push(formatter.escape(s.container_title) + '.');
-      if (s.archive) p.push(formatter.escape(s.archive) + '.');
-      if (s.archive_location) p.push(formatter.escape(s.archive_location) + '.');
-      break;
-    }
-    case 'interview': {
-      if (author) p.push(formatter.escape(s.author) + ', interviewer.');
-      if (s.title) p.push(formatter.italic(s.title) + '.');
-      const date = longDate(s.date) || (year ? String(year) : '');
-      if (s.place || date) p.push([formatter.escape(s.place), date].filter(Boolean).join(', ') + '.');
-      if (s.archive) p.push(formatter.escape(s.archive) + '.');
-      if (s.archive_location) p.push(formatter.escape(s.archive_location) + '.');
-      break;
-    }
-    case 'map': {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.italic(s.title) + '.');
-      const place = [s.place, s.publisher].filter(Boolean).map(formatter.escape).join(': ');
-      const line = [place, year].filter(Boolean).join(', ');
-      if (line) p.push(line + '.');
-      break;
-    }
-    default: {
-      if (author) p.push(author);
-      if (s.title) p.push(formatter.italic(s.title) + '.');
-      if (s.container_title) p.push(formatter.escape(s.container_title) + '.');
-      if (year) p.push(year + '.');
-    }
+    case 'book': case 'chapter': case 'report': parts = fmtBook(s, formatter, author, year); break;
+    case 'journal':   parts = fmtJournal(s, formatter, author, year); break;
+    case 'newspaper': parts = fmtNewspaper(s, formatter, author, year); break;
+    case 'magazine':  parts = fmtMagazine(s, formatter, year); break;
+    case 'website':   parts = fmtWebsite(s, formatter, author, year); break;
+    case 'archive': case 'manuscript': parts = fmtArchive(s, formatter, author, year); break;
+    case 'interview': parts = fmtInterview(s, formatter, year); break;
+    case 'map':       parts = fmtMap(s, formatter, author, year); break;
+    default:          parts = fmtOther(s, formatter, author, year);
   }
-  return p.filter(Boolean).join(' ');
+  return parts.filter(Boolean).join(' ');
 }
 
 export function citeChicago(s: Source): string {
