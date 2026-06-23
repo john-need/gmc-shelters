@@ -54,10 +54,15 @@ function longDate(iso: string): string {
   return `${monthName(m)} ${d}, ${y}`;
 }
 
-function fmtBook(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+function startCitation(author: string, title: string | undefined, f: CitationFormatter): string[] {
   const p: string[] = [];
   if (author) p.push(author);
-  if (s.title) p.push(f.italic(s.title) + '.');
+  if (title) p.push(f.italic(title) + '.');
+  return p;
+}
+
+function fmtBook(s: Source, f: CitationFormatter, author: string, year: string): string[] {
+  const p = startCitation(author, s.title, f);
   if (s.editor) p.push(`Edited by ${f.escape(s.editor)}.`);
   if (s.edition && s.edition.toLowerCase() !== '1st') p.push(`${f.escape(s.edition)} ed.`);
   const pubLine = [[s.place, s.publisher].filter(Boolean).map(f.escape).join(': '), year].filter(Boolean).join(', ');
@@ -117,9 +122,7 @@ function fmtWebsite(s: Source, f: CitationFormatter, author: string, year: strin
 }
 
 function fmtArchive(s: Source, f: CitationFormatter, author: string, year: string): string[] {
-  const p: string[] = [];
-  if (author) p.push(author);
-  if (s.title) p.push(f.italic(s.title) + '.');
+  const p = startCitation(author, s.title, f);
   if (year) p.push(year + '.');
   if (s.container_title) p.push(f.escape(s.container_title) + '.');
   if (s.archive) p.push(f.escape(s.archive) + '.');
@@ -148,9 +151,7 @@ function fmtMap(s: Source, f: CitationFormatter, author: string, year: string): 
 }
 
 function fmtOther(s: Source, f: CitationFormatter, author: string, year: string): string[] {
-  const p: string[] = [];
-  if (author) p.push(author);
-  if (s.title) p.push(f.italic(s.title) + '.');
+  const p = startCitation(author, s.title, f);
   if (s.container_title) p.push(f.escape(s.container_title) + '.');
   if (year) p.push(year + '.');
   return p;

@@ -5,6 +5,7 @@ import type { Photo } from '../../../../shared/ipc-types';
 import { savePhotoMetadata } from '../../../store/photosSlice';
 import { showToast } from '../../../store/uiSlice';
 import { screenToLocalDelta } from '../../../utils/cropUtils';
+import PhotoPreviewImage from '../../ui/PhotoPreviewImage';
 
 interface Props {
   photo: Photo;
@@ -14,21 +15,6 @@ interface Props {
   isDefault: boolean;
   onSave: () => void;
   onCancel: () => void;
-}
-
-function PhotoPreviewImage({ src, alt, fallback, onLoad }: { src: string; alt: string; fallback: string; onLoad?: (img: HTMLImageElement) => void }) {
-  const [imgError, setImgError] = useState(false);
-  return imgError ? (
-    <span className="glyph">{fallback}</span>
-  ) : (
-    <img
-      src={src}
-      alt={alt}
-      onLoad={(e) => onLoad?.(e.currentTarget)}
-      onError={() => setImgError(true)}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-    />
-  );
 }
 
 interface TransformSidebarProps {
@@ -106,6 +92,55 @@ function TransformSidebar({
           </span>
           <button className="btn icon sm" onClick={onZoomIn}>+</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface CropOverlayLayerProps {
+  cropOverlayRef: React.RefObject<HTMLDivElement>;
+  renderedImageRect: { left: number; top: number; width: number; height: number };
+  cropRect: { x: number; y: number; w: number; h: number };
+  onStartDrag: (type: 'move' | 'tl' | 'tr' | 'bl' | 'br', e: React.MouseEvent<HTMLElement>) => void;
+}
+
+function CropOverlayLayer({ cropOverlayRef, renderedImageRect, cropRect, onStartDrag }: CropOverlayLayerProps) {
+  return (
+    <div
+      ref={cropOverlayRef}
+      style={{
+        position: 'absolute',
+        left: renderedImageRect.left,
+        top: renderedImageRect.top,
+        width: renderedImageRect.width,
+        height: renderedImageRect.height,
+      }}
+    >
+      <div
+        className="crop-rect"
+        style={{
+          position: 'absolute',
+          left: `${cropRect.x}%`,
+          top: `${cropRect.y}%`,
+          width: `${cropRect.w}%`,
+          height: `${cropRect.h}%`,
+          cursor: 'move',
+        }}
+        onMouseDown={(e) => onStartDrag('move', e)}
+      >
+        {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+          <div
+            key={c}
+            className="crop-handle"
+            style={{
+              position: 'absolute',
+              [c.includes('t') ? 'top' : 'bottom']: -5,
+              [c.includes('l') ? 'left' : 'right']: -5,
+              cursor: c === 'tl' || c === 'br' ? 'nwse-resize' : 'nesw-resize',
+            }}
+            onMouseDown={(e) => onStartDrag(c, e)}
+          />
+        ))}
       </div>
     </div>
   );
@@ -374,43 +409,12 @@ export default function PhotoEditorDialog({
                 <span className="glyph">{initial}</span>
               )}
               {cropping && renderedImageRect && (
-                <div
-                  ref={cropOverlayRef}
-                  style={{
-                    position: 'absolute',
-                    left: renderedImageRect.left,
-                    top: renderedImageRect.top,
-                    width: renderedImageRect.width,
-                    height: renderedImageRect.height,
-                  }}
-                >
-                  <div
-                    className="crop-rect"
-                    style={{
-                      position: 'absolute',
-                      left: `${cropRect.x}%`,
-                      top: `${cropRect.y}%`,
-                      width: `${cropRect.w}%`,
-                      height: `${cropRect.h}%`,
-                      cursor: 'move',
-                    }}
-                    onMouseDown={(e) => startCropDrag('move', e)}
-                  >
-                    {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
-                      <div
-                        key={c}
-                        className="crop-handle"
-                        style={{
-                          position: 'absolute',
-                          [c.includes('t') ? 'top' : 'bottom']: -5,
-                          [c.includes('l') ? 'left' : 'right']: -5,
-                          cursor: c === 'tl' || c === 'br' ? 'nwse-resize' : 'nesw-resize',
-                        }}
-                        onMouseDown={(e) => startCropDrag(c, e)}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <CropOverlayLayer
+                  cropOverlayRef={cropOverlayRef}
+                  renderedImageRect={renderedImageRect}
+                  cropRect={cropRect}
+                  onStartDrag={startCropDrag}
+                />
               )}
             </div>
             {isDefault && (

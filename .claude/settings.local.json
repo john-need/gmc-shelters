@@ -86,7 +86,16 @@
       "Bash(sed -n '398,410p' src/shared/ipc-types.ts)",
       "Bash(echo \"===EXIT $?===\")",
       "Bash(echo \"EXIT: $?\")",
-      "Bash(echo \"tsc exit: $?\")"
+      "Bash(echo \"tsc exit: $?\")",
+      "Bash(sed -n '34,50p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '103,120p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '222,240p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '785,800p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '1125,1175p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '85,110p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '204,226p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '1112,1132p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
+      "Bash(sed -n '1140,1161p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)"
     ]
   }
 }
