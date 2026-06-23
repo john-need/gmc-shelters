@@ -26,7 +26,7 @@ const mapStub = {
 const L = {
   Map: jest.fn(() => mapStub),
   TileLayer: jest.fn(() => ({ addTo: jest.fn() })),
-  DivIcon: jest.fn(() => ({})),
+  DivIcon: jest.fn((opts) => ({ options: opts ?? {} })),
   Marker: jest.fn(() => makeMarkerStub()),
   LatLngBounds: jest.fn(() => ({ extend: jest.fn().mockReturnThis() })),
 };

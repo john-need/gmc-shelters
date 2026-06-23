@@ -5,19 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="dbstuff">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/export/builder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/export/builder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/publish/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/publish/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/__mocks__/leaflet.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/__mocks__/leaflet.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/SourcesTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/SourcesTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/SourcesTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/SourcesTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/PublishModal/PublishModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/PublishModal/PublishModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/shared/cite-chicago.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/cite-chicago.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +74,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="508" />
+    <option name="cachedIndexableFilesCount" value="595" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Merge.Settings">
@@ -156,9 +157,10 @@
     "Shell Script.build dist.executor": "Run",
     "Shell Script.build manifest.executor": "Run",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "copilot.chat.legacySessionMetadata.migrated": "true",
     "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
     "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
-    "git-widget-placeholder": "priorities",
+    "git-widget-placeholder": "main",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/johnneed/Library/Application Support/gmc-shelters",
@@ -338,6 +340,7 @@
       <workItem from="1780050016702" duration="3255000" />
       <workItem from="1780124713844" duration="7480000" />
       <workItem from="1781849575745" duration="39000" />
+      <workItem from="1782068227209" duration="3950000" />
     </task>
     <task id="LOCAL-00001" summary="dbstuff">
       <option name="closed" value="true" />

@@ -83,7 +83,9 @@ afterEach(() => {
   (window as { api: unknown }).api = undefined;
 });
 
-describe('ReconcileModal', () => {
+// ReconcileModal unit tests live in ReconcileModal.test.tsx.
+// These integration tests confirm the Reconcile button wires up through PhotosTab.
+describe('ReconcileModal (integration)', () => {
   it('renders a Reconcile button in the toolbar', () => {
     const store = makeStore(makeShelter());
     render(<Provider store={store}><PhotosTab /></Provider>);

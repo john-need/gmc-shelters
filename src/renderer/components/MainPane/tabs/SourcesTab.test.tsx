@@ -178,7 +178,9 @@ describe('SourcesTab', () => {
   });
 });
 
-describe('SourceModal — browse existing sources picker', () => {
+// SourceModal unit tests (form, picker) live in SourceModal.test.tsx.
+// These integration tests confirm the picker wires up through SourcesTab.
+describe('SourceModal — browse existing sources picker (integration)', () => {
   type Ref = Awaited<ReturnType<typeof window.api.sources.getAll>>[number];
   const ref = (o: Partial<Ref>): Ref => ({
     id: 0, type: 'book', author: '', title: '', container_title: '', editor: '',

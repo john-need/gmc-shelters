@@ -34,71 +34,9 @@ export function computeDiff(
   localManifest: ManifestJson,
   priorManifest: ManifestJson | null,
 ): PublishDiff {
-  const priorPhotoIndex = new Map<string, PhotoEntry>();
-  if (priorManifest) {
-    for (const shelter of priorManifest.shelters) {
-      for (const photo of shelter.photos) {
-        priorPhotoIndex.set(photo.fileName, photo);
-      }
-    }
-  }
-
-  const localFileNames = new Set<string>();
-  const toUpload: PublishDiffItem[] = [];
-  const toUpdate: PublishDiffItem[] = [];
-  let unchangedCount = 0;
-
-  for (const shelter of localManifest.shelters) {
-    for (const photo of shelter.photos) {
-      localFileNames.add(photo.fileName);
-      const prior = priorPhotoIndex.get(photo.fileName);
-
-      if (!prior) {
-        toUpload.push({ fileName: photo.fileName, shelterSlug: shelter.slug, updated: photo.updated });
-      } else if (!prior.updated || photo.updated > prior.updated) {
-        toUpdate.push({
-          fileName: photo.fileName,
-          shelterSlug: shelter.slug,
-          updated: photo.updated,
-          priorUpdated: prior.updated,
-          driveFileId: prior.driveFileId,
-        });
-      } else {
-        unchangedCount++;
-      }
-    }
-  }
-
-  const toDelete: PublishDiffItem[] = [];
-  for (const [fileName, photo] of priorPhotoIndex) {
-    if (!localFileNames.has(fileName)) {
-      toDelete.push({ fileName, shelterSlug: fileName.split('/')[0], driveFileId: photo.driveFileId });
-    }
-  }
-
-  const priorHistoryBySlug = new Map<string, HistoryEntry>();
-  if (priorManifest) {
-    for (const shelter of priorManifest.shelters) {
-      if (shelter.history && typeof shelter.history === 'object') {
-        priorHistoryBySlug.set(shelter.slug, shelter.history);
-      }
-    }
-  }
-
-  let historyToUploadCount = 0;
-  let historyUnchangedCount = 0;
-  let markerCount = 0;
-  for (const shelter of localManifest.shelters) {
-    if (shelter.history) {
-      const prior = priorHistoryBySlug.get(shelter.slug);
-      if (!prior || shelter.history.updated > prior.updated) {
-        historyToUploadCount++;
-      } else {
-        historyUnchangedCount++;
-      }
-    }
-    markerCount += shelter.mapMarkers.length;
-  }
+  const { priorPhotoIndex, priorHistoryBySlug } = buildPriorIndexes(priorManifest);
+  const { toUpload, toUpdate, toDelete, unchangedCount } = classifyPhotos(localManifest, priorPhotoIndex);
+  const { historyToUploadCount, historyUnchangedCount, markerCount } = computeHistoryAndMarkerStats(localManifest, priorHistoryBySlug);
 
   return {
     newCount: toUpload.length,
@@ -148,19 +86,7 @@ export async function runPreflight(
       }
     }
 
-    const priorPhotoIndex = new Map<string, PhotoEntry>();
-    const priorHistoryIndex = new Map<string, HistoryEntry>();
-    if (priorManifest) {
-      for (const shelter of priorManifest.shelters) {
-        for (const photo of shelter.photos) {
-          priorPhotoIndex.set(photo.fileName, photo);
-        }
-        if (shelter.history && typeof shelter.history === 'object') {
-          priorHistoryIndex.set(shelter.slug, shelter.history);
-        }
-      }
-    }
-
+    const { priorPhotoIndex, priorHistoryBySlug: priorHistoryIndex } = buildPriorIndexes(priorManifest);
     const diff = computeDiff(buildResult.manifest, priorManifest);
 
     return {
@@ -171,6 +97,73 @@ export async function runPreflight(
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
     throw err;
   }
+}
+
+function buildPriorIndexes(priorManifest: ManifestJson | null): {
+  priorPhotoIndex: Map<string, PhotoEntry>;
+  priorHistoryBySlug: Map<string, HistoryEntry>;
+} {
+  const priorPhotoIndex = new Map<string, PhotoEntry>();
+  const priorHistoryBySlug = new Map<string, HistoryEntry>();
+  if (!priorManifest) return { priorPhotoIndex, priorHistoryBySlug };
+  for (const shelter of priorManifest.shelters) {
+    for (const photo of shelter.photos) priorPhotoIndex.set(photo.fileName, photo);
+    if (shelter.history && typeof shelter.history === 'object') {
+      priorHistoryBySlug.set(shelter.slug, shelter.history);
+    }
+  }
+  return { priorPhotoIndex, priorHistoryBySlug };
+}
+
+function classifyPhotos(
+  localManifest: ManifestJson,
+  priorPhotoIndex: Map<string, PhotoEntry>,
+): { toUpload: PublishDiffItem[]; toUpdate: PublishDiffItem[]; toDelete: PublishDiffItem[]; unchangedCount: number } {
+  const localFileNames = new Set<string>();
+  const toUpload: PublishDiffItem[] = [];
+  const toUpdate: PublishDiffItem[] = [];
+  let unchangedCount = 0;
+
+  for (const shelter of localManifest.shelters) {
+    for (const photo of shelter.photos) {
+      localFileNames.add(photo.fileName);
+      const prior = priorPhotoIndex.get(photo.fileName);
+      if (!prior) {
+        toUpload.push({ fileName: photo.fileName, shelterSlug: shelter.slug, updated: photo.updated });
+      } else if (!prior.updated || photo.updated > prior.updated) {
+        toUpdate.push({ fileName: photo.fileName, shelterSlug: shelter.slug, updated: photo.updated, priorUpdated: prior.updated, driveFileId: prior.driveFileId });
+      } else {
+        unchangedCount++;
+      }
+    }
+  }
+
+  const toDelete: PublishDiffItem[] = [];
+  for (const [fileName, photo] of priorPhotoIndex) {
+    if (!localFileNames.has(fileName)) {
+      toDelete.push({ fileName, shelterSlug: fileName.split('/')[0], driveFileId: photo.driveFileId });
+    }
+  }
+
+  return { toUpload, toUpdate, toDelete, unchangedCount };
+}
+
+function computeHistoryAndMarkerStats(
+  localManifest: ManifestJson,
+  priorHistoryBySlug: Map<string, HistoryEntry>,
+): { historyToUploadCount: number; historyUnchangedCount: number; markerCount: number } {
+  let historyToUploadCount = 0;
+  let historyUnchangedCount = 0;
+  let markerCount = 0;
+  for (const shelter of localManifest.shelters) {
+    if (shelter.history) {
+      const prior = priorHistoryBySlug.get(shelter.slug);
+      if (!prior || shelter.history.updated > prior.updated) historyToUploadCount++;
+      else historyUnchangedCount++;
+    }
+    markerCount += shelter.mapMarkers.length;
+  }
+  return { historyToUploadCount, historyUnchangedCount, markerCount };
 }
 
 async function ensureShelterFolder(
@@ -185,6 +178,59 @@ async function ensureShelterFolder(
     shelterFolderIds.set(slug, folderId);
   }
   return folderId;
+}
+
+async function uploadPhotoFile(
+  photo: PhotoEntry,
+  localPath: string,
+  shelterSlug: string,
+  shelterFolderIds: Map<string, string>,
+  client: GDriveClient,
+  rootFolderId: string,
+  result: PublishResult,
+): Promise<void> {
+  const folderId = await ensureShelterFolder(shelterSlug, shelterFolderIds, client, rootFolderId);
+  photo.driveFileId = await client.uploadFile(localPath, photo.fileName.split('/').slice(1).join('/'), folderId, 'image/jpeg');
+  result.photosUploaded++;
+}
+
+async function processOnePhoto(
+  photo: PhotoEntry,
+  shelterSlug: string,
+  localPath: string,
+  isUpload: boolean,
+  isUpdate: boolean,
+  prior: PhotoEntry | undefined,
+  shelterFolderIds: Map<string, string>,
+  client: GDriveClient,
+  rootFolderId: string,
+  result: PublishResult,
+): Promise<void> {
+  if (isUpload) {
+    if (!fs.existsSync(localPath)) { result.photosMissing++; return; }
+    try {
+      await uploadPhotoFile(photo, localPath, shelterSlug, shelterFolderIds, client, rootFolderId, result);
+    } catch { result.photosFailed++; }
+    return;
+  }
+  if (isUpdate) {
+    if (!fs.existsSync(localPath)) { result.photosMissing++; return; }
+    const driveFileId = prior?.driveFileId;
+    if (!driveFileId) { result.photosFailed++; return; }
+    try {
+      await client.updateFile(driveFileId, localPath, 'image/jpeg');
+      photo.driveFileId = driveFileId;
+      result.photosUpdated++;
+    } catch (err) {
+      if (!isNotFoundError(err)) { result.photosFailed++; return; }
+      try {
+        await uploadPhotoFile(photo, localPath, shelterSlug, shelterFolderIds, client, rootFolderId, result);
+      } catch { result.photosFailed++; }
+    }
+    return;
+  }
+  photo.driveFileId = prior?.driveFileId ?? null;
+  result.photosSkipped++;
 }
 
 async function processAllPhotos(
@@ -207,40 +253,13 @@ async function processAllPhotos(
       if (isCancelled()) break outer;
       const localPath = path.join(tmpDir, photo.fileName);
       const prior = priorPhotoIndex.get(photo.fileName);
-
-      if (uploadSet.has(photo.fileName)) {
+      const isUpload = uploadSet.has(photo.fileName);
+      const isUpdate = updateSet.has(photo.fileName);
+      if (isUpload || isUpdate) {
         uploaded.count++;
-        onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'photo', action: 'create', fileName: photo.fileName });
-        if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
-        try {
-          const folderId = await ensureShelterFolder(shelter.slug, shelterFolderIds, client, config.rootFolderId);
-          photo.driveFileId = await client.uploadFile(localPath, photo.fileName.split('/').slice(1).join('/'), folderId, 'image/jpeg');
-          result.photosUploaded++;
-        } catch { result.photosFailed++; }
-
-      } else if (updateSet.has(photo.fileName)) {
-        uploaded.count++;
-        onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'photo', action: 'update', fileName: photo.fileName });
-        if (!fs.existsSync(localPath)) { result.photosMissing++; continue; }
-        const driveFileId = prior?.driveFileId;
-        if (!driveFileId) { result.photosFailed++; continue; }
-        try {
-          await client.updateFile(driveFileId, localPath, 'image/jpeg');
-          photo.driveFileId = driveFileId;
-          result.photosUpdated++;
-        } catch (err) {
-          if (!isNotFoundError(err)) { result.photosFailed++; continue; }
-          // Drive file removed out-of-band — re-upload as new.
-          try {
-            const folderId = await ensureShelterFolder(shelter.slug, shelterFolderIds, client, config.rootFolderId);
-            photo.driveFileId = await client.uploadFile(localPath, photo.fileName.split('/').slice(1).join('/'), folderId, 'image/jpeg');
-            result.photosUploaded++;
-          } catch { result.photosFailed++; }
-        }
-      } else {
-        photo.driveFileId = prior?.driveFileId ?? null;
-        result.photosSkipped++;
+        onProgress?.({ stage: 'uploading', current: uploaded.count, total: totalUploads, itemKind: 'photo', action: isUpload ? 'create' : 'update', fileName: photo.fileName });
       }
+      await processOnePhoto(photo, shelter.slug, localPath, isUpload, isUpdate, prior, shelterFolderIds, client, config.rootFolderId, result);
     }
   }
 }
