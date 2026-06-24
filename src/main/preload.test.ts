@@ -46,4 +46,16 @@ describe('preload contextBridge', () => {
     const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, Record<string, unknown>>];
     expect(typeof api.photos.reorder).toBe('function');
   });
+
+  it('photos.move forwards to CHANNELS.PHOTOS_MOVE with the right payload', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { photos: { move: (photoId: number, targetShelterId: number, sheltersRoot: string) => Promise<unknown> } }];
+
+    expect(typeof api.photos.move).toBe('function');
+    await api.photos.move(10, 3, '/base/shelters');
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.PHOTOS_MOVE, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
+  });
 });

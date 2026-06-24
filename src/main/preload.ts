@@ -33,6 +33,8 @@ const api: ElectronAPI = {
     update: (input: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_UPDATE, input),
     delete: (id: number, sheltersRoot: string) => ipcRenderer.invoke(CHANNELS.PHOTOS_DELETE, { id, sheltersRoot }),
+    move: (photoId: number, targetShelterId: number, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_MOVE, { photoId, targetShelterId, sheltersRoot }),
     setDefault: (shelterId: number, photoId: number) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_SET_DEFAULT, { shelterId, photoId }),
     reorder: (input: PhotoReorderInput) =>

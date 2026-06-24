@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from './photos';
+import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos, movePhotoToShelter } from './photos';
 
 jest.mock('./connection');
 import { getDb } from './connection';
@@ -13,7 +13,7 @@ const SCHEMA = `
   );
   CREATE TABLE photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shelter_id INTEGER, file_name TEXT, title TEXT,
+    shelter_id INTEGER REFERENCES shelters(id), file_name TEXT, title TEXT,
     photographer TEXT DEFAULT '', caption TEXT DEFAULT '',
     date_taken TEXT, notes TEXT DEFAULT '', alt_text TEXT DEFAULT '',
     description TEXT DEFAULT '', include_in_post INTEGER DEFAULT 0, sort_order INTEGER,
@@ -169,6 +169,62 @@ describe('db/photos', () => {
       clearDefaultPhoto(shelterId, 42);
       const row = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
       expect(row.default_photo_id).toBeNull();
+    });
+  });
+
+  describe('movePhotoToShelter', () => {
+    let targetShelterId: number;
+
+    beforeEach(() => {
+      db.exec(`INSERT INTO shelters (name, slug, created, updated) VALUES ('Target', 'target', '2020-01-01', '2020-01-01')`);
+      targetShelterId = (db.prepare('SELECT last_insert_rowid() as id').get() as { id: number }).id;
+    });
+
+    it('updates shelter_id and file_name on the photo and returns the updated Photo', () => {
+      const photo = insertPhoto(shelterId, 'test/photos/move-me.jpg');
+      const returned = movePhotoToShelter(photo.id, targetShelterId, 'target/photos/move-me.jpg');
+      expect(returned.id).toBe(photo.id);
+      expect(returned.shelter_id).toBe(targetShelterId);
+      expect(returned.file_name).toBe('target/photos/move-me.jpg');
+
+      const moved = getPhotosByShelter(targetShelterId)[0];
+      expect(moved.id).toBe(photo.id);
+      expect(getPhotosByShelter(shelterId)).toHaveLength(0);
+    });
+
+    it('clears the source shelter default_photo_id when it referenced the moved photo', () => {
+      const photo = insertPhoto(shelterId, 'default.jpg');
+      setDefaultPhoto(shelterId, photo.id);
+      movePhotoToShelter(photo.id, targetShelterId, 'target/photos/default.jpg');
+      const shelter = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+      expect(shelter.default_photo_id).toBeNull();
+    });
+
+    it('does not touch the source default_photo_id when it referenced a different photo', () => {
+      const keep = insertPhoto(shelterId, 'keep.jpg');
+      const moving = insertPhoto(shelterId, 'moving.jpg');
+      setDefaultPhoto(shelterId, keep.id);
+      movePhotoToShelter(moving.id, targetShelterId, 'target/photos/moving.jpg');
+      const shelter = db.prepare('SELECT default_photo_id FROM shelters WHERE id = ?').get(shelterId) as { default_photo_id: number | null };
+      expect(shelter.default_photo_id).toBe(keep.id);
+    });
+
+    it('clears map_markers.photo_id referencing the moved photo', () => {
+      const photo = insertPhoto(shelterId, 'marker.jpg');
+      db.prepare(
+        `INSERT INTO map_markers (shelter_id, photo_id, latitude, longitude, name, start_year, change_type, notes, is_extant, created, updated)
+         VALUES (?, ?, 44.0, -72.0, 'Test Marker', 1930, 'Original', '', 1, '2020-01-01', '2020-01-01')`,
+      ).run(shelterId, photo.id);
+      movePhotoToShelter(photo.id, targetShelterId, 'target/photos/marker.jpg');
+      const marker = db.prepare('SELECT photo_id FROM map_markers WHERE shelter_id = ?').get(shelterId) as { photo_id: number | null };
+      expect(marker.photo_id).toBeNull();
+    });
+
+    it('runs as a single transaction: a failure leaves shelter_id unchanged', () => {
+      const photo = insertPhoto(shelterId, 'atomic.jpg');
+      expect(() => movePhotoToShelter(photo.id, 999999, 'target/photos/atomic.jpg')).toThrow();
+      const unchanged = db.prepare('SELECT shelter_id FROM photos WHERE id = ?').get(photo.id) as { shelter_id: number };
+      expect(unchanged.shelter_id).toBe(shelterId);
     });
   });
 });

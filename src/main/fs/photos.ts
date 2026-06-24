@@ -46,6 +46,35 @@ export async function copyPhotoToShelter(
   return fileName;
 }
 
+export async function movePhotoFile(
+  sourceSlug: string,
+  fileName: string,
+  targetSlug: string,
+  sheltersRoot: string,
+): Promise<string> {
+  const sourcePath = photoFilePath(sourceSlug, fileName, sheltersRoot);
+  const targetDir = photosDirForSlug(targetSlug, sheltersRoot);
+  await fs.mkdir(targetDir, { recursive: true });
+
+  const basename = path.basename(sourcePath);
+  let destName = basename;
+  let dest = path.join(targetDir, destName);
+  try {
+    await fs.access(dest);
+    // Destination already has a file with this name — never overwrite it.
+    const ext = path.extname(basename);
+    const base = path.basename(basename, ext);
+    destName = `${base}-${Date.now()}${ext}`;
+    dest = path.join(targetDir, destName);
+  } catch {
+    // ENOENT means no collision — keep the original basename.
+  }
+
+  await fs.copyFile(sourcePath, dest);
+  log.info(`Photo moved: ${sourcePath} → ${dest}`);
+  return `${targetSlug}/photos/${destName}`;
+}
+
 export async function deletePhotoFile(slug: string, fileName: string, sheltersRoot: string): Promise<void> {
   const filePath = photoFilePath(slug, fileName, sheltersRoot);
   try {

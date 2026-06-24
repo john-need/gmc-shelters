@@ -95,10 +95,10 @@ describe('purgeThumbnailsForSource', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('deletes all cached files (any mtime) matching the source basename, across both size dirs', () => {
-    mockedFs.readdirSync.mockImplementation((dir: unknown) => {
+    (mockedFs.readdirSync as jest.Mock).mockImplementation((dir: string) => {
       const d = String(dir);
-      if (d.includes('/grid')) return ['bar-123-1000.png', 'bar-123-2000.png', 'other-99.png'] as unknown as fs.Dirent[];
-      if (d.includes('/preview')) return ['bar-123-1000.png'] as unknown as fs.Dirent[];
+      if (d.includes('/grid')) return ['bar-123-1000.png', 'bar-123-2000.png', 'other-99.png'];
+      if (d.includes('/preview')) return ['bar-123-1000.png'];
       return [];
     });
     mockedFs.unlinkSync.mockImplementation(() => undefined);
@@ -113,7 +113,7 @@ describe('purgeThumbnailsForSource', () => {
   });
 
   it('returns 0 and does not throw when the cache directory does not exist yet', () => {
-    mockedFs.readdirSync.mockImplementation(() => {
+    (mockedFs.readdirSync as jest.Mock).mockImplementation(() => {
       throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
     });
 
@@ -128,10 +128,10 @@ describe('scanThumbnails', () => {
   it('reports missing current-mtime thumbnails and orphaned stale/gone-record cache files, without writing anything', () => {
     mockedFs.statSync.mockReturnValue({ mtimeMs: 1000 } as fs.Stats);
     mockedFs.existsSync.mockImplementation((p: unknown) => String(p).includes('grid/a-1-1000.png'));
-    mockedFs.readdirSync.mockImplementation((dir: unknown) => {
+    (mockedFs.readdirSync as jest.Mock).mockImplementation((dir: string) => {
       const d = String(dir);
-      if (d.includes('/grid')) return ['a-1-1000.png', 'a-1-500.png'] as unknown as fs.Dirent[];
-      if (d.includes('/preview')) return ['old-photo-2000.png'] as unknown as fs.Dirent[];
+      if (d.includes('/grid')) return ['a-1-1000.png', 'a-1-500.png'];
+      if (d.includes('/preview')) return ['old-photo-2000.png'];
       return [];
     });
 
@@ -155,9 +155,9 @@ describe('scanThumbnails', () => {
   it('returns no missing/orphaned entries when everything is already in sync', () => {
     mockedFs.statSync.mockReturnValue({ mtimeMs: 1000 } as fs.Stats);
     mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readdirSync.mockImplementation((dir: unknown) => {
+    (mockedFs.readdirSync as jest.Mock).mockImplementation((dir: string) => {
       const d = String(dir);
-      if (d.includes('/grid') || d.includes('/preview')) return ['a-1-1000.png'] as unknown as fs.Dirent[];
+      if (d.includes('/grid') || d.includes('/preview')) return ['a-1-1000.png'];
       return [];
     });
 

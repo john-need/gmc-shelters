@@ -20,13 +20,13 @@ function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   };
 }
 
-function makeStore(shelter: Shelter, photos: Photo[] = []) {
+function makeStore(shelter: Shelter, photos: Photo[] = [], otherShelters: Shelter[] = []) {
   const reducer = combineReducers({ shelters: sheltersReducer, photos: photosReducer, ui: uiReducer });
   return configureStore({
     reducer,
     preloadedState: {
       shelters: {
-        list: [shelter],
+        list: [shelter, ...otherShelters],
         selectedId: shelter.id,
         editBuffer: shelter,
         loading: false,
@@ -75,6 +75,7 @@ beforeEach(() => {
       readMetadata: jest.fn().mockResolvedValue({}),
       export: jest.fn().mockResolvedValue(null),
       delete: jest.fn().mockResolvedValue(undefined),
+      move: jest.fn().mockResolvedValue({ id: 1, shelter_id: 20, file_name: 'other-shelter/photos/test.jpg' }),
     },
   };
 });
@@ -432,6 +433,89 @@ describe('US1 — Metadata icon button', () => {
     fireEvent.click(within(screen.getByRole('dialog', { name: /confirm/i })).getByRole('button', { name: /cancel/i }));
     expect(screen.queryByRole('dialog', { name: /confirm/i })).not.toBeInTheDocument();
     expect(window.api.photos.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe('US1 — Move to shelter', () => {
+  it('clicking move opens the move dialog without moving immediately', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    expect(screen.getByRole('button', { name: /confirm move/i })).toBeInTheDocument();
+    expect(window.api.photos.move).not.toHaveBeenCalled();
+  });
+
+  it('confirming the move dialog calls photos.move and removes the photo from the current shelter list', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '20' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+    });
+    expect(window.api.photos.move).toHaveBeenCalledWith(1, 20, expect.any(String));
+    expect(store.getState().photos.byShelter[10] ?? []).toHaveLength(0);
+  });
+
+  it('cancelling the move dialog does not call photos.move', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('button', { name: /confirm move/i })).not.toBeInTheDocument();
+    expect(window.api.photos.move).not.toHaveBeenCalled();
+  });
+
+  it('shows a failure toast and makes no state change when photos.move rejects', async () => {
+    (window.api.photos.move as jest.Mock).mockRejectedValue(new Error('move failed'));
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '20' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+    });
+    expect(store.getState().photos.byShelter[10]).toHaveLength(1);
+  });
+
+  it('clears the source shelter default_photo_id when the moved photo was the default (FR-008)', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter({ default_photo_id: 1 }), [makePhoto({ id: 1, file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '20' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+    });
+    expect(store.getState().shelters.list.find((sh) => sh.id === 10)?.default_photo_id).toBeNull();
+  });
+
+  it('disables the move button when no other shelter exists', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    expect(screen.getByTitle('Move to shelter')).toBeDisabled();
   });
 });
 

@@ -111,6 +111,21 @@ export function deletePhoto(id: number): void {
   })();
 }
 
+export function movePhotoToShelter(photoId: number, targetShelterId: number, newFileName: string): Photo {
+  const db = getDb();
+  const today = new Date().toISOString().slice(0, 10);
+  db.transaction(() => {
+    db.prepare('UPDATE shelters SET default_photo_id = NULL WHERE default_photo_id = ?').run(photoId);
+    db.prepare('UPDATE map_markers SET photo_id = NULL WHERE photo_id = ?').run(photoId);
+    db.prepare('UPDATE photos SET shelter_id = ?, file_name = ?, updated = ? WHERE id = ?')
+      .run(targetShelterId, newFileName, today, photoId);
+  })();
+
+  return rowToPhoto(
+    db.prepare('SELECT * FROM photos WHERE id = ?').get(photoId) as PhotoRow,
+  );
+}
+
 export function setDefaultPhoto(shelterId: number, photoId: number): void {
   const db = getDb();
   db.prepare('UPDATE shelters SET default_photo_id = ? WHERE id = ?').run(photoId, shelterId);
