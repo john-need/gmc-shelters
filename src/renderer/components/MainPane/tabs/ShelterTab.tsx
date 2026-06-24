@@ -14,17 +14,19 @@ function FlagCheck({
   onClick,
   title,
   sub,
+  icon,
 }: {
   on: boolean;
   onClick: () => void;
   title: string;
   sub: string;
+  icon: React.ReactNode;
 }) {
   return (
     <div className={`check ${on ? 'on' : ''}`} onClick={onClick}>
       <div className="check-box">
         {on && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12.5 10 17 19 7.5"/>
           </svg>
         )}
@@ -33,9 +35,32 @@ function FlagCheck({
         <span className="check-title">{title}</span>
         <span className="check-sub">{sub}</span>
       </div>
+      <span className="check-icon">{icon}</span>
     </div>
   );
 }
+
+const flagIconProps = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.5,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+// ponytail: inline SVGs match the rest of the codebase's icon style; no icon lib in use
+const ExtantIcon = () => (
+  <svg {...flagIconProps}><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6M4 21h16"/></svg>
+);
+const GmcIcon = () => (
+  <svg {...flagIconProps}><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
+);
+const WebIcon = () => (
+  <svg {...flagIconProps}><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/></svg>
+);
 
 interface DefaultPhotoModalProps {
   s: Shelter;
@@ -358,9 +383,9 @@ function ShelterFormSections({ s, f, archList, catList, photoCount, photoSummary
         <span className="section-title">Flags <em>& visibility</em></span>
       </div>
       <div className="checkbox-grid">
-        <FlagCheck on={s.is_extant} onClick={() => onToggleFlag('is_extant')} title="Is extant" sub="Structure still standing" />
-        <FlagCheck on={s.is_gmc} onClick={() => onToggleFlag('is_gmc')} title="GMC stewardship" sub="Maintained by club" />
-        <FlagCheck on={s.show_on_web} onClick={() => onToggleFlag('show_on_web')} title="Show on web" sub="Publish to public catalog" />
+        <FlagCheck on={s.is_extant} onClick={() => onToggleFlag('is_extant')} title="Is extant" sub="Structure still standing" icon={<ExtantIcon />} />
+        <FlagCheck on={s.is_gmc} onClick={() => onToggleFlag('is_gmc')} title="GMC stewardship" sub="Maintained by club" icon={<GmcIcon />} />
+        <FlagCheck on={s.show_on_web} onClick={() => onToggleFlag('show_on_web')} title="Show on web" sub="Publish to public catalog" icon={<WebIcon />} />
       </div>
 
       <div className="section-head" style={{ marginTop: 28 }}>

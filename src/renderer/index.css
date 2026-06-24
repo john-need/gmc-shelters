@@ -1200,7 +1200,7 @@ html, body {
   gap: 10px 16px;
 }
 .check {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px;
   padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--line-2);
@@ -1211,8 +1211,8 @@ html, body {
 .check:hover { background: #fff; border-color: var(--line-strong); }
 .check.on { background: rgba(45,74,50,0.07); border-color: var(--forest); }
 .check-box {
-  width: 16px; height: 16px;
-  border-radius: 3px;
+  width: 22px; height: 22px;
+  border-radius: 4px;
   border: 1.5px solid var(--line-strong);
   background: #fff;
   display: flex; align-items: center; justify-content: center;
@@ -1226,6 +1226,8 @@ html, body {
 }
 .check-text { display: flex; flex-direction: column; gap: 2px; }
 .check-title { font-size: 13px; font-weight: 500; color: var(--ink-1); }
+.check-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--ink-3); }
+.check.on .check-icon { color: var(--forest-deep); }
 .check-sub { font-size: 11.5px; color: var(--ink-3); }
 .check.on .check-title { color: var(--forest-deep); }
 
@@ -1630,13 +1632,23 @@ html, body {
   color: var(--ink-1);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.photo-meta {
+.photo-post-toggle {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  display: flex; align-items: center; gap: 6px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--ink-3);
-  display: flex; gap: 6px;
+  background: var(--surface-2);
+  cursor: pointer;
 }
+.photo-post-toggle:hover { background: var(--hover); }
+.photo-post-toggle.on {
+  background: rgba(45,74,50,0.12);
+  color: var(--forest-deep);
+}
+.photo-post-toggle input[type="checkbox"] { cursor: pointer; }
 
 /* Photo detail pane */
 .photos-resize-handle {

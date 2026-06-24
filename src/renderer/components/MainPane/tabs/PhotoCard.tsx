@@ -56,18 +56,16 @@ export const PhotoCardBody = memo(function PhotoCardBody({ p, idx, isDefault, on
       </div>
       <div className="photo-info">
         <span className="photo-title">{p.title || 'Untitled'}</span>
-        <div className="photo-meta">
-          <label
-            style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: 10 }}
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-            title="Include in published post"
-          >
-            <IncludeInPostCheckbox photoId={p.id} checked={!!p.include_in_post} onToggle={onToggleInclude} />
-            Post on web
-          </label>
-        </div>
       </div>
+      <label
+        className={`photo-post-toggle ${p.include_in_post ? 'on' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        title="Include in published post"
+      >
+        <IncludeInPostCheckbox photoId={p.id} checked={!!p.include_in_post} onToggle={onToggleInclude} />
+        Post on web
+      </label>
     </>
   );
 });
