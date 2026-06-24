@@ -1,7 +1,18 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { configureStore } from '@reduxjs/toolkit';
+import { Provider } from 'react-redux';
+import sheltersReducer from '../../../store/sheltersSlice';
+import photosReducer from '../../../store/photosSlice';
+import uiReducer from '../../../store/uiSlice';
 import PhotoDetailPane from './PhotoDetailPane';
 import type { Photo } from '../../../../shared/ipc-types';
+
+function makeStore() {
+  return configureStore({
+    reducer: { shelters: sheltersReducer, photos: photosReducer, ui: uiReducer },
+  });
+}
 
 function makePhoto(overrides: Partial<Photo> = {}): Photo {
   return {
@@ -21,6 +32,7 @@ function makeProps(overrides = {}) {
     isDefault: false,
     selectedIdx: 0,
     selectedPhotoUrl: '',
+    editorPhotoUrl: '',
     isMetadataDirty: false,
     detailWidth: 380,
     resizing: false,
@@ -124,5 +136,26 @@ describe('PhotoDetailPane', () => {
     render(<PhotoDetailPane {...makeProps({ onExport })} />);
     fireEvent.click(screen.getByRole('button', { name: /export photo/i }));
     expect(onExport).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the preview pane image using selectedPhotoUrl (preview-size thumbnail)', () => {
+    render(<PhotoDetailPane {...makeProps({ selectedPhotoUrl: '/preview-thumb.jpg', editorPhotoUrl: '/full-res.jpg' })} />);
+    const preview = screen.getByTestId('photo-preview');
+    expect(preview.querySelector('img')?.getAttribute('src')).toBe('/preview-thumb.jpg');
+  });
+
+  it('passes editorPhotoUrl (not selectedPhotoUrl) to the photo editor dialog', () => {
+    const store = makeStore();
+    render(
+      <Provider store={store}>
+        <PhotoDetailPane {...makeProps({
+          editorOpen: true,
+          selectedPhotoUrl: '/preview-thumb.jpg',
+          editorPhotoUrl: '/full-res.jpg',
+        })} />
+      </Provider>,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.querySelector('img')?.getAttribute('src')).toBe('/full-res.jpg');
   });
 });

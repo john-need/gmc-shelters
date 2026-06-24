@@ -1,4 +1,9 @@
-export function buildPhotoUrl(repoRoot: string, sheltersRoot: string, fileName: string): string {
+export function buildPhotoUrl(
+  repoRoot: string,
+  sheltersRoot: string,
+  fileName: string,
+  size?: 'grid' | 'preview',
+): string {
   if (!repoRoot && !/^([A-Za-z]:[/\\]|\/)/.test(sheltersRoot)) {
     return '';
   }
@@ -13,5 +18,6 @@ export function buildPhotoUrl(repoRoot: string, sheltersRoot: string, fileName: 
   // Encode only the path part to be safe, then prepend the protocol
   // We use three slashes to ensure it's treated as an absolute path with no host
   const fullPath = `/${base}/${finalFileName}`.replace(/\/+/g, '/');
-  return `shelter://${encodeURI(fullPath)}`;
+  const url = `shelter://${encodeURI(fullPath)}`;
+  return size ? `${url}?size=${size}` : url;
 }

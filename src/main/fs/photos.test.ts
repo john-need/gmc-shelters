@@ -347,6 +347,30 @@ describe('transformPhoto', () => {
     expect(fsp.writeFile).toHaveBeenCalledWith('/path/to/img.jpg', expect.any(Buffer));
   });
 
+  it('extracts the crop before rotating, since crop coords are in the original unrotated image space', async () => {
+    // Regression test: extract() must run before rotate()/flop(), otherwise
+    // rotate's width/height swap puts the original-space crop coordinates
+    // out of bounds and sharp throws when both transforms are combined.
+    jest.clearAllMocks();
+    const orderOfCalls: string[] = [];
+    mockSharp.extract.mockImplementation(() => { orderOfCalls.push('extract'); return mockSharp; });
+    mockSharp.rotate.mockImplementation(() => { orderOfCalls.push('rotate'); return mockSharp; });
+    mockSharp.flop.mockImplementation(() => { orderOfCalls.push('flop'); return mockSharp; });
+    (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
+
+    await transformPhoto('/path/to/img.jpg', {
+      rotation: 90,
+      flipped: true,
+      crop: { x: 10, y: 10, width: 100, height: 100 },
+    });
+
+    expect(orderOfCalls).toEqual(['extract', 'rotate', 'flop']);
+
+    mockSharp.extract.mockReturnThis();
+    mockSharp.rotate.mockReturnThis();
+    mockSharp.flop.mockReturnThis();
+  });
+
   it('bakes EXIF orientation before applying user rotation', async () => {
     // Source JPEGs often carry an EXIF Orientation tag the browser honors when
     // displaying. sharp.rotate(angle) rotates raw pixels and ignores that tag,

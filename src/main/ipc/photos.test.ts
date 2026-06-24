@@ -2,6 +2,7 @@ jest.mock('electron');
 jest.mock('../db/photos');
 jest.mock('../db/shelters');
 jest.mock('../fs/photos');
+jest.mock('../fs/thumbnails');
 jest.mock('../db/connection');
 jest.mock('fs/promises');
 
@@ -10,6 +11,7 @@ import * as fsp from 'fs/promises';
 import * as dbPhotos from '../db/photos';
 import * as dbShelters from '../db/shelters';
 import * as fsPhotos from '../fs/photos';
+import * as fsThumbnails from '../fs/thumbnails';
 import { getDb } from '../db/connection';
 import { registerPhotoHandlers } from './photos';
 import { CHANNELS } from '@shared/ipc-types';
@@ -23,6 +25,8 @@ function getHandler<T = unknown>(channel: string) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({ missing: [], orphaned: [] });
+  (fsThumbnails.applyThumbnailScan as jest.Mock).mockResolvedValue({ generated: 0, purged: 0 });
   registerPhotoHandlers();
 });
 
@@ -81,6 +85,37 @@ describe('ipc/photos', () => {
     await handler(null, { id: 10, sheltersRoot: '/base/shelters' });
 
     expect(fsPhotos.deletePhotoFile).toHaveBeenCalledWith('my-shelter', 'shot.jpg', '/base/shelters');
+    expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(10);
+  });
+
+  it('PHOTOS_DELETE purges the deleted photo\'s cached thumbnails', async () => {
+    const mockPrepare = jest.fn().mockReturnValue({
+      get: jest.fn().mockReturnValue({ shelter_id: 2, file_name: 'shot.jpg' }),
+    });
+    (getDb as jest.Mock).mockReturnValue({ prepare: mockPrepare });
+    (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 2, slug: 'my-shelter' });
+    (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+    (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/shelters/my-shelter/photos/shot.jpg');
+
+    const handler = getHandler(CHANNELS.PHOTOS_DELETE);
+    await handler(null, { id: 10, sheltersRoot: '/base/shelters' });
+
+    expect(fsPhotos.photoFilePath).toHaveBeenCalledWith('my-shelter', 'shot.jpg', '/base/shelters');
+    expect(fsThumbnails.purgeThumbnailsForSource).toHaveBeenCalledWith('/base/shelters/my-shelter/photos/shot.jpg');
+  });
+
+  it('PHOTOS_DELETE does not throw if thumbnail purge fails', async () => {
+    const mockPrepare = jest.fn().mockReturnValue({
+      get: jest.fn().mockReturnValue({ shelter_id: 2, file_name: 'shot.jpg' }),
+    });
+    (getDb as jest.Mock).mockReturnValue({ prepare: mockPrepare });
+    (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 2, slug: 'my-shelter' });
+    (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+    (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/shelters/my-shelter/photos/shot.jpg');
+    (fsThumbnails.purgeThumbnailsForSource as jest.Mock).mockImplementation(() => { throw new Error('boom'); });
+
+    const handler = getHandler(CHANNELS.PHOTOS_DELETE);
+    await expect(handler(null, { id: 10, sheltersRoot: '/base/shelters' })).resolves.toBeUndefined();
     expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(10);
   });
 
@@ -291,6 +326,47 @@ describe('ipc/photos', () => {
       expect(result.orphanedRecords).toHaveLength(1);
       expect(result.orphanedRecords[0].id).toBe(21);
     });
+
+    it('reports missing/orphaned thumbnail counts from scanThumbnails, without writing anything', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 5, file_name: 'test-shelter/photos/synced.jpg', title: 'Synced' },
+      ]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue(['synced.jpg']);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock).mockResolvedValue(undefined);
+      (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({
+        missing: [{ sourcePath: '/shelters/test-shelter/photos/synced.jpg', sizeClass: 'preview' }],
+        orphaned: ['/tmp/photo-thumbnails/grid/synced-500.png'],
+      });
+
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      const result = await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
+
+      expect(fsThumbnails.scanThumbnails).toHaveBeenCalledWith(
+        ['/shelters/test-shelter/photos/synced.jpg'],
+        [],
+      );
+      expect(result.missingThumbnailCount).toBe(1);
+      expect(result.orphanedThumbnails).toEqual(['synced-500.png']);
+      expect(fsThumbnails.applyThumbnailScan).not.toHaveBeenCalled();
+    });
+
+    it('passes gone-record basenames to scanThumbnails for shelter-scoped orphan detection', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 10, file_name: 'test-shelter/photos/missing.jpg', title: 'Gone Photo' },
+      ]);
+      (fsPhotos.listPhotosDir as jest.Mock).mockResolvedValue([]);
+      (fsPhotos.listShelterRootImages as jest.Mock).mockResolvedValue([]);
+      (fsp.access as jest.Mock).mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
+      (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({ missing: [], orphaned: [] });
+
+      const handler = getHandler<ReconcileScanResult>(CHANNELS.PHOTOS_RECONCILE_SCAN);
+      await handler(null, { shelterId: 1, sheltersRoot: '/shelters' });
+
+      expect(fsThumbnails.scanThumbnails).toHaveBeenCalledWith([], ['missing.jpg']);
+    });
   });
 
   describe('PHOTOS_RECONCILE_APPLY', () => {
@@ -381,6 +457,71 @@ describe('ipc/photos', () => {
       };
       const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
       await expect(handler(null, input)).resolves.toBeDefined();
+    });
+
+    it('always generates missing thumbnails for the shelter, regardless of purgeOrphanedThumbnails', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 5, file_name: 'test-shelter/photos/synced.jpg' },
+      ]);
+      (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({
+        missing: [{ sourcePath: '/shelters/test-shelter/photos/synced.jpg', sizeClass: 'grid' }],
+        orphaned: ['/tmp/photo-thumbnails/preview/old-1.png'],
+      });
+      (fsThumbnails.applyThumbnailScan as jest.Mock).mockResolvedValue({ generated: 1, purged: 0 });
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: [], recordIdsToDelete: [], purgeOrphanedThumbnails: false,
+      };
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
+
+      expect(fsThumbnails.applyThumbnailScan).toHaveBeenCalledWith(
+        [{ sourcePath: '/shelters/test-shelter/photos/synced.jpg', sizeClass: 'grid' }],
+        ['/tmp/photo-thumbnails/preview/old-1.png'],
+        false,
+      );
+      expect(result.thumbnailsGenerated).toBe(1);
+      expect(result.thumbnailsPurged).toBe(0);
+    });
+
+    it('purges orphaned thumbnails when purgeOrphanedThumbnails is true', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([]);
+      (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({ missing: [], orphaned: ['/tmp/x.png'] });
+      (fsThumbnails.applyThumbnailScan as jest.Mock).mockResolvedValue({ generated: 0, purged: 1 });
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: [], recordIdsToDelete: [], purgeOrphanedThumbnails: true,
+      };
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      const result = await handler(null, input);
+
+      expect(fsThumbnails.applyThumbnailScan).toHaveBeenCalledWith([], ['/tmp/x.png'], true);
+      expect(result.thumbnailsPurged).toBe(1);
+    });
+
+    it('includes the file basenames of records being deleted in the thumbnail orphan scan', async () => {
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 1, slug: 'test-shelter' });
+      (dbPhotos.getPhotosByShelter as jest.Mock).mockReturnValue([
+        { id: 10, file_name: 'test-shelter/photos/gone.jpg' },
+      ]);
+      (fsThumbnails.scanThumbnails as jest.Mock).mockReturnValue({ missing: [], orphaned: [] });
+      (fsThumbnails.applyThumbnailScan as jest.Mock).mockResolvedValue({ generated: 0, purged: 0 });
+
+      const input: ReconcileApplyInput = {
+        shelterId: 1, sheltersRoot: '/shelters',
+        filesToAdd: [], recordIdsToDelete: [10],
+      };
+      const handler = getHandler<ReconcileApplyResult>(CHANNELS.PHOTOS_RECONCILE_APPLY);
+      await handler(null, input);
+
+      expect(fsThumbnails.scanThumbnails).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.arrayContaining(['gone.jpg']),
+      );
     });
   });
 

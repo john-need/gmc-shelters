@@ -630,3 +630,45 @@ describe('list view drag handle', () => {
     expect(row.style.cursor).not.toBe('grab');
   });
 });
+
+describe('thumbnail size routing (US1/US2)', () => {
+  it('grid: photo card image src includes ?size=grid', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'hut.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const card = await screen.findByTestId('photo-card-1');
+    const img = await waitFor(() => card.querySelector('img'));
+    expect(img).not.toBeNull();
+    expect(img!.getAttribute('src')).toContain('size=grid');
+  });
+
+  it('list: row image src includes ?size=grid', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'hut.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    fireEvent.click(screen.getByRole('button', { name: /list/i }));
+    const row = await screen.findByTestId('list-row-1');
+    const img = await waitFor(() => row.querySelector('img'));
+    expect(img).not.toBeNull();
+    expect(img!.getAttribute('src')).toContain('size=grid');
+  });
+
+  it('selected-photo preview pane uses ?size=preview', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'hut.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const preview = await screen.findByTestId('photo-preview');
+    const img = await waitFor(() => preview.querySelector('img'));
+    expect(img).not.toBeNull();
+    expect(img!.getAttribute('src')).toContain('size=preview');
+  });
+
+  it('opening the photo editor loads the full-resolution image (no size param)', async () => {
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'hut.jpg' })]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    const preview = await screen.findByTestId('photo-preview');
+    await waitFor(() => expect(preview.querySelector('img')).not.toBeNull());
+    fireEvent.click(preview);
+    const dialog = await screen.findByRole('dialog');
+    const editorImg = await waitFor(() => dialog.querySelector('img'));
+    expect(editorImg).not.toBeNull();
+    expect(editorImg!.getAttribute('src')).not.toContain('size=');
+  });
+});

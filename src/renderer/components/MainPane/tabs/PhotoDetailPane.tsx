@@ -11,6 +11,7 @@ export interface PhotoDetailPaneProps {
   isDefault: boolean;
   selectedIdx: number;
   selectedPhotoUrl: string;
+  editorPhotoUrl: string;
   isMetadataDirty: boolean;
   detailWidth: number;
   resizing: boolean;
@@ -32,7 +33,7 @@ export interface PhotoDetailPaneProps {
 }
 
 export default function PhotoDetailPane({
-  selected, shelterId, shelterSlug, isDefault, selectedIdx, selectedPhotoUrl,
+  selected, shelterId, shelterSlug, isDefault, selectedIdx, selectedPhotoUrl, editorPhotoUrl,
   isMetadataDirty, detailWidth, resizing, sheltersRoot,
   editorOpen, metadataOpen,
   onStartResize, onOpenMetadata, onSetDefault, onExport, onDelete,
@@ -206,7 +207,7 @@ export default function PhotoDetailPane({
       {editorOpen && (
         <PhotoEditorDialog
           photo={selected}
-          photoUrl={selectedPhotoUrl}
+          photoUrl={editorPhotoUrl}
           shelterId={shelterId}
           sheltersRoot={sheltersRoot}
           isDefault={isDefault}

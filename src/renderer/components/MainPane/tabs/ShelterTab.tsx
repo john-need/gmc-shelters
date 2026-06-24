@@ -83,7 +83,7 @@ function DefaultPhotoModal({
   repoRoot, sheltersRoot, onClose, onSetDefault, onPrev, onNext, onSelectIndex, onImgError,
 }: DefaultPhotoModalProps) {
   const dppPhoto = photos.length > 0 ? photos[dppIndex] : null;
-  const dppPhotoUrl = repoRoot && dppPhoto ? buildPhotoUrl(repoRoot, sheltersRoot, dppPhoto.file_name) : '';
+  const dppPhotoUrl = repoRoot && dppPhoto ? buildPhotoUrl(repoRoot, sheltersRoot, dppPhoto.file_name, 'preview') : '';
 
   return (
     <div className="modal-bg" onClick={onClose}>
@@ -152,7 +152,7 @@ function DefaultPhotoModal({
 
         <div className="dpp-strip">
           {photos.map((p, i) => {
-            const thumbUrl = repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name) : '';
+            const thumbUrl = repoRoot ? buildPhotoUrl(repoRoot, sheltersRoot, p.file_name, 'grid') : '';
             return (
               <button
                 key={p.id}
@@ -570,7 +570,7 @@ export default function ShelterTab() {
 
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
   const defaultPhotoUrl = repoRoot && defaultPhoto
-    ? buildPhotoUrl(repoRoot, sheltersRoot, defaultPhoto.file_name)
+    ? buildPhotoUrl(repoRoot, sheltersRoot, defaultPhoto.file_name, 'preview')
     : '';
   const photoCount = photos.length || s.photo_count || 0;
   const photoSummary = defaultPhoto ? (defaultPhoto.title || defaultPhoto.file_name) : 'No default photo selected';

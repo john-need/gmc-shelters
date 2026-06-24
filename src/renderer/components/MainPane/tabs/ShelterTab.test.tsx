@@ -131,8 +131,8 @@ describe('ShelterTab', () => {
     const img = screen.getByAltText('Birch Glen Lodge seen from the trail') as HTMLImageElement;
     // base = /tmp/repo root/shelters (since default sheltersRoot is 'shelters/')
     // fileName = default view.jpg
-    // finalUrl = shelter:///tmp/repo%20root/shelters/default%20view.jpg
-    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/default%20view.jpg');
+    // finalUrl = shelter:///tmp/repo%20root/shelters/default%20view.jpg?size=preview (US3: preview-size thumbnail)
+    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/default%20view.jpg?size=preview');
     expect(screen.queryByText(/1 photos · 1 published/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/1932–present/i)).not.toBeInTheDocument();
 
@@ -167,7 +167,7 @@ describe('ShelterTab', () => {
     });
 
     const img = screen.getByAltText('Legacy photo') as HTMLImageElement;
-    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/birch-glen-lodge/legacy-photo.png');
+    expect(img.src).toBe('shelter:///tmp/repo%20root/shelters/birch-glen-lodge/legacy-photo.png?size=preview');
   });
 
   it('shows the empty default-photo message when none is selected', async () => {

@@ -5,6 +5,7 @@ import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
 import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
+import { purgeThumbnailsForSource, scanThumbnails, applyThumbnailScan } from '../fs/thumbnails';
 import type { PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
@@ -91,7 +92,13 @@ export function registerPhotoHandlers(): void {
       if (photo) {
         const shelter = getShelterById(photo.shelter_id);
         if (shelter) {
+          const filePath = photoFilePath(shelter.slug, photo.file_name, sheltersRoot);
           await deletePhotoFile(shelter.slug, photo.file_name, sheltersRoot);
+          try {
+            purgeThumbnailsForSource(filePath);
+          } catch (err) {
+            console.warn('Thumbnail purge failed after photo deletion:', err);
+          }
         }
       }
     } catch (err) {
@@ -123,7 +130,7 @@ export function registerPhotoHandlers(): void {
     CHANNELS.PHOTOS_RECONCILE_SCAN,
     async (_e, { shelterId, sheltersRoot }: { shelterId: number; sheltersRoot: string }) => {
       const shelter = getShelterById(shelterId);
-      if (!shelter) return { untrackedFiles: [], orphanedRecords: [] };
+      if (!shelter) return { untrackedFiles: [], orphanedRecords: [], missingThumbnailCount: 0, orphanedThumbnails: [] };
 
       const resolvedRoot = path.isAbsolute(sheltersRoot)
         ? sheltersRoot
@@ -164,19 +171,38 @@ export function registerPhotoHandlers(): void {
       // Untracked: on-disk relative paths not referenced by any DB record
       const dbRelPaths = new Set(dbRecords.map((p) => normalizeDbPath(p.file_name)));
 
+      // Thumbnail housekeeping (read-only): which current photos lack a cached
+      // thumbnail, and which cache files no longer match any current photo for
+      // this shelter (stale-edit leftovers, or thumbnails for gone records).
+      const existingSourcePaths: string[] = [];
+      const goneFileNames: string[] = [];
+      dbRecords.forEach((p, i) => {
+        const orphan = orphanChecks[i];
+        if (orphan) {
+          goneFileNames.push(orphan.fileName);
+        } else {
+          existingSourcePaths.push(resolveDbFilePath(p.file_name));
+        }
+      });
+      const { missing, orphaned } = scanThumbnails(existingSourcePaths, goneFileNames);
+
       return {
         untrackedFiles: onDiskRelPaths
           .filter((relPath) => !dbRelPaths.has(relPath))
           .map((fileName) => ({ fileName })),
         orphanedRecords: orphanChecks.filter((r): r is NonNullable<typeof r> => r !== null),
+        missingThumbnailCount: missing.length,
+        orphanedThumbnails: orphaned.map((f) => path.basename(f)),
       };
     },
   );
 
   ipcMain.handle(
     CHANNELS.PHOTOS_RECONCILE_APPLY,
-    async (_e, { shelterId, sheltersRoot: _sheltersRoot, filesToAdd, recordIdsToDelete }: ReconcileApplyInput) => {
-      const result: ReconcileApplyResult = { added: 0, deleted: 0, failed: 0, failures: [] };
+    async (_e, { shelterId, sheltersRoot, filesToAdd, recordIdsToDelete, purgeOrphanedThumbnails }: ReconcileApplyInput) => {
+      const result: ReconcileApplyResult = {
+        added: 0, deleted: 0, failed: 0, failures: [], thumbnailsGenerated: 0, thumbnailsPurged: 0,
+      };
       const shelter = getShelterById(shelterId);
 
       for (const fileName of filesToAdd) {
@@ -192,8 +218,12 @@ export function registerPhotoHandlers(): void {
         }
       }
 
+      const photosBeforeDelete = getPhotosByShelter(shelterId) ?? [];
+      const goneFileNames: string[] = [];
       for (const photoId of recordIdsToDelete) {
         try {
+          const existing = photosBeforeDelete.find((p) => p.id === photoId);
+          if (existing) goneFileNames.push(path.basename(existing.file_name));
           clearDefaultPhoto(shelterId, photoId);
           deletePhoto(photoId);
           result.deleted++;
@@ -201,6 +231,20 @@ export function registerPhotoHandlers(): void {
           result.failed++;
           result.failures.push({ item: String(photoId), reason: err instanceof Error ? err.message : 'unknown error' });
         }
+      }
+
+      if (shelter) {
+        const resolvedRoot = path.isAbsolute(sheltersRoot)
+          ? sheltersRoot
+          : path.resolve(app.getAppPath(), sheltersRoot);
+        const normalizeDbPath = (fileName: string) =>
+          fileName.startsWith('shelters/') ? fileName.slice('shelters/'.length) : fileName;
+        const remaining = getPhotosByShelter(shelterId) ?? [];
+        const existingSourcePaths = remaining.map((p) => path.join(resolvedRoot, normalizeDbPath(p.file_name)));
+        const { missing, orphaned } = scanThumbnails(existingSourcePaths, goneFileNames);
+        const applied = await applyThumbnailScan(missing, orphaned, !!purgeOrphanedThumbnails);
+        result.thumbnailsGenerated = applied.generated;
+        result.thumbnailsPurged = applied.purged;
       }
 
       return result;
