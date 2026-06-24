@@ -119,6 +119,82 @@ describe('ipc/photos', () => {
     expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(10);
   });
 
+  describe('PHOTOS_MOVE', () => {
+    function mockPhotoLookup(row: { shelter_id: number; file_name: string } | undefined) {
+      const mockPrepare = jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue(row) });
+      (getDb as jest.Mock).mockReturnValue({ prepare: mockPrepare });
+    }
+
+    it('copies the file, runs the db move, deletes the old file, and returns the updated photo', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockImplementation((id: number) =>
+        id === 2 ? { id: 2, slug: 'source-shelter' } : { id: 3, slug: 'target-shelter' });
+      (fsPhotos.movePhotoFile as jest.Mock).mockResolvedValue('target-shelter/photos/shot.jpg');
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/shelters/source-shelter/photos/shot.jpg');
+      (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+      const movedPhoto = { id: 10, shelter_id: 3, file_name: 'target-shelter/photos/shot.jpg' };
+      (dbPhotos.movePhotoToShelter as jest.Mock).mockReturnValue(movedPhoto);
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE);
+      const result = await handler(null, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
+
+      expect(fsPhotos.movePhotoFile).toHaveBeenCalledWith('source-shelter', 'source-shelter/photos/shot.jpg', 'target-shelter', '/base/shelters');
+      expect(dbPhotos.movePhotoToShelter).toHaveBeenCalledWith(10, 3, 'target-shelter/photos/shot.jpg');
+      expect(fsPhotos.deletePhotoFile).toHaveBeenCalledWith('source-shelter', 'source-shelter/photos/shot.jpg', '/base/shelters');
+      expect(result).toBe(movedPhoto);
+    });
+
+    it('purges stale thumbnails for the old path when the filename changed', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockImplementation((id: number) =>
+        id === 2 ? { id: 2, slug: 'source-shelter' } : { id: 3, slug: 'target-shelter' });
+      (fsPhotos.movePhotoFile as jest.Mock).mockResolvedValue('target-shelter/photos/shot-123.jpg');
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/shelters/source-shelter/photos/shot.jpg');
+      (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+      (dbPhotos.movePhotoToShelter as jest.Mock).mockReturnValue({ id: 10, shelter_id: 3, file_name: 'target-shelter/photos/shot-123.jpg' });
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE);
+      await handler(null, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
+
+      expect(fsThumbnails.purgeThumbnailsForSource).toHaveBeenCalledWith('/base/shelters/source-shelter/photos/shot.jpg');
+    });
+
+    it('does not purge thumbnails when the filename is unchanged', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockImplementation((id: number) =>
+        id === 2 ? { id: 2, slug: 'source-shelter' } : { id: 3, slug: 'target-shelter' });
+      (fsPhotos.movePhotoFile as jest.Mock).mockResolvedValue('target-shelter/photos/shot.jpg');
+      (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+      (dbPhotos.movePhotoToShelter as jest.Mock).mockReturnValue({ id: 10, shelter_id: 3, file_name: 'target-shelter/photos/shot.jpg' });
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE);
+      await handler(null, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
+
+      expect(fsThumbnails.purgeThumbnailsForSource).not.toHaveBeenCalled();
+    });
+
+    it('on db failure, deletes the copied file at the target and rejects without touching the source file', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockImplementation((id: number) =>
+        id === 2 ? { id: 2, slug: 'source-shelter' } : { id: 3, slug: 'target-shelter' });
+      (fsPhotos.movePhotoFile as jest.Mock).mockResolvedValue('target-shelter/photos/shot.jpg');
+      (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+      (dbPhotos.movePhotoToShelter as jest.Mock).mockImplementation(() => { throw new Error('db boom'); });
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE);
+      await expect(handler(null, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' })).rejects.toThrow('db boom');
+
+      expect(fsPhotos.deletePhotoFile).toHaveBeenCalledWith('target-shelter', 'target-shelter/photos/shot.jpg', '/base/shelters');
+      expect(fsPhotos.deletePhotoFile).not.toHaveBeenCalledWith('source-shelter', expect.anything(), expect.anything());
+    });
+
+    it('throws when the photo is not found', async () => {
+      mockPhotoLookup(undefined);
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE);
+      await expect(handler(null, { photoId: 999, targetShelterId: 3, sheltersRoot: '/base/shelters' })).rejects.toThrow();
+    });
+  });
+
   it('PHOTOS_SET_DEFAULT calls setDefaultPhoto', () => {
     const handler = getHandler(CHANNELS.PHOTOS_SET_DEFAULT);
     handler(null, { shelterId: 3, photoId: 7 });

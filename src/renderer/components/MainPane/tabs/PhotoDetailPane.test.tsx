@@ -44,6 +44,8 @@ function makeProps(overrides = {}) {
     onSetDefault: jest.fn(),
     onExport: jest.fn(),
     onDelete: jest.fn(),
+    onMove: jest.fn(),
+    canMove: true,
     onUpdatePhoto: jest.fn(),
     onSaveMetadata: jest.fn(),
     onImportMetadata: jest.fn(),
@@ -107,6 +109,23 @@ describe('PhotoDetailPane', () => {
     render(<PhotoDetailPane {...makeProps({ onDelete })} />);
     fireEvent.click(screen.getByTitle('Delete photo'));
     expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onMove when the move button is clicked', () => {
+    const onMove = jest.fn();
+    render(<PhotoDetailPane {...makeProps({ onMove })} />);
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    expect(onMove).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables the move button when canMove is false', () => {
+    render(<PhotoDetailPane {...makeProps({ canMove: false })} />);
+    expect(screen.getByTitle('Move to shelter')).toBeDisabled();
+  });
+
+  it('enables the move button when canMove is true', () => {
+    render(<PhotoDetailPane {...makeProps({ canMove: true })} />);
+    expect(screen.getByTitle('Move to shelter')).not.toBeDisabled();
   });
 
   it('calls onOpenMetadata when metadata button is clicked', () => {

@@ -2,11 +2,11 @@ import path from 'path';
 import fs from 'fs/promises';
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
-import { getPhotosByShelter, updatePhoto, deletePhoto, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
+import { getPhotosByShelter, updatePhoto, deletePhoto, movePhotoToShelter, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
-import { copyPhotoToShelter, deletePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
+import { copyPhotoToShelter, deletePhotoFile, movePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
 import { purgeThumbnailsForSource, scanThumbnails, applyThumbnailScan } from '../fs/thumbnails';
-import type { PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
+import type { PhotoMoveInput, PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
   ipcMain.handle(
@@ -104,6 +104,53 @@ export function registerPhotoHandlers(): void {
     } catch (err) {
       console.warn('Photo file deletion failed after record was removed:', err);
     }
+  });
+
+  ipcMain.handle(CHANNELS.PHOTOS_MOVE, async (_e, { photoId, targetShelterId, sheltersRoot }: PhotoMoveInput) => {
+    const { getDb } = await import('../db/connection');
+    const db = getDb();
+    const photo = db.prepare('SELECT shelter_id, file_name FROM photos WHERE id = ?').get(photoId) as
+      | { shelter_id: number; file_name: string }
+      | undefined;
+    if (!photo) throw new Error(`Photo ${photoId} not found`);
+
+    const sourceShelter = getShelterById(photo.shelter_id);
+    const targetShelter = getShelterById(targetShelterId);
+    if (!sourceShelter || !targetShelter) throw new Error('Source or target shelter not found');
+
+    const newFileName = await movePhotoFile(sourceShelter.slug, photo.file_name, targetShelter.slug, sheltersRoot);
+
+    let movedPhoto;
+    try {
+      movedPhoto = movePhotoToShelter(photoId, targetShelterId, newFileName);
+    } catch (err) {
+      // DB transaction failed — clean up the copy we just made at the target
+      // so no orphaned duplicate is left behind, then surface the error.
+      try {
+        await deletePhotoFile(targetShelter.slug, newFileName, sheltersRoot);
+      } catch (cleanupErr) {
+        console.warn('Failed to clean up copied file after move rollback:', cleanupErr);
+      }
+      throw err;
+    }
+
+    // Best-effort cleanup — the DB is already authoritative at this point.
+    try {
+      await deletePhotoFile(sourceShelter.slug, photo.file_name, sheltersRoot);
+    } catch (err) {
+      console.warn('Old photo file deletion failed after move:', err);
+    }
+
+    if (path.basename(newFileName) !== path.basename(photo.file_name)) {
+      try {
+        const oldFilePath = photoFilePath(sourceShelter.slug, photo.file_name, sheltersRoot);
+        purgeThumbnailsForSource(oldFilePath);
+      } catch (err) {
+        console.warn('Thumbnail purge failed after photo move:', err);
+      }
+    }
+
+    return movedPhoto;
   });
 
   ipcMain.handle(

@@ -23,6 +23,8 @@ export interface PhotoDetailPaneProps {
   onSetDefault: () => void;
   onExport: () => void;
   onDelete: () => void;
+  onMove: () => void;
+  canMove: boolean;
   onUpdatePhoto: (patch: Partial<Photo>) => void;
   onSaveMetadata: () => void;
   onImportMetadata: () => void;
@@ -36,7 +38,7 @@ export default function PhotoDetailPane({
   selected, shelterId, shelterSlug, isDefault, selectedIdx, selectedPhotoUrl, editorPhotoUrl,
   isMetadataDirty, detailWidth, resizing, sheltersRoot,
   editorOpen, metadataOpen,
-  onStartResize, onOpenMetadata, onSetDefault, onExport, onDelete,
+  onStartResize, onOpenMetadata, onSetDefault, onExport, onDelete, onMove, canMove,
   onUpdatePhoto, onSaveMetadata, onImportMetadata,
   onOpenEditor, onEditorSave, onEditorCancel, onMetadataClose,
 }: PhotoDetailPaneProps) {
@@ -74,6 +76,11 @@ export default function PhotoDetailPane({
             <button className="btn icon sm" aria-label="Export photo" title="Export photo" onClick={onExport}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>
+              </svg>
+            </button>
+            <button className="btn icon sm" title="Move to shelter" disabled={!canMove} onClick={onMove}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
               </svg>
             </button>
             <button className="btn icon sm" title="Delete photo" onClick={onDelete}>

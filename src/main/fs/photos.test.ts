@@ -27,6 +27,7 @@ import {
   photoFilePath,
   copyPhotoToShelter,
   deletePhotoFile,
+  movePhotoFile,
   ensureShelterDir,
   writePhotoXmp,
   readPhotoXmp,
@@ -151,6 +152,37 @@ describe('fs/photos', () => {
       expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-shelter/photos', { recursive: true });
       expect(fsp.copyFile).toHaveBeenCalled();
       expect(fileName).toMatch(/^image-\d+\.jpg$/);
+    });
+  });
+
+  describe('movePhotoFile', () => {
+    it('copies the file into the target shelter photos dir and returns the new relative file_name', async () => {
+      (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (fsp.access as jest.Mock).mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
+      (fsp.copyFile as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await movePhotoFile('source-shelter', 'source-shelter/photos/shot.jpg', 'target-shelter', '/base/shelters');
+
+      expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/target-shelter/photos', { recursive: true });
+      expect(fsp.copyFile).toHaveBeenCalledWith(
+        '/base/shelters/source-shelter/photos/shot.jpg',
+        '/base/shelters/target-shelter/photos/shot.jpg',
+      );
+      expect(result).toBe('target-shelter/photos/shot.jpg');
+    });
+
+    it('suffixes the filename with a timestamp on a basename collision, never overwriting', async () => {
+      (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (fsp.access as jest.Mock).mockResolvedValue(undefined); // destination already exists
+      (fsp.copyFile as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await movePhotoFile('source-shelter', 'source-shelter/photos/shot.jpg', 'target-shelter', '/base/shelters');
+
+      expect(result).toMatch(/^target-shelter\/photos\/shot-\d+\.jpg$/);
+      expect(fsp.copyFile).toHaveBeenCalledWith(
+        '/base/shelters/source-shelter/photos/shot.jpg',
+        expect.stringMatching(/\/base\/shelters\/target-shelter\/photos\/shot-\d+\.jpg$/),
+      );
     });
   });
 

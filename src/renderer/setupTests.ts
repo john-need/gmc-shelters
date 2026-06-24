@@ -39,6 +39,7 @@ const mockApi: ElectronAPI = {
     getByShelter: jest.fn().mockResolvedValue([]),
     update: noop,
     delete: noop,
+    move: noop,
     setDefault: noop,
     reorder: noop,
     upload: noop,

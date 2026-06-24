@@ -32,6 +32,7 @@ import { ListRow, ListRowOverlay, LIST_ROW_GRID, LIST_ROW_PAD } from './ListRow'
 import ConfirmDialog from './ConfirmDialog';
 import ReconcileModal from './ReconcileModal';
 import PhotoDetailPane from './PhotoDetailPane';
+import MovePhotoDialog from './MovePhotoDialog';
 
 function photoItemProps(
   p: Photo,
@@ -60,6 +61,7 @@ export default function PhotosTab() {
     s ? (state.photos.byShelter[s.id] ?? []) : [],
   );
   const originals = useSelector((state: RootState) => state.photos.originals);
+  const allShelters = useSelector((state: RootState) => state.shelters.list);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -72,6 +74,7 @@ export default function PhotosTab() {
   const [resizing, setResizing] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [pendingMoveId, setPendingMoveId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
   const repoRoot = useRepoRoot();
@@ -185,6 +188,22 @@ export default function PhotosTab() {
       dispatch(showToast({ id: Date.now().toString(), message: 'Photo deleted.' }));
     } catch {
       dispatch(showToast({ id: Date.now().toString(), message: 'Delete failed.' }));
+    }
+  };
+
+  const handleMovePhoto = async (id: number, targetShelterId: number) => {
+    setPendingMoveId(null);
+    try {
+      if (typeof window !== 'undefined' && window.api) {
+        await window.api.photos.move(id, targetShelterId, sheltersRoot);
+      }
+      dispatch(removePhotoLocal({ shelterId: s.id, photoId: id }));
+      if (s.default_photo_id === id) {
+        dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId: null, fileName: '' }));
+      }
+      dispatch(showToast({ id: Date.now().toString(), message: 'Photo moved.' }));
+    } catch {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Move failed.' }));
     }
   };
 
@@ -376,6 +395,15 @@ export default function PhotosTab() {
         />
       )}
 
+      {pendingMoveId !== null && (
+        <MovePhotoDialog
+          shelters={allShelters}
+          currentShelterId={s.id}
+          onConfirm={(targetShelterId) => handleMovePhoto(pendingMoveId, targetShelterId)}
+          onCancel={() => setPendingMoveId(null)}
+        />
+      )}
+
       {reconcileOpen && (
         <ReconcileModal
           shelterId={s.id}
@@ -407,6 +435,8 @@ export default function PhotosTab() {
           onSetDefault={() => handleSetDefault(selected.id)}
           onExport={handleExportPhoto}
           onDelete={() => setPendingDeleteId(selected.id)}
+          onMove={() => setPendingMoveId(selected.id)}
+          canMove={allShelters.length > 1}
           onUpdatePhoto={(patch) => updatePhoto(selected.id, patch)}
           onSaveMetadata={handleSaveMetadata}
           onImportMetadata={handleImportMetadata}

@@ -11,22 +11,20 @@
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/db/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/photos.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/db/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/photos.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/fs/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.test.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/ipc/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/photos.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/preload.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.test.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotosTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ReconcileModal.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ReconcileModal.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ReconcileModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ReconcileModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/utils/paths.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/utils/paths.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/setupTests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/setupTests.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,7 +80,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="595" />
+    <option name="cachedIndexableFilesCount" value="617" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Merge.Settings">
@@ -168,7 +166,7 @@
     &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
     &quot;copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters&quot;: &quot;true&quot;,
     &quot;database.data.extractors.current.export.id&quot;: &quot;JSON-Groovy.json.groovy&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;010-photo-thumbnail-cache&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;011-move-photo-shelter&quot;,
     &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/johnneed/Library/Application Support/gmc-shelters&quot;,
@@ -211,7 +209,7 @@
       <recent name="$PROJECT_DIR$/shelters/glastenbury-mountain-forestry-cabin" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start">
+  <component name="RunManager" selected="npm.typecheck">
     <configuration name="Deploy 2 Drive" type="ShConfigurationType">
       <option name="SCRIPT_TEXT" value="python3 ./scripts/deploy_to_drive.py" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
