@@ -12,6 +12,7 @@ import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
 import { registerExportHandlers } from './ipc/export';
 import { registerPublishHandlers } from './ipc/publish';
+import { getThumbnailPath, type ThumbnailSizeClass } from './fs/thumbnails';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'shelter', privileges: { secure: true, standard: true, supportFetchAPI: true } },
@@ -112,10 +113,10 @@ if (!app.requestSingleInstanceLock()) {
       '.tiff': 'image/tiff',
       '.gif': 'image/gif',
     };
-    protocol.handle('shelter', (request) => {
+    protocol.handle('shelter', async (request) => {
       const url = new URL(request.url);
       let filePath = decodeURIComponent(url.pathname);
-      
+
       // If there's a host (e.g. shelter://C:/...), prepend it to pathname
       if (url.host && url.host !== 'localhost') {
         filePath = url.host + filePath;
@@ -125,19 +126,26 @@ if (!app.requestSingleInstanceLock()) {
       if (process.platform === 'win32' && filePath.startsWith('/')) {
         filePath = filePath.slice(1);
       }
-      
+
       // On macOS/Linux, if it's missing the leading slash
       if (process.platform !== 'win32' && !filePath.startsWith('/')) {
         filePath = '/' + filePath;
       }
 
-      log.info(`[shelter] url=${request.url} → path=${filePath}`);
+      const size = url.searchParams.get('size') as ThumbnailSizeClass | null;
+      let servedPath = filePath;
+      if (size === 'grid' || size === 'preview') {
+        const thumbPath = await getThumbnailPath(filePath, size);
+        if (thumbPath) servedPath = thumbPath;
+      }
+
+      log.info(`[shelter] url=${request.url} → path=${servedPath}`);
       try {
-        const data = fs.readFileSync(filePath);
+        const data = fs.readFileSync(servedPath);
         const contentType = MIME[path.extname(filePath).toLowerCase()] ?? 'application/octet-stream';
         return new Response(data, { headers: { 'Content-Type': contentType } });
       } catch (err) {
-        log.error(`[shelter] 404: ${filePath}`, err);
+        log.error(`[shelter] 404: ${servedPath}`, err);
         return new Response('Not found', { status: 404 });
       }
     });

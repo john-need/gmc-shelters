@@ -17,6 +17,9 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
   const [scanning, setScanning] = useState(true);
   const [untrackedFiles, setUntrackedFiles] = useState<UntrackedFile[]>([]);
   const [orphanedRecords, setOrphanedRecords] = useState<OrphanedRecord[]>([]);
+  const [missingThumbnailCount, setMissingThumbnailCount] = useState(0);
+  const [orphanedThumbnails, setOrphanedThumbnails] = useState<string[]>([]);
+  const [purgeThumbnails, setPurgeThumbnails] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [applying, setApplying] = useState(false);
@@ -30,6 +33,8 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
         if (!cancelled) {
           setUntrackedFiles(scan.untrackedFiles);
           setOrphanedRecords(scan.orphanedRecords);
+          setMissingThumbnailCount(scan.missingThumbnailCount ?? 0);
+          setOrphanedThumbnails(scan.orphanedThumbnails ?? []);
         }
       } finally {
         if (!cancelled) setScanning(false);
@@ -54,7 +59,8 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
     });
   };
 
-  const noneSelected = selectedFiles.size === 0 && selectedIds.size === 0;
+  const hasThumbnailWork = missingThumbnailCount > 0 || orphanedThumbnails.length > 0;
+  const noneSelected = selectedFiles.size === 0 && selectedIds.size === 0 && !hasThumbnailWork;
 
   const handleApply = async () => {
     setApplying(true);
@@ -64,6 +70,7 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
         sheltersRoot,
         filesToAdd: Array.from(selectedFiles),
         recordIdsToDelete: Array.from(selectedIds),
+        purgeOrphanedThumbnails: purgeThumbnails,
       }));
       if (reconcileApply.fulfilled.match(action)) {
         const res = action.payload;
@@ -111,6 +118,12 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
               {result.deleted > 0 && <span>{result.deleted} deleted</span>}
               {result.failed > 0 && (result.added > 0 || result.deleted > 0) && ' · '}
               {result.failed > 0 && <span style={{ color: 'var(--red, #c0392b)' }}>{result.failed} failed</span>}
+              {result.thumbnailsGenerated > 0 && (
+                <span><br />{result.thumbnailsGenerated} thumbnail{result.thumbnailsGenerated !== 1 ? 's' : ''} generated</span>
+              )}
+              {result.thumbnailsPurged > 0 && (
+                <span><br />{result.thumbnailsPurged} thumbnail{result.thumbnailsPurged !== 1 ? 's' : ''} purged</span>
+              )}
             </p>
             {result.failures.length > 0 && (
               <ul style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-3)', margin: 0, paddingLeft: 16 }}>
@@ -121,7 +134,7 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
               <button className="btn primary" onClick={() => onClose(true)}>Done</button>
             </div>
           </div>
-        ) : (untrackedFiles.length === 0 && orphanedRecords.length === 0) ? (
+        ) : (untrackedFiles.length === 0 && orphanedRecords.length === 0 && !hasThumbnailWork) ? (
           <div>
             <p style={{ color: 'var(--ink-2)', fontStyle: 'italic' }}>All photos are in sync</p>
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
@@ -158,6 +171,30 @@ export default function ReconcileModal({ shelterId, sheltersRoot, shelterSlug: _
                     <span style={{ color: 'var(--ink-3)', fontSize: 11 }}>{r.title}</span>
                   </label>
                 ))}
+              </section>
+            )}
+            {missingThumbnailCount > 0 && (
+              <p style={{ fontSize: 12, color: 'var(--ink-2)', marginBottom: 12 }}>
+                {missingThumbnailCount} missing thumbnail{missingThumbnailCount !== 1 ? 's' : ''} will be generated.
+              </p>
+            )}
+            {orphanedThumbnails.length > 0 && (
+              <section style={{ marginBottom: 20 }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+                  Orphaned thumbnail files ({orphanedThumbnails.length})
+                </p>
+                <ul style={{ fontFamily: 'var(--font-mono)', fontSize: 12, margin: 0, paddingLeft: 16, marginBottom: 8 }}>
+                  {orphanedThumbnails.map((name) => <li key={name}>{name}</li>)}
+                </ul>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Purge ${orphanedThumbnails.length} orphaned thumbnail file${orphanedThumbnails.length !== 1 ? 's' : ''}`}
+                    checked={purgeThumbnails}
+                    onChange={() => setPurgeThumbnails((v) => !v)}
+                  />
+                  <span style={{ fontSize: 12 }}>Purge all orphaned thumbnails</span>
+                </label>
               </section>
             )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>

@@ -194,12 +194,10 @@ export async function transformPhoto(
     // the rotation the user applied on screen (and crop coords would be off).
     let pipeline = sharp(filePath).autoOrient();
 
-    if (transform.rotation) {
-      pipeline = pipeline.rotate(transform.rotation);
-    }
-    if (transform.flipped) {
-      pipeline = pipeline.flop();
-    }
+    // Crop coordinates are computed by the renderer in the original,
+    // unrotated/unflipped image's coordinate space, so extract must run
+    // before rotate/flop while the buffer still matches that space —
+    // otherwise rotate's dimension swap puts extract out of bounds.
     if (transform.crop) {
       pipeline = pipeline.extract({
         left: transform.crop.x,
@@ -207,6 +205,12 @@ export async function transformPhoto(
         width: transform.crop.width,
         height: transform.crop.height,
       });
+    }
+    if (transform.rotation) {
+      pipeline = pipeline.rotate(transform.rotation);
+    }
+    if (transform.flipped) {
+      pipeline = pipeline.flop();
     }
 
     const buffer = await pipeline.toBuffer();

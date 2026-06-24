@@ -48,7 +48,7 @@ function photoItemProps(
     idx: i,
     isDefault: defaultPhotoId === p.id,
     isSelected: p.id === selectedId,
-    photoUrl: repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name)}?v=${version}` : '',
+    photoUrl: repoRoot ? `${buildPhotoUrl(repoRoot, sheltersRoot, p.file_name, 'grid')}&v=${version}` : '',
     ...handlers,
   };
 }
@@ -131,6 +131,10 @@ export default function PhotosTab() {
 
   const selectedIdx = photos.findIndex((p) => p.id === selectedId);
   const selectedPhotoUrl = repoRoot && selected
+    ? `${buildPhotoUrl(repoRoot, sheltersRoot, selected.file_name, 'preview')}&v=${version}`
+    : '';
+  // Editor needs the true full-resolution original, not the preview thumbnail (FR-005).
+  const editorPhotoUrl = repoRoot && selected
     ? `${buildPhotoUrl(repoRoot, sheltersRoot, selected.file_name)}?v=${version}`
     : '';
 
@@ -391,6 +395,7 @@ export default function PhotosTab() {
           isDefault={s.default_photo_id === selected.id}
           selectedIdx={selectedIdx}
           selectedPhotoUrl={selectedPhotoUrl}
+          editorPhotoUrl={editorPhotoUrl}
           isMetadataDirty={isMetadataDirty}
           detailWidth={detailWidth}
           resizing={resizing}

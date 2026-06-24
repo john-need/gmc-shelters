@@ -72,6 +72,12 @@ const protocol = {
   registerFileProtocol: jest.fn(),
 };
 
+const nativeImage = {
+  createThumbnailFromPath: jest.fn().mockResolvedValue({
+    toPNG: jest.fn(() => Buffer.from('thumb')),
+  }),
+};
+
 module.exports = {
   app,
   BrowserWindow: BrowserWindowMock,
@@ -82,4 +88,5 @@ module.exports = {
   shell,
   dialog,
   protocol,
+  nativeImage,
 };

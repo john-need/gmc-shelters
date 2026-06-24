@@ -1,5 +1,10 @@
 // Main process tests — electron APIs mocked via jest.config.cjs moduleNameMapper
 
+jest.mock('fs');
+jest.mock('./fs/thumbnails', () => ({
+  getThumbnailPath: jest.fn(),
+}));
+
 describe('main process index', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -80,6 +85,67 @@ describe('main process index', () => {
       expect(opts.webPreferences.nodeIntegration).toBe(false);
       expect(String(opts.webPreferences.preload)).toMatch(/preload/);
     }
+  });
+});
+
+describe('shelter:// protocol handler — thumbnail size routing', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
+  });
+
+  async function getHandler() {
+    const electron = await import('electron');
+    await import('./index');
+    const readyCalls = (electron.app.on as jest.Mock).mock.calls as Array<[string, () => void | Promise<void>]>;
+    const readyCall = readyCalls.find(([event]) => event === 'ready');
+    if (readyCall) await readyCall[1]();
+    const handleCalls = (electron.protocol.handle as jest.Mock).mock.calls as Array<
+      [string, (request: Request) => Promise<Response>]
+    >;
+    const shelterCall = handleCalls.find(([scheme]) => scheme === 'shelter');
+    return shelterCall?.[1];
+  }
+
+  it('serves the original file when no size param is present', async () => {
+    const fs = (await import('fs')).default;
+    (fs.readFileSync as jest.Mock).mockReturnValue(Buffer.from('original'));
+    const { getThumbnailPath } = await import('./fs/thumbnails');
+
+    const handler = await getHandler();
+    const response = await handler!(new Request('shelter:///shelters/foo/photos/bar.jpg'));
+
+    expect(getThumbnailPath).not.toHaveBeenCalled();
+    expect(fs.readFileSync).toHaveBeenCalledWith('/shelters/foo/photos/bar.jpg');
+    expect(response.status).not.toBe(404);
+  });
+
+  it('serves the cached thumbnail when ?size=grid resolves', async () => {
+    const fs = (await import('fs')).default;
+    (fs.readFileSync as jest.Mock).mockReturnValue(Buffer.from('thumb'));
+    const { getThumbnailPath } = await import('./fs/thumbnails');
+    (getThumbnailPath as jest.Mock).mockResolvedValue('/userdata/photo-thumbnails/grid/bar-1.png');
+
+    const handler = await getHandler();
+    const response = await handler!(new Request('shelter:///shelters/foo/photos/bar.jpg?size=grid'));
+
+    expect(getThumbnailPath).toHaveBeenCalledWith('/shelters/foo/photos/bar.jpg', 'grid');
+    expect(fs.readFileSync).toHaveBeenCalledWith('/userdata/photo-thumbnails/grid/bar-1.png');
+    expect(response.status).not.toBe(404);
+  });
+
+  it('falls back to the original file when thumbnail generation returns null', async () => {
+    const fs = (await import('fs')).default;
+    (fs.readFileSync as jest.Mock).mockReturnValue(Buffer.from('original'));
+    const { getThumbnailPath } = await import('./fs/thumbnails');
+    (getThumbnailPath as jest.Mock).mockResolvedValue(null);
+
+    const handler = await getHandler();
+    const response = await handler!(new Request('shelter:///shelters/foo/photos/bar.jpg?size=preview'));
+
+    expect(getThumbnailPath).toHaveBeenCalledWith('/shelters/foo/photos/bar.jpg', 'preview');
+    expect(fs.readFileSync).toHaveBeenCalledWith('/shelters/foo/photos/bar.jpg');
+    expect(response.status).not.toBe(404);
   });
 });
 

@@ -141,4 +141,103 @@ describe('ReconcileModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onClose).toHaveBeenCalledWith(false);
   });
+
+  describe('thumbnail housekeeping', () => {
+    it('shows the Apply screen (not "all in sync") when only orphaned thumbnails are found', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 0,
+        orphanedThumbnails: ['stale-1000.png'],
+      });
+      renderModal();
+      await waitFor(() => expect(screen.getByText('stale-1000.png')).toBeInTheDocument());
+      expect(screen.queryByText(/all photos are in sync/i)).not.toBeInTheDocument();
+    });
+
+    it('lists orphaned thumbnails with a single checkbox to purge them all', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 0,
+        orphanedThumbnails: ['stale-1000.png', 'stale-2000.png'],
+      });
+      renderModal();
+      await waitFor(() => screen.getByText('stale-1000.png'));
+      expect(screen.getByText('stale-2000.png')).toBeInTheDocument();
+      expect(screen.getAllByRole('checkbox', { name: /purge/i })).toHaveLength(1);
+    });
+
+    it('shows an informational note (no checkbox) when thumbnails are missing', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 3,
+        orphanedThumbnails: [],
+      });
+      renderModal();
+      await waitFor(() => expect(screen.getByText(/3 missing thumbnails/i)).toBeInTheDocument());
+      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    });
+
+    it('Apply is enabled even with nothing selected when thumbnail work is pending', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 1,
+        orphanedThumbnails: [],
+      });
+      renderModal();
+      await waitFor(() => expect(screen.getByText(/1 missing thumbnail/i)).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: /apply/i })).not.toBeDisabled();
+    });
+
+    it('calls reconcileApply with purgeOrphanedThumbnails:false when the checkbox is left unchecked', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 0,
+        orphanedThumbnails: ['stale-1000.png'],
+      });
+      mockReconcileApply.mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [], thumbnailsGenerated: 0, thumbnailsPurged: 0 });
+      renderModal();
+      await waitFor(() => screen.getByText('stale-1000.png'));
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /apply/i })); });
+      await waitFor(() => {
+        expect(mockReconcileApply).toHaveBeenCalledWith(
+          expect.objectContaining({ purgeOrphanedThumbnails: false }),
+        );
+      });
+    });
+
+    it('calls reconcileApply with purgeOrphanedThumbnails:true when the checkbox is checked', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 0,
+        orphanedThumbnails: ['stale-1000.png'],
+      });
+      mockReconcileApply.mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [], thumbnailsGenerated: 0, thumbnailsPurged: 1 });
+      renderModal();
+      await waitFor(() => screen.getByText('stale-1000.png'));
+      fireEvent.click(screen.getByRole('checkbox', { name: /purge/i }));
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /apply/i })); });
+      await waitFor(() => {
+        expect(mockReconcileApply).toHaveBeenCalledWith(
+          expect.objectContaining({ purgeOrphanedThumbnails: true }),
+        );
+      });
+    });
+
+    it('shows thumbnail generated/purged counts in the result summary', async () => {
+      mockReconcileScan.mockResolvedValue({
+        untrackedFiles: [], orphanedRecords: [],
+        missingThumbnailCount: 2,
+        orphanedThumbnails: ['stale-1000.png'],
+      });
+      mockReconcileApply.mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [], thumbnailsGenerated: 2, thumbnailsPurged: 1 });
+      renderModal();
+      await waitFor(() => screen.getByText('stale-1000.png'));
+      fireEvent.click(screen.getByRole('checkbox', { name: /purge/i }));
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /apply/i })); });
+      await waitFor(() => {
+        expect(screen.getByText(/2 thumbnails generated/i)).toBeInTheDocument();
+        expect(screen.getByText(/1 thumbnail purged/i)).toBeInTheDocument();
+      });
+    });
+  });
 });

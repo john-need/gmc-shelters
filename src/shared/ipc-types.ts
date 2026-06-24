@@ -256,6 +256,8 @@ export interface OrphanedRecord {
 export interface ReconcileScanResult {
   untrackedFiles: UntrackedFile[];
   orphanedRecords: OrphanedRecord[];
+  missingThumbnailCount: number;
+  orphanedThumbnails: string[];
 }
 
 export interface ReconcileApplyInput {
@@ -263,6 +265,7 @@ export interface ReconcileApplyInput {
   sheltersRoot: string;
   filesToAdd: string[];
   recordIdsToDelete: number[];
+  purgeOrphanedThumbnails?: boolean;
 }
 
 export interface ReconcileItemOutcome {
@@ -275,6 +278,8 @@ export interface ReconcileApplyResult {
   deleted: number;
   failed: number;
   failures: ReconcileItemOutcome[];
+  thumbnailsGenerated: number;
+  thumbnailsPurged: number;
 }
 
 export interface PhotoUploadInput {
