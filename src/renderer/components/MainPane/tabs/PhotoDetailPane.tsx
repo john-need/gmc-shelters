@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { Photo } from '../../../../shared/ipc-types';
 import PhotoPreviewImage from '../../ui/PhotoPreviewImage';
 import { photoBackground } from './PhotoCard';
@@ -42,6 +43,12 @@ export default function PhotoDetailPane({
   onUpdatePhoto, onSaveMetadata, onImportMetadata,
   onOpenEditor, onEditorSave, onEditorCancel, onMetadataClose,
 }: PhotoDetailPaneProps) {
+  const fieldsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fieldsRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selected.id]);
+
   return (
     <>
       <div
@@ -100,7 +107,6 @@ export default function PhotoDetailPane({
           <div className="photo-preview-frame" style={{ background: photoBackground(selectedIdx), position: 'relative', overflow: 'hidden' }}>
             {selectedPhotoUrl ? (
               <PhotoPreviewImage
-                key={selectedPhotoUrl}
                 src={selectedPhotoUrl}
                 alt={selected.alt_text || selected.title || selected.file_name}
                 fallback={selected.title ? selected.title.charAt(0) : selected.file_name.charAt(0).toUpperCase()}
@@ -122,7 +128,7 @@ export default function PhotoDetailPane({
           )}
         </div>
 
-        <div className="photo-fields">
+        <div className="photo-fields" ref={fieldsRef}>
           <div className="field">
             <label className="label">Title</label>
             <input className="input" value={selected.title || ''} onChange={(e) => onUpdatePhoto({ title: e.target.value })} />

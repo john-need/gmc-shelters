@@ -1832,11 +1832,15 @@ html, body {
   background: rgba(0, 0, 0, 0.18);
 }
 
+@keyframes photo-preview-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.photo-preview-fade-in { animation: photo-preview-fade-in 0.18s ease-out; }
+
 .photo-fields {
   padding: 16px 18px;
   overflow-y: auto;
   flex: 1;
   display: flex; flex-direction: column; gap: 12px;
+  scroll-behavior: smooth;
 }
 .photo-fields::-webkit-scrollbar { width: 8px; }
 .photo-fields::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }

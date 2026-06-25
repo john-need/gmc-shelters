@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,7 +6,7 @@ import type { AppDispatch, RootState } from '../../../store';
 import type { MapMarker, MapMarkerCreateInput, MapMarkerUpdateInput, Shelter } from '../../../../shared/ipc-types';
 import { createMarker, updateMarker, deleteMarker, loadMapMarkers } from '../../../store/mapMarkersSlice';
 import { setSelectedId as setShelterSelectedId } from '../../../store/sheltersSlice';
-import { type FormState, emptyForm, markerToForm, computePreviewEndYear } from './markerUtils';
+import { type FormState, emptyForm, markerToForm, computePreviewEndYear, findYearGap } from './markerUtils';
 import { makeNumberedIcon, makeEditingIcon, makeDraftIcon, fitMapToBounds, renderOtherShelterPins } from './markerIcons';
 import MarkerDetailPanel from './MarkerDetailPanel';
 import MarkerFormPanel from './MarkerFormPanel';
@@ -49,6 +49,12 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
 
   useEffect(() => { modeRef.current = mode; }, [mode]);
 
+  // Close any open add/edit form before the new shelter's data renders, so the
+  // form never flashes with the previous shelter's draft.
+  useLayoutEffect(() => {
+    setMode('idle'); setEditId(null); setForm(emptyForm()); setSelectedId(null); setErrorMsg(null);
+  }, [shelterId]);
+
   // ── init map ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -78,7 +84,13 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
       if (mode === 'edit' && m.id === editId) return;
       const pin = new L.Marker([m.latitude, m.longitude] as L.LatLngExpression, {
         icon: makeNumberedIcon(idx + 1, m.id === selectedId, m.is_extant),
-      }).addTo(map).on('click', () => setSelectedId((cur) => (cur === m.id ? null : m.id)));
+      }).addTo(map).on('click', () => {
+        if (modeRef.current === 'add' || modeRef.current === 'edit') {
+          setForm((f) => ({ ...f, latitude: m.latitude.toFixed(6), longitude: m.longitude.toFixed(6) }));
+          return;
+        }
+        setSelectedId((cur) => (cur === m.id ? null : m.id));
+      });
       pinLayerRef.current.set(m.id, pin);
     });
   }, [markers, selectedId, mode, editId]);
@@ -139,7 +151,8 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   // ── actions ───────────────────────────────────────────────────────────────
   function startAdd() {
     const defaultYear = markers.length === 0 ? shelter.start_year : markers[markers.length - 1].start_year + 1;
-    setForm({ ...emptyForm(), start_year: String(defaultYear) });
+    const defaultEndYear = computePreviewEndYear(markers, defaultYear, shelter);
+    setForm({ ...emptyForm(), start_year: String(defaultYear), end_year: defaultEndYear != null ? String(defaultEndYear) : '' });
     setEditId(null); setSelectedId(null); setMode('add'); setErrorMsg(null);
   }
 
@@ -153,6 +166,12 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
 
   async function handleSave() {
     if (saving) return;
+    const startYear = parseInt(form.start_year, 10);
+    const endYear = form.end_year.trim() === '' ? null : parseInt(form.end_year, 10);
+
+    const gap = findYearGap(markers, { id: editId ?? undefined, start_year: startYear, end_year: endYear }, editId, shelter);
+    if (gap) window.alert(gap);
+
     setSaving(true); setErrorMsg(null);
     try {
       if (mode === 'edit' && editId != null) {
@@ -160,6 +179,8 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           latitude: parseFloat(form.latitude),
           longitude: parseFloat(form.longitude),
           name: form.name,
+          start_year: startYear,
+          end_year: endYear,
           change_type: form.changeTypeBase as MapMarker['change_type'],
           notes: form.notes,
         };
@@ -170,7 +191,8 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
           latitude: parseFloat(form.latitude),
           longitude: parseFloat(form.longitude),
           name: form.name,
-          start_year: parseInt(form.start_year, 10),
+          start_year: startYear,
+          end_year: endYear,
           change_type: form.changeTypeBase as MapMarker['change_type'],
           notes: form.notes,
         };
@@ -191,6 +213,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   }
 
   function handleRowClick(id: number, lat: number, lng: number) {
+    if (mode !== 'idle') return; // editing/adding: row selection is disabled, pins set location instead
     const isSelecting = selectedId !== id;
     setSelectedId((cur) => (cur === id ? null : id));
     if (isSelecting && mapRef.current) {
@@ -201,14 +224,8 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   // ── derived ───────────────────────────────────────────────────────────────
   const selectedMarker = selectedId != null ? markers.find((m) => m.id === selectedId) : undefined;
   const selectedIndex = selectedMarker ? markers.indexOf(selectedMarker) : -1;
-  const canSave = form.latitude.trim() !== '' && form.longitude.trim() !== '';
+  const canSave = form.latitude.trim() !== '' && form.longitude.trim() !== '' && form.start_year.trim() !== '';
   const editingMarker = editId != null ? markers.find((m) => m.id === editId) : undefined;
-  const previewEndYear = mode === 'add' && form.start_year.trim() !== ''
-    ? computePreviewEndYear(markers, parseInt(form.start_year, 10), shelter)
-    : (editingMarker?.end_year ?? null);
-  const endYearDisplay = mode === 'add'
-    ? (form.start_year.trim() ? (previewEndYear != null ? String(previewEndYear) : 'present') : '—')
-    : (editingMarker ? (editingMarker.end_year != null ? String(editingMarker.end_year) : 'present') : '—');
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
@@ -265,7 +282,6 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
             form={form}
             setForm={setForm}
             errorMsg={errorMsg}
-            endYearDisplay={endYearDisplay}
             canSave={canSave}
             saving={saving}
             shelterStartYear={shelter.start_year}

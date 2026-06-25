@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   src: string;
@@ -9,15 +9,37 @@ interface Props {
 
 export default function PhotoPreviewImage({ src, alt, fallback, onLoad }: Props) {
   const [imgError, setImgError] = useState(false);
-  return imgError ? (
-    <span className="glyph">{fallback}</span>
-  ) : (
-    <img
-      src={src}
-      alt={alt}
-      onLoad={(e) => onLoad?.(e.currentTarget)}
-      onError={() => setImgError(true)}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-    />
+  const [current, setCurrent] = useState(src);
+  const [previous, setPrevious] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (src === current) return;
+    setPrevious(current);
+    setCurrent(src);
+    setImgError(false);
+  }, [src, current]);
+
+  if (imgError) return <span className="glyph">{fallback}</span>;
+
+  return (
+    <>
+      {previous && (
+        <img
+          src={previous}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+        />
+      )}
+      <img
+        key={current}
+        src={current}
+        alt={alt}
+        onLoad={(e) => onLoad?.(e.currentTarget)}
+        onError={() => setImgError(true)}
+        onAnimationEnd={() => setPrevious(null)}
+        className={previous ? 'photo-preview-fade-in' : undefined}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    </>
   );
 }

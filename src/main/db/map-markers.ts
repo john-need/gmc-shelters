@@ -67,7 +67,7 @@ export function insertMapMarker(
     input.longitude,
     input.name,
     input.start_year,
-    null, // end_year set by recomputeEndYears
+    input.end_year,
     input.change_type,
     input.notes,
     shelter.is_extant ? 1 : 0,
@@ -80,18 +80,20 @@ export function insertMapMarker(
 export function updateMapMarker(
   db: Database.Database,
   id: number,
-  input: { latitude: number; longitude: number; name: string; change_type: string; notes: string },
+  input: { latitude: number; longitude: number; name: string; start_year: number; end_year: number | null; change_type: string; notes: string },
 ): MapMarker {
   const today = new Date().toISOString().slice(0, 10);
   db.prepare(
     `UPDATE map_markers SET
-       latitude = ?, longitude = ?, name = ?,
+       latitude = ?, longitude = ?, name = ?, start_year = ?, end_year = ?,
        change_type = ?, notes = ?, updated = ?
      WHERE id = ?`,
   ).run(
     input.latitude,
     input.longitude,
     input.name,
+    input.start_year,
+    input.end_year,
     input.change_type,
     input.notes,
     today,
@@ -100,27 +102,6 @@ export function updateMapMarker(
   return rowToMapMarker(
     db.prepare('SELECT * FROM map_markers WHERE id = ?').get(id) as MapMarkerRow,
   );
-}
-
-export function recomputeEndYears(
-  db: Database.Database,
-  shelterId: number,
-  shelter: { end_year: number | null; is_extant: boolean | number },
-): void {
-  const rows = db
-    .prepare('SELECT id, start_year FROM map_markers WHERE shelter_id = ? ORDER BY start_year ASC')
-    .all(shelterId) as { id: number; start_year: number }[];
-
-  const update = db.prepare('UPDATE map_markers SET end_year = ? WHERE id = ?');
-  for (let i = 0; i < rows.length; i++) {
-    const endYear =
-      i < rows.length - 1
-        ? rows[i + 1].start_year - 1
-        : shelter.is_extant
-          ? null
-          : shelter.end_year;
-    update.run(endYear, rows[i].id);
-  }
 }
 
 export function deleteMapMarker(db: Database.Database, id: number): void {

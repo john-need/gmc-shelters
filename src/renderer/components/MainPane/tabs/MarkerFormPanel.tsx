@@ -8,7 +8,6 @@ export interface MarkerFormPanelProps {
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   errorMsg: string | null;
-  endYearDisplay: string;
   canSave: boolean;
   saving: boolean;
   shelterStartYear: number;
@@ -16,7 +15,7 @@ export interface MarkerFormPanelProps {
   onSave: () => void;
 }
 
-export default function MarkerFormPanel({ mode, editingMarker, form, setForm, errorMsg, endYearDisplay, canSave, saving, shelterStartYear, shelterEndYear, onSave }: MarkerFormPanelProps) {
+export default function MarkerFormPanel({ mode, editingMarker, form, setForm, errorMsg, canSave, saving, shelterStartYear, shelterEndYear, onSave }: MarkerFormPanelProps) {
   return (
     <div className="mm-detail">
       <div className="mm-detail-head">
@@ -72,27 +71,33 @@ export default function MarkerFormPanel({ mode, editingMarker, form, setForm, er
           </div>
 
           <div className="mm-field">
-            <label className="mm-label">Start year</label>
-            {mode === 'add' ? (
-              <input
-                className="input mono"
-                type="number"
-                aria-label="Start year"
-                value={form.start_year}
-                onChange={(e) => setForm((f) => ({ ...f, start_year: e.target.value }))}
-                min={shelterStartYear}
-                max={shelterEndYear ?? undefined}
-              />
-            ) : (
-              <input className="input mono" value={form.start_year} disabled title="Start year cannot be changed after creation" />
-            )}
+            <label className="mm-label" htmlFor="mm-start-year">Start year</label>
+            <input
+              id="mm-start-year"
+              aria-label="Start year"
+              className="input mono"
+              type="number"
+              value={form.start_year}
+              onChange={(e) => setForm((f) => ({ ...f, start_year: e.target.value }))}
+              min={shelterStartYear}
+              max={shelterEndYear ?? undefined}
+            />
           </div>
           <div className="mm-field">
-            <label className="mm-label">
+            <label className="mm-label" htmlFor="mm-end-year">
               End year
-              <span className="mm-label-hint">auto</span>
+              <span className="mm-label-hint">blank = present</span>
             </label>
-            <input className="input mono" value={endYearDisplay} disabled title="Computed automatically from adjacent markers" />
+            <input
+              id="mm-end-year"
+              aria-label="End year"
+              className="input mono"
+              type="number"
+              value={form.end_year}
+              onChange={(e) => setForm((f) => ({ ...f, end_year: e.target.value }))}
+              placeholder="present"
+              min={shelterStartYear}
+            />
           </div>
 
           <div className="mm-field mm-col2">
