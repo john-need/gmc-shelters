@@ -423,12 +423,16 @@ interface ShelterSaveBarProps {
 function ShelterSaveBar({ s, dirty, saving, onRevert, onSave, onOpenDelete }: ShelterSaveBarProps) {
   return (
     <div className="save-bar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button type="button" className="btn danger icon" title="Delete this shelter" onClick={onOpenDelete}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn primary" onClick={onSave} disabled={!dirty || saving}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
           </svg>
+          Save record
         </button>
+        <button className="btn" onClick={onRevert} disabled={!dirty}>Revert</button>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div className="save-bar-info">
           {dirty ? (
             <><span className="dot" /><span className="changed">Unsaved changes</span><span>· will write to <code style={{ fontFamily: 'var(--font-mono)' }}>shelters.db</code></span></>
@@ -436,14 +440,10 @@ function ShelterSaveBar({ s, dirty, saving, onRevert, onSave, onOpenDelete }: Sh
             <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 10 17 19 7.5"/></svg><span>All changes saved · last write {s.updated}</span></>
           )}
         </div>
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button className="btn" onClick={onRevert} disabled={!dirty}>Revert</button>
-        <button className="btn primary" onClick={onSave} disabled={!dirty || saving}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
+        <button type="button" className="btn danger icon" title="Delete this shelter" onClick={onOpenDelete}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
           </svg>
-          Save record
         </button>
       </div>
     </div>
