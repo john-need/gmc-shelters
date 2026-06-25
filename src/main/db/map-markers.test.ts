@@ -4,7 +4,6 @@ import {
   insertMapMarker,
   updateMapMarker,
   deleteMapMarker,
-  recomputeEndYears,
 } from './map-markers';
 
 jest.mock('./connection');
@@ -55,6 +54,7 @@ function insertAndGet(db: Database.Database, shelter: ReturnType<typeof makeShel
     longitude: -71.0,
     name: 'X',
     start_year: 1960,
+    end_year: null,
     change_type: 'Original' as const,
     notes: '',
     ...overrides,
@@ -115,6 +115,7 @@ describe('db/map-markers', () => {
         longitude: -71.5678,
         name: 'Original Site',
         start_year: 1960,
+        end_year: null,
         change_type: 'Original',
         notes: '',
       }, shelter);
@@ -144,6 +145,8 @@ describe('db/map-markers', () => {
         latitude: 45.0,
         longitude: -72.0,
         name: 'New Name',
+        start_year: created.start_year,
+        end_year: created.end_year,
         change_type: 'Moved',
         notes: 'updated',
       });
@@ -152,17 +155,13 @@ describe('db/map-markers', () => {
       expect(updated.change_type).toBe('Moved');
     });
 
-    it('does not change start_year or end_year', () => {
-      const created = insertAndGet(db, shelter, { start_year: 1960 });
-      recomputeEndYears(db, shelter.id, shelter);
-      const before = getMarkersByShelter(shelter.id)[0];
-
-      updateMapMarker(db, created.id, {
-        latitude: 45.0, longitude: -72.0, name: 'Updated', change_type: 'Original', notes: '',
+    it('updates start_year and end_year', () => {
+      const created = insertAndGet(db, shelter, { start_year: 1960, end_year: 1970 });
+      const updated = updateMapMarker(db, created.id, {
+        latitude: 45.0, longitude: -72.0, name: 'Updated', start_year: 1965, end_year: 1980, change_type: 'Original', notes: '',
       });
-      const after = getMarkersByShelter(shelter.id)[0];
-      expect(after.start_year).toBe(before.start_year);
-      expect(after.end_year).toBe(before.end_year);
+      expect(updated.start_year).toBe(1965);
+      expect(updated.end_year).toBe(1980);
     });
   });
 
@@ -171,27 +170,6 @@ describe('db/map-markers', () => {
       const marker = insertAndGet(db, shelter);
       deleteMapMarker(db, marker.id);
       expect(getMarkersByShelter(shelter.id)).toHaveLength(0);
-    });
-  });
-
-  describe('recomputeEndYears', () => {
-    it('sets end_year of each marker to the next marker start_year minus 1', () => {
-      // Use a non-extant shelter so the last marker gets shelter.end_year (not null)
-      const goneShelter = makeShelter(db, { slug: 'gone', is_extant: 0, end_year: 1990 });
-      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'A', start_year: 1960, change_type: 'Original', notes: '' }, goneShelter);
-      insertMapMarker(db, { shelter_id: goneShelter.id, latitude: 44, longitude: -71, name: 'B', start_year: 1975, change_type: 'Moved', notes: '' }, goneShelter);
-      recomputeEndYears(db, goneShelter.id, goneShelter);
-      const markers = getMarkersByShelter(goneShelter.id);
-      expect(markers[0].end_year).toBe(1974); // 1975 - 1
-      expect(markers[1].end_year).toBe(goneShelter.end_year); // last marker of non-extant shelter → shelter end_year
-    });
-
-    it('sets null end_year for last marker when shelter is extant', () => {
-      const extantShelter = makeShelter(db, { slug: 'extant', is_extant: 1, end_year: null });
-      insertMapMarker(db, { shelter_id: extantShelter.id, latitude: 44, longitude: -71, name: 'A', start_year: 1960, change_type: 'Original', notes: '' }, extantShelter);
-      recomputeEndYears(db, extantShelter.id, extantShelter);
-      const markers = getMarkersByShelter(extantShelter.id);
-      expect(markers[0].end_year).toBeNull();
     });
   });
 

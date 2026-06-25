@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { registerMapMarkerHandlers } from './map-markers';
-import { getMarkerById, getMarkersByShelter, insertMapMarker, updateMapMarker, deleteMapMarker, recomputeEndYears } from '../db/map-markers';
+import { getMarkerById, getMarkersByShelter, insertMapMarker, updateMapMarker, deleteMapMarker } from '../db/map-markers';
 import { getShelterById } from '../db/shelters';
 import type { MapMarker, Shelter } from '../../shared/ipc-types';
 
@@ -72,6 +72,7 @@ describe('MAP_MARKERS_CREATE', () => {
     longitude: -71.0,
     name: 'Spring',
     start_year: 1965,
+    end_year: null,
     change_type: 'Original' as const,
     notes: '',
   };
@@ -82,7 +83,6 @@ describe('MAP_MARKERS_CREATE', () => {
   beforeEach(() => {
     (getShelterById as jest.Mock).mockReturnValue(shelter);
     (insertMapMarker as jest.Mock).mockReturnValue(undefined);
-    (recomputeEndYears as jest.Mock).mockReturnValue(undefined);
     (getMarkersByShelter as jest.Mock).mockReturnValue(resultMarkers);
   });
 
@@ -122,7 +122,11 @@ describe('MAP_MARKERS_CREATE', () => {
     const result = await handler(nullEvent, validInput);
     expect(Array.isArray(result)).toBe(true);
     expect(insertMapMarker).toHaveBeenCalled();
-    expect(recomputeEndYears).toHaveBeenCalled();
+  });
+
+  it('rejects when end_year is before start_year', async () => {
+    const handler = getHandler('mapMarkers:create');
+    await expect(handler(nullEvent, { ...validInput, end_year: 1960 })).rejects.toThrow(/end_year/i);
   });
 
   it('rejects duplicate start_year', async () => {
@@ -139,11 +143,19 @@ describe('MAP_MARKERS_UPDATE', () => {
     latitude: 44.5,
     longitude: -71.5,
     name: 'Updated Spring',
+    start_year: 1965,
+    end_year: 1980,
     change_type: 'Moved' as const,
     notes: '',
   };
 
+  const existing = makeMarker({ id: 3, shelter_id: 10, start_year: 1965 });
+  const shelter = makeShelter({ start_year: 1960, end_year: 1990, is_extant: false });
+
   beforeEach(() => {
+    (getMarkerById as jest.Mock).mockReturnValue(existing);
+    (getShelterById as jest.Mock).mockReturnValue(shelter);
+    (getMarkersByShelter as jest.Mock).mockReturnValue([existing]);
     (updateMapMarker as jest.Mock).mockReturnValue(makeMarker({ name: 'Updated Spring' }));
   });
 
@@ -152,22 +164,40 @@ describe('MAP_MARKERS_UPDATE', () => {
     await expect(handler(nullEvent, { id: 3, input: { ...validInput, latitude: 100 } })).rejects.toThrow(/latitude/i);
   });
 
+  it('rejects when end_year is before start_year', async () => {
+    const handler = getHandler('mapMarkers:update');
+    await expect(handler(nullEvent, { id: 3, input: { ...validInput, end_year: 1960 } })).rejects.toThrow(/end_year/i);
+  });
+
+  it('rejects when marker not found', async () => {
+    (getMarkerById as jest.Mock).mockReturnValue(null);
+    const handler = getHandler('mapMarkers:update');
+    await expect(handler(nullEvent, { id: 999, input: validInput })).rejects.toThrow(/not found/i);
+  });
+
   it('accepts valid edit and returns updated marker', async () => {
     const handler = getHandler('mapMarkers:update');
     const result = await handler(nullEvent, { id: 3, input: validInput });
     expect(result).toMatchObject({ name: 'Updated Spring' });
   });
+
+  it('persists an end_year short of the shelter end_year, leaving a gap, instead of clamping it', async () => {
+    const handler = getHandler('mapMarkers:update');
+    await handler(nullEvent, { id: 3, input: { ...validInput, end_year: 1970 } }); // shelter end_year is 1990
+    expect(updateMapMarker).toHaveBeenCalledWith(
+      expect.anything(),
+      3,
+      expect.objectContaining({ end_year: 1970 }),
+    );
+  });
 });
 
 describe('MAP_MARKERS_DELETE', () => {
   const existing = makeMarker({ id: 7, shelter_id: 10 });
-  const shelter = makeShelter();
 
   beforeEach(() => {
     (getMarkerById as jest.Mock).mockReturnValue(existing);
-    (getShelterById as jest.Mock).mockReturnValue(shelter);
     (deleteMapMarker as jest.Mock).mockReturnValue(undefined);
-    (recomputeEndYears as jest.Mock).mockReturnValue(undefined);
     (getMarkersByShelter as jest.Mock).mockReturnValue([]);
   });
 
@@ -175,7 +205,6 @@ describe('MAP_MARKERS_DELETE', () => {
     const handler = getHandler('mapMarkers:delete');
     const result = await handler(nullEvent, { id: 7 });
     expect(deleteMapMarker).toHaveBeenCalledWith(expect.anything(), 7);
-    expect(recomputeEndYears).toHaveBeenCalled();
     expect(Array.isArray(result)).toBe(true);
   });
 

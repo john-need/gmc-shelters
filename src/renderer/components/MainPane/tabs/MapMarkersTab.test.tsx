@@ -9,6 +9,24 @@ import MapMarkersTab from './MapMarkersTab';
 import type { MapMarker, Shelter } from '../../../../shared/ipc-types';
 // Jest resolves both this path and 'leaflet' to the same module instance via moduleNameMapper
 import { mapStub } from '../../../__mocks__/leaflet';
+import L from 'leaflet';
+
+// Finds the most recently constructed L.Marker pin at the given coordinates and
+// returns its registered 'click' handler, so tests can simulate clicking a pin
+// through the leaflet stub (which has no real DOM to fire events on).
+function pinClickHandlerAt(lat: number, lng: number): () => void {
+  const MarkerMock = L.Marker as unknown as jest.Mock;
+  const calls = MarkerMock.mock.calls;
+  for (let i = calls.length - 1; i >= 0; i--) {
+    const [latlng] = calls[i];
+    if (Array.isArray(latlng) && latlng[0] === lat && latlng[1] === lng) {
+      const stub = MarkerMock.mock.results[i].value;
+      const onCall = stub.on.mock.calls.find(([event]: [string]) => event === 'click');
+      return onCall[1];
+    }
+  }
+  throw new Error(`No pin found at [${lat}, ${lng}]`);
+}
 
 function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
@@ -103,7 +121,7 @@ describe('map auto-fit (fitMapToBounds)', () => {
       store.dispatch(createMarker.fulfilled(
         { shelterId: 10, markers: [...initial, third] },
         '',
-        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 2000, change_type: 'Moved', notes: '' },
+        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 2000, end_year: null, change_type: 'Moved', notes: '' },
       ));
     });
     expect(mapStub.flyToBounds.mock.calls.length).toBeGreaterThan(countBefore);
@@ -168,7 +186,7 @@ describe('map re-fit after marker changes (US2)', () => {
       store.dispatch(createMarker.fulfilled(
         { shelterId: 10, markers: [...initial, third] },
         '',
-        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 1990, change_type: 'Moved', notes: '' },
+        { shelter_id: 10, latitude: 43.8, longitude: -72.0, name: 'New', start_year: 1990, end_year: null, change_type: 'Moved', notes: '' },
       ));
     });
     expect(mapStub.flyToBounds.mock.calls.length).toBeGreaterThan(countBefore);
@@ -292,7 +310,7 @@ describe('MapMarkersTab', () => {
         store.dispatch(createMarker.fulfilled(
           { shelterId: 10, markers: [makeMarker({ id: 1 }), newMarker] },
           '',
-          { shelter_id: 10, latitude: 44, longitude: -71, name: 'New', start_year: 1975, change_type: 'Moved', notes: '' },
+          { shelter_id: 10, latitude: 44, longitude: -71, name: 'New', start_year: 1975, end_year: null, change_type: 'Moved', notes: '' },
         ));
       });
       expect(screen.getAllByTestId('marker-row')).toHaveLength(2);
@@ -390,6 +408,52 @@ describe('MapMarkersTab', () => {
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
       expect(screen.queryByLabelText(/latitude/i)).not.toBeInTheDocument();
       expect(window.api.mapMarkers.update).not.toHaveBeenCalled();
+    });
+
+    it('saves a lowered end_year as-is instead of the shelter end_year, even when it opens a gap', () => {
+      // shelter (from makeShelter()) is non-extant, start_year 1950, end_year 2000.
+      // A single marker spanning the whole shelter lifespan; shortening its end_year
+      // opens a trailing gap before the shelter's end_year.
+      const lastMarker = makeMarker({ id: 1, name: 'Original Site', start_year: 1950, end_year: 2000 });
+      const store = makeStore([lastMarker]);
+      jest.spyOn(window, 'alert').mockImplementation(() => {});
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+      fireEvent.change(screen.getByLabelText(/end year/i), { target: { value: '1975' } });
+      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('1976'));
+      expect(window.api.mapMarkers.update).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ end_year: 1975 }),
+      );
+    });
+
+    it('clicking another marker pin while editing sets the location instead of selecting it', () => {
+      const other = makeMarker({ id: 2, name: 'Other Site', latitude: 45.0, longitude: -72.0, start_year: 1975 });
+      const store = makeStore([marker, other]);
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getAllByRole('button', { name: /edit/i })[0]); // edit marker 1
+      act(() => { pinClickHandlerAt(45.0, -72.0)(); }); // click marker 2's pin
+
+      expect((screen.getByLabelText(/latitude/i) as HTMLInputElement).value).toBe('45.000000');
+      expect((screen.getByLabelText(/longitude/i) as HTMLInputElement).value).toBe('-72.000000');
+      expect(window.api.mapMarkers.update).not.toHaveBeenCalled();
+    });
+
+    it('disables row selection on other markers while editing', () => {
+      const other = makeMarker({ id: 2, name: 'Other Site', latitude: 45.0, longitude: -72.0, start_year: 1975 });
+      const store = makeStore([marker, other]);
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getAllByRole('button', { name: /edit/i })[0]); // edit marker 1
+      jest.clearAllMocks();
+      const otherRow = screen.getAllByTestId('marker-row').find((r) => r.textContent?.includes('Other Site'));
+      fireEvent.click(otherRow!);
+
+      expect(mapStub.flyTo).not.toHaveBeenCalled();
     });
   });
 

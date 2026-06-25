@@ -9,7 +9,6 @@ const baseProps = {
   form: emptyForm(),
   setForm: jest.fn(),
   errorMsg: null,
-  endYearDisplay: '—',
   canSave: false,
   saving: false,
   shelterStartYear: 1950,
@@ -69,9 +68,16 @@ describe('MarkerFormPanel', () => {
     expect(input).not.toBeDisabled();
   });
 
-  it('start_year input disabled in edit mode', () => {
+  it('start_year input editable in edit mode', () => {
     render(<MarkerFormPanel {...baseProps} mode="edit" />);
-    expect(screen.getByTitle(/start year cannot be changed/i)).toBeDisabled();
+    const input = screen.getByRole('spinbutton', { name: /start year/i });
+    expect(input).not.toBeDisabled();
+  });
+
+  it('end_year input editable', () => {
+    render(<MarkerFormPanel {...baseProps} mode="add" />);
+    const input = screen.getByRole('spinbutton', { name: /end year/i });
+    expect(input).not.toBeDisabled();
   });
 
   it('shows lat/lng hint when both set in add mode', () => {

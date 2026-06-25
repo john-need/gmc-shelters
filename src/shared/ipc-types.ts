@@ -105,6 +105,7 @@ export type MapMarkerCreateInput = {
   longitude: number;
   name: string;
   start_year: number;
+  end_year: number | null;
   change_type: ChangeType;
   notes: string;
 };
@@ -113,6 +114,8 @@ export type MapMarkerUpdateInput = {
   latitude: number;
   longitude: number;
   name: string;
+  start_year: number;
+  end_year: number | null;
   change_type: ChangeType;
   notes: string;
 };
