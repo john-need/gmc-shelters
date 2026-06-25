@@ -86,6 +86,31 @@ export async function deletePhotoFile(slug: string, fileName: string, sheltersRo
   }
 }
 
+export async function renameShelterDir(oldSlug: string, newSlug: string, sheltersRoot: string): Promise<void> {
+  const resolvedRoot = path.isAbsolute(sheltersRoot)
+    ? sheltersRoot
+    : path.resolve(app.getAppPath(), sheltersRoot);
+  const oldDir = path.join(resolvedRoot, oldSlug);
+  const newDir = path.join(resolvedRoot, newSlug);
+
+  try {
+    await fs.access(newDir);
+    throw new Error(`A folder named "${newSlug}" already exists`);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+  }
+
+  try {
+    await fs.access(oldDir);
+  } catch {
+    log.warn(`Shelter dir to rename does not exist, nothing to move: ${oldDir}`);
+    return;
+  }
+
+  await fs.rename(oldDir, newDir);
+  log.info(`Shelter dir renamed: ${oldDir} → ${newDir}`);
+}
+
 export async function deleteShelterDir(slug: string, sheltersRoot: string): Promise<void> {
   const resolvedRoot = path.isAbsolute(sheltersRoot)
     ? sheltersRoot

@@ -4,6 +4,7 @@ import type { AppDispatch, RootState } from '../../../store';
 import { setEditBuffer, revertEditBuffer, saveShelter, deleteShelterThunk } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadStoredPaths } from '../../../pathSettings';
+import { slugify } from '../../../../shared/slug';
 import { buildPhotoUrl } from '../../../utils/paths';
 import type { Shelter } from '../../../../shared/ipc-types';
 
@@ -302,7 +303,12 @@ function ShelterFormSections({ s, f, archList, catList, photoCount, photoSummary
           </div>
           <div className="field">
             <label className="label">Slug <span className="hint">URL-safe</span></label>
-            <input className="input mono" value={s.slug} onChange={f('slug')} />
+            <input
+              className="input mono"
+              value={s.slug}
+              onChange={f('slug')}
+              onBlur={(e) => f('slug')({ target: { value: slugify(e.target.value) } } as React.ChangeEvent<HTMLInputElement>)}
+            />
           </div>
           <div className="field">
             <label className="label">Category</label>
@@ -519,6 +525,8 @@ export default function ShelterTab() {
     const result = await dispatch(saveShelter(s));
     if (saveShelter.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: 'Record saved · shelters.db' }));
+    } else if (saveShelter.rejected.match(result)) {
+      dispatch(showToast({ id: Date.now().toString(), message: result.error.message ?? 'Could not save shelter.' }));
     }
   };
 

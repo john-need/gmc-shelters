@@ -94,3 +94,6 @@ const mockApi: ElectronAPI = {
 };
 
 Object.defineProperty(window, 'api', { value: mockApi, writable: true });
+
+// Mock scrollTo for JSDOM
+HTMLDivElement.prototype.scrollTo = jest.fn();

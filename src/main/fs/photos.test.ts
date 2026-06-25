@@ -29,6 +29,7 @@ import {
   deletePhotoFile,
   movePhotoFile,
   ensureShelterDir,
+  renameShelterDir,
   writePhotoXmp,
   readPhotoXmp,
   readPhotoFileMetadata,
@@ -205,6 +206,38 @@ describe('fs/photos', () => {
       await ensureShelterDir('my-shelter', 'shelters');
       expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-shelter', { recursive: true });
       expect(fsp.mkdir).toHaveBeenCalledWith('/base/shelters/my-shelter/photos', { recursive: true });
+    });
+  });
+
+  describe('renameShelterDir', () => {
+    it('renames the old slug dir to the new slug dir', async () => {
+      (fsp.access as jest.Mock)
+        .mockRejectedValueOnce(Object.assign(new Error('ENOENT'), { code: 'ENOENT' })) // target check: doesn't exist
+        .mockResolvedValueOnce(undefined); // source check: exists
+      (fsp.rename as jest.Mock).mockResolvedValue(undefined);
+
+      await renameShelterDir('old-slug', 'new-slug', 'shelters');
+
+      expect(fsp.rename).toHaveBeenCalledWith('/base/shelters/old-slug', '/base/shelters/new-slug');
+    });
+
+    it('throws and does not rename when the target dir already exists', async () => {
+      (fsp.access as jest.Mock).mockResolvedValue(undefined); // target exists
+
+      await expect(renameShelterDir('old-slug', 'new-slug', 'shelters')).rejects.toThrow(
+        'A folder named "new-slug" already exists',
+      );
+      expect(fsp.rename).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning and resolves when the source dir is missing', async () => {
+      (fsp.access as jest.Mock)
+        .mockRejectedValueOnce(Object.assign(new Error('ENOENT'), { code: 'ENOENT' })) // target check: doesn't exist
+        .mockRejectedValueOnce(Object.assign(new Error('ENOENT'), { code: 'ENOENT' })); // source check: doesn't exist
+
+      await expect(renameShelterDir('old-slug', 'new-slug', 'shelters')).resolves.not.toThrow();
+      expect(fsp.rename).not.toHaveBeenCalled();
+      expect(log.warn).toHaveBeenCalled();
     });
   });
 });

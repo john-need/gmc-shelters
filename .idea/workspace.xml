@@ -5,22 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="697b570f-f789-4245-9e7d-39de9f1dd09e" name="Changes" comment="dbstuff">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.specify/feature.json" beforeDir="false" afterPath="$PROJECT_DIR$/.specify/feature.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/map-markers.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/map-markers.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/map-markers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/map-markers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/map-markers.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/map-markers.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/ipc/map-markers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/map-markers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MapMarkersTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MarkerFormPanel.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MarkerFormPanel.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MarkerFormPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/MarkerFormPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoDetailPane.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/markerUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/markerUtils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/ui/PhotoPreviewImage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/ui/PhotoPreviewImage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/mapMarkersSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/mapMarkersSlice.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/db/shelters.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/shelters.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/db/shelters.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/shelters.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/shelters.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/shelters.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/shelters.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/shelters.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/ShelterTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/setupTests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/setupTests.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/sheltersSlice.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -76,7 +79,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="617" />
+    <option name="cachedIndexableFilesCount" value="629" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Merge.Settings">
@@ -145,50 +148,50 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Jest.All Tests.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenDatabaseViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Shell Script.Deploy 2 Drive.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.build dist.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.build manifest.executor&quot;: &quot;Run&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
-    &quot;copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters&quot;: &quot;true&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;JSON-Groovy.json.groovy&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;011-move-photo-shelter&quot;,
-    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/johnneed/Library/Application Support/gmc-shelters&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs.jest.jest_package&quot;: &quot;/Users/johnneed/Projects/gmc-shelters/node_modules/jest&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.lint.executor&quot;: &quot;Run&quot;,
-    &quot;npm.make.executor&quot;: &quot;Run&quot;,
-    &quot;npm.package.executor&quot;: &quot;Run&quot;,
-    &quot;npm.start.executor&quot;: &quot;Run&quot;,
-    &quot;npm.test.executor&quot;: &quot;Run&quot;,
-    &quot;npm.typecheck.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.AcpAgentsConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/johnneed/Projects/gmc-shelters/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Jest.All Tests.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.OpenDatabaseViewOnStart": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Shell Script.Deploy 2 Drive.executor": "Run",
+    "Shell Script.build dist.executor": "Run",
+    "Shell Script.build manifest.executor": "Run",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "copilot.chat.legacySessionMetadata.migrated": "true",
+    "copilot.sensitive.folder.allow.file_read./Users/johnneed/Library/Logs/gmc-shelters": "true",
+    "database.data.extractors.current.export.id": "JSON-Groovy.json.groovy",
+    "git-widget-placeholder": "012-shelter-slug-rename",
+    "javascript.preferred.runtime.type.id": "node",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/johnneed/Library/Application Support/gmc-shelters",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs.jest.jest_package": "/Users/johnneed/Projects/gmc-shelters/node_modules/jest",
+    "nodejs_package_manager_path": "npm",
+    "npm.lint.executor": "Run",
+    "npm.make.executor": "Run",
+    "npm.package.executor": "Run",
+    "npm.start.executor": "Run",
+    "npm.test.executor": "Run",
+    "npm.typecheck.executor": "Run",
+    "settings.editor.selected.configurable": "ml.llm.AcpAgentsConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/johnneed/Projects/gmc-shelters/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;sqlite&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "sqlite"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$USER_HOME$/Library/Application Support/gmc-shelters" />

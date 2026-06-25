@@ -232,11 +232,38 @@ describe('ShelterTab', () => {
     fireEvent.click(screen.getByRole('button', { name: /save record/i }));
 
     await waitFor(() => {
-      expect(window.api.shelters.update).toHaveBeenCalledWith(expect.objectContaining({ name: 'Birch Glen Shelter' }));
+      expect(window.api.shelters.update).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Birch Glen Shelter' }),
+        expect.any(String),
+      );
     });
 
     await waitFor(() => {
       expect(screen.getByText(/all changes saved/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows an error toast when saving is rejected (e.g. duplicate slug)', async () => {
+    const shelter = makeShelter();
+    const store = makeStore(shelter, [makePhoto()]);
+
+    window.api.shelters.update = jest.fn().mockRejectedValue(new Error('Slug "other-slug" is already in use'));
+
+    render(
+      <Provider store={store}>
+        <ShelterTab />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(window.api.app.getRepoRoot).toHaveBeenCalled();
+    });
+
+    fireEvent.change(screen.getByDisplayValue('birch-glen-lodge'), { target: { value: 'other-slug' } });
+    fireEvent.click(screen.getByRole('button', { name: /save record/i }));
+
+    await waitFor(() => {
+      expect(store.getState().ui.toast?.message).toBe('Slug "other-slug" is already in use');
     });
   });
 });
