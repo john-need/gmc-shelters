@@ -21,7 +21,8 @@ const api: ElectronAPI = {
     getAll: () => ipcRenderer.invoke(CHANNELS.SHELTERS_GET_ALL),
     getById: (id: number) => ipcRenderer.invoke(CHANNELS.SHELTERS_GET_BY_ID, { id }),
     create: (input: ShelterCreateInput) => ipcRenderer.invoke(CHANNELS.SHELTERS_CREATE, input),
-    update: (shelter: Shelter) => ipcRenderer.invoke(CHANNELS.SHELTERS_UPDATE, shelter),
+    update: (shelter: Shelter, sheltersRoot: string) =>
+      ipcRenderer.invoke(CHANNELS.SHELTERS_UPDATE, { shelter, sheltersRoot }),
     delete: (id: number, slug: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.SHELTERS_DELETE, { id, slug, sheltersRoot }),
     setHistory: (id: number, history: string) =>

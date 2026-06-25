@@ -72,15 +72,50 @@ describe('ipc/shelters', () => {
     expect(result).toBe(shelter);
   });
 
-  it('SHELTERS_UPDATE calls updateShelter and syncs markers', () => {
-    const shelter = { id: 1, name: 'Updated', slug: 'updated', is_extant: true, default_photo_id: 5 };
-    (dbShelters.updateShelter as jest.Mock).mockReturnValue(shelter);
-    (dbMapMarkers.syncMarkersFromShelter as jest.Mock).mockReturnValue(undefined);
-    const handler = getHandler(CHANNELS.SHELTERS_UPDATE);
-    const result = handler(null, shelter);
-    expect(dbShelters.updateShelter).toHaveBeenCalledWith(shelter);
-    expect(dbMapMarkers.syncMarkersFromShelter).toHaveBeenCalledWith(shelter);
-    expect(result).toBe(shelter);
+  describe('SHELTERS_UPDATE', () => {
+    it('calls updateShelter and syncs markers when the slug is unchanged', async () => {
+      const before = { id: 1, slug: 'updated' };
+      const shelter = { id: 1, name: 'Updated', slug: 'updated', is_extant: true, default_photo_id: 5 };
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue(before);
+      (dbShelters.updateShelter as jest.Mock).mockReturnValue(shelter);
+      (dbMapMarkers.syncMarkersFromShelter as jest.Mock).mockReturnValue(undefined);
+
+      const handler = getHandler(CHANNELS.SHELTERS_UPDATE);
+      const result = await handler(null, { shelter, sheltersRoot: '/shelters' });
+
+      expect(dbShelters.updateShelter).toHaveBeenCalledWith(shelter);
+      expect(fsPhotos.renameShelterDir).not.toHaveBeenCalled();
+      expect(dbMapMarkers.syncMarkersFromShelter).toHaveBeenCalledWith(shelter);
+      expect(result).toBe(shelter);
+    });
+
+    it('renames the shelter dir on disk when the slug changed', async () => {
+      const before = { id: 1, slug: 'old-slug' };
+      const shelter = { id: 1, name: 'Updated', slug: 'new-slug' };
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue(before);
+      (dbShelters.updateShelter as jest.Mock).mockReturnValue(shelter);
+      (fsPhotos.renameShelterDir as jest.Mock).mockResolvedValue(undefined);
+
+      const handler = getHandler(CHANNELS.SHELTERS_UPDATE);
+      const result = await handler(null, { shelter, sheltersRoot: '/shelters' });
+
+      expect(fsPhotos.renameShelterDir).toHaveBeenCalledWith('old-slug', 'new-slug', '/shelters');
+      expect(dbMapMarkers.syncMarkersFromShelter).toHaveBeenCalledWith(shelter);
+      expect(result).toBe(shelter);
+    });
+
+    it('rolls back the DB slug change and rethrows if the disk rename fails', async () => {
+      const before = { id: 1, slug: 'old-slug' };
+      const shelter = { id: 1, name: 'Updated', slug: 'new-slug' };
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue(before);
+      (dbShelters.updateShelter as jest.Mock).mockReturnValue(shelter);
+      (fsPhotos.renameShelterDir as jest.Mock).mockRejectedValue(new Error('disk full'));
+
+      const handler = getHandler(CHANNELS.SHELTERS_UPDATE);
+      await expect(handler(null, { shelter, sheltersRoot: '/shelters' })).rejects.toThrow('disk full');
+
+      expect(dbShelters.updateShelter).toHaveBeenCalledWith({ ...shelter, slug: 'old-slug' });
+    });
   });
 
   it('SHELTERS_DELETE calls deleteShelter with id', () => {

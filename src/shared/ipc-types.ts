@@ -402,7 +402,7 @@ export interface ElectronAPI {
     getAll: () => Promise<Shelter[]>;
     getById: (id: number) => Promise<Shelter | null>;
     create: (input: ShelterCreateInput) => Promise<Shelter>;
-    update: (shelter: Shelter) => Promise<Shelter>;
+    update: (shelter: Shelter, sheltersRoot: string) => Promise<Shelter>;
     delete: (id: number, slug: string, sheltersRoot: string) => Promise<void>;
     setHistory: (id: number, history: string) => Promise<void>;
   };
