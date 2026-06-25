@@ -60,6 +60,21 @@ describe('NewShelterModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('clearing the year field shows blank, not 0', () => {
+    renderModal();
+    const yearInput = screen.getByDisplayValue(String(new Date().getFullYear()));
+    fireEvent.change(yearInput, { target: { value: '' } });
+    expect((yearInput as HTMLInputElement).value).toBe('');
+  });
+
+  it('Create record button is disabled when year is cleared', () => {
+    renderModal();
+    fireEvent.change(screen.getByPlaceholderText(/Mossy Brook/i), { target: { value: 'New Shelter' } });
+    const yearInput = screen.getByDisplayValue(String(new Date().getFullYear()));
+    fireEvent.change(yearInput, { target: { value: '' } });
+    expect(screen.getByText('Create record').closest('button')).toBeDisabled();
+  });
+
   it('submits and dispatches createShelter on form submission', async () => {
     const mockShelter = {
       id: 1, name: 'Test Shelter', slug: 'test-shelter', start_year: 2020,
