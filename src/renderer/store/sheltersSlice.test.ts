@@ -6,6 +6,7 @@ import sheltersReducer, {
   clearDirty,
   loadHistory,
   saveHistory,
+  saveShelter,
 } from './sheltersSlice';
 import type { SheltersState } from './sheltersSlice';
 import type { Shelter } from '../../shared/ipc-types';
@@ -118,6 +119,15 @@ describe('sheltersSlice', () => {
     await saveHistory({ historyRelPath: 'test-shelter/test-shelter.md', content: '# Updated' })(jest.fn(), () => ({}), undefined);
 
     expect(window.api.history.write).toHaveBeenCalledWith('test-shelter/test-shelter.md', '# Updated', '/custom/shelters');
+  });
+
+  it('saveShelter uses the saved shelters root from localStorage', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    window.api.shelters.update = jest.fn().mockResolvedValue(mockShelter);
+
+    await saveShelter(mockShelter)(jest.fn(), () => ({}), undefined);
+
+    expect(window.api.shelters.update).toHaveBeenCalledWith(mockShelter, '/custom/shelters');
   });
 
   it('stores the missing-file flag from loadHistory', () => {

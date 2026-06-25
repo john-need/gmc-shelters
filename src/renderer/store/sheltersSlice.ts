@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { HistoryReadResult, Shelter, ShelterCreateInput } from '../../shared/ipc-types';
 import { loadStoredPaths } from '../pathSettings';
+import { slugify } from '../../shared/slug';
 
 export interface SheltersState {
   list: Shelter[];
@@ -48,7 +49,7 @@ export const saveShelter = createAsyncThunk(
   'shelters/save',
   async (shelter: Shelter) => {
     if (typeof window !== 'undefined' && window.api) {
-      return window.api.shelters.update(shelter);
+      return window.api.shelters.update(shelter, loadStoredPaths().SHELTERS_ROOT);
     }
     return { ...shelter, updated: new Date().toISOString().slice(0, 10) };
   },
@@ -60,10 +61,7 @@ export const createShelter = createAsyncThunk(
     if (typeof window !== 'undefined' && window.api) {
       return window.api.shelters.create(input);
     }
-    const slug = input.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    const slug = slugify(input.name);
     const today = new Date().toISOString().slice(0, 10);
     return {
       id: Date.now(),

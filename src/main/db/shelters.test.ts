@@ -138,6 +138,66 @@ describe('db/shelters', () => {
       expect(updated.name).toBe('Renamed');
       expect(updated.description).toBe('New desc');
     });
+
+    it('renaming the slug rewrites photos.file_name and shelters.history prefixes', () => {
+      const created = createShelter({ name: 'Old Place', start_year: 1950, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+      const oldSlug = created.slug;
+      db.exec(`UPDATE shelters SET history = '${oldSlug}/${oldSlug}.md' WHERE id = ${created.id}`);
+      db.exec(`INSERT INTO photos (shelter_id, file_name, created, updated) VALUES (${created.id}, '${oldSlug}/photos/a.jpg', '2020-01-01', '2020-01-01')`);
+
+      const updated = updateShelter({ ...created, slug: 'new-place' });
+
+      expect(updated.slug).toBe('new-place');
+      // Only the directory prefix changes — the .md file itself isn't renamed,
+      // it travels along inside the renamed folder (fs.rename moves the whole dir).
+      expect(updated.history).toBe('new-place/old-place.md');
+      const photo = db.prepare('SELECT file_name FROM photos WHERE shelter_id = ?').get(created.id) as { file_name: string };
+      expect(photo.file_name).toBe('new-place/photos/a.jpg');
+    });
+
+    it('does not touch photos.file_name or history when the slug is unchanged', () => {
+      const created = createShelter({ name: 'Steady', start_year: 1955, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+      const slug = created.slug;
+      db.exec(`UPDATE shelters SET history = '${slug}/${slug}.md' WHERE id = ${created.id}`);
+      db.exec(`INSERT INTO photos (shelter_id, file_name, created, updated) VALUES (${created.id}, '${slug}/photos/a.jpg', '2020-01-01', '2020-01-01')`);
+
+      updateShelter({ ...created, description: 'unrelated edit' });
+
+      const photo = db.prepare('SELECT file_name FROM photos WHERE shelter_id = ?').get(created.id) as { file_name: string };
+      expect(photo.file_name).toBe(`${slug}/photos/a.jpg`);
+      const row = db.prepare('SELECT history FROM shelters WHERE id = ?').get(created.id) as { history: string };
+      expect(row.history).toBe(`${slug}/${slug}.md`);
+    });
+
+    it('throws when renaming to a slug already used by another shelter, without mutating either row', () => {
+      const a = createShelter({ name: 'Shelter A', start_year: 1960, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+      const b = createShelter({ name: 'Shelter B', start_year: 1961, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+
+      expect(() => updateShelter({ ...a, slug: b.slug })).toThrow('Slug already exists. Choose a unique slug');
+
+      expect(getShelterById(a.id)!.slug).toBe(a.slug);
+      expect(getShelterById(b.id)!.slug).toBe(b.slug);
+    });
+
+    it('sanitizes the slug before storing or using it for comparisons', () => {
+      const created = createShelter({ name: 'Mixed Case', start_year: 1962, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+
+      const updated = updateShelter({ ...created, slug: 'My Shelter/Two' });
+
+      expect(updated.slug).toBe('my-shelter-two');
+    });
+
+    it('throws when the sanitized slug is empty, before any DB write', () => {
+      const created = createShelter({ name: 'Original Name', start_year: 1963, category: 'Shelter', is_gmc: false, sheltersRoot: '/tmp' });
+
+      expect(() => updateShelter({ ...created, slug: '!!!', name: 'Changed Name' })).toThrow(
+        'Slug cannot be empty after removing invalid characters',
+      );
+
+      const row = getShelterById(created.id)!;
+      expect(row.slug).toBe(created.slug);
+      expect(row.name).toBe('Original Name');
+    });
   });
 
   describe('deleteShelter', () => {

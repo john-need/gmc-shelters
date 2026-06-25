@@ -1,4 +1,5 @@
 import { getDb } from './connection';
+import { slugify } from '../../shared/slug';
 import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
 
 interface ShelterRow {
@@ -110,10 +111,7 @@ function resolveBuilderIdUpsert(db: ReturnType<typeof getDb>, name: string): num
 export function createShelter(input: ShelterCreateInput): Shelter {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
-  const slug = input.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+  const slug = slugify(input.name);
 
   const categoryId = resolveCategoryId(db, input.category);
 
@@ -139,30 +137,53 @@ export function updateShelter(shelter: Shelter): Shelter {
   const categoryId = resolveCategoryId(db, shelter.category);
   const builderId = resolveBuilderIdUpsert(db, shelter.built_by);
 
-  db.prepare(
-    `UPDATE shelters SET
-       name = ?, slug = ?, start_year = ?, end_year = ?, description = ?,
-       default_photo_id = ?, is_gmc = ?,
-       architecture_id = ?, builder_id = ?, notes = ?, is_extant = ?,
-       category_id = ?, show_on_web = ?, updated = ?
-     WHERE id = ?`,
-  ).run(
-    shelter.name,
-    shelter.slug,
-    shelter.start_year,
-    shelter.end_year ?? null,
-    shelter.description,
-    shelter.default_photo_id ?? null,
-    shelter.is_gmc ? 1 : 0,
-    architectureId,
-    builderId,
-    shelter.notes,
-    shelter.is_extant ? 1 : 0,
-    categoryId,
-    shelter.show_on_web ? 1 : 0,
-    today,
-    shelter.id,
-  );
+  const newSlug = slugify(shelter.slug);
+  if (!newSlug) throw new Error('Slug cannot be empty after removing invalid characters');
+
+  const current = db.prepare('SELECT slug FROM shelters WHERE id = ?').get(shelter.id) as { slug: string } | undefined;
+  const oldSlug = current?.slug;
+  const slugChanged = oldSlug !== undefined && newSlug !== oldSlug;
+
+  if (slugChanged) {
+    const duplicate = db.prepare('SELECT id FROM shelters WHERE slug = ? AND id != ?').get(newSlug, shelter.id);
+    if (duplicate) throw new Error('Slug already exists. Choose a unique slug');
+  }
+
+  db.transaction(() => {
+    db.prepare(
+      `UPDATE shelters SET
+         name = ?, slug = ?, start_year = ?, end_year = ?, description = ?,
+         default_photo_id = ?, is_gmc = ?,
+         architecture_id = ?, builder_id = ?, notes = ?, is_extant = ?,
+         category_id = ?, show_on_web = ?, updated = ?
+       WHERE id = ?`,
+    ).run(
+      shelter.name,
+      newSlug,
+      shelter.start_year,
+      shelter.end_year ?? null,
+      shelter.description,
+      shelter.default_photo_id ?? null,
+      shelter.is_gmc ? 1 : 0,
+      architectureId,
+      builderId,
+      shelter.notes,
+      shelter.is_extant ? 1 : 0,
+      categoryId,
+      shelter.show_on_web ? 1 : 0,
+      today,
+      shelter.id,
+    );
+
+    if (slugChanged) {
+      db.prepare(
+        `UPDATE photos SET file_name = ? || substr(file_name, ?) WHERE shelter_id = ? AND file_name LIKE ? || '/%'`,
+      ).run(newSlug, oldSlug!.length + 1, shelter.id, oldSlug);
+      db.prepare(
+        `UPDATE shelters SET history = ? || substr(history, ?) WHERE id = ? AND history LIKE ? || '/%'`,
+      ).run(newSlug, oldSlug!.length + 1, shelter.id, oldSlug);
+    }
+  })();
 
   return getShelterById(shelter.id) as Shelter;
 }

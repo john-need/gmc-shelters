@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getAllShelters, getShelterById, createShelter, updateShelter, deleteShelter, setShelterHistory } from '../db/shelters';
 import { syncMarkersFromShelter } from '../db/map-markers';
-import { ensureShelterDir, deleteShelterDir } from '../fs/photos';
+import { ensureShelterDir, deleteShelterDir, renameShelterDir } from '../fs/photos';
 import { writeHistory } from '../fs/history';
 import { log } from '../logger';
 import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
@@ -32,11 +32,27 @@ export function registerShelterHandlers(): void {
     return shelter;
   });
 
-  ipcMain.handle(CHANNELS.SHELTERS_UPDATE, (_e, shelter: Shelter) => {
-    const updated = updateShelter(shelter);
-    syncMarkersFromShelter(updated);
-    return updated;
-  });
+  ipcMain.handle(
+    CHANNELS.SHELTERS_UPDATE,
+    async (_e, { shelter, sheltersRoot }: { shelter: Shelter; sheltersRoot: string }) => {
+      const before = getShelterById(shelter.id);
+      const oldSlug = before?.slug;
+
+      const updated = updateShelter(shelter);
+
+      if (oldSlug && updated.slug !== oldSlug) {
+        try {
+          await renameShelterDir(oldSlug, updated.slug, sheltersRoot);
+        } catch (err) {
+          updateShelter({ ...updated, slug: oldSlug });
+          throw err;
+        }
+      }
+
+      syncMarkersFromShelter(updated);
+      return updated;
+    },
+  );
 
   ipcMain.handle(
     CHANNELS.SHELTERS_DELETE,
