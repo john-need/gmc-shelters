@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Source } from '../../../../shared/ipc-types';
 import { citeChicago } from '../../../../shared/cite-chicago';
 import { SOURCE_TYPES, SOURCE_GLYPH, prettyUrl } from './sourceTypes';
@@ -44,6 +44,18 @@ function SourceQuote({ text }: { text: string }) {
 export default function SourceCard({ s, selected, onClick, onToggleInclude, onEdit, onDelete }: SourceCardProps) {
   const typeLabel = SOURCE_TYPES.find((t) => t.v === s.type)?.label ?? s.type;
   const html = citeChicago(s);
+  const citationRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = citationRef.current;
+    if (!el) return;
+    const handle = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest('a');
+      if (a?.href) { e.preventDefault(); window.api?.shell.openExternal(a.href); }
+    };
+    el.addEventListener('click', handle);
+    return () => el.removeEventListener('click', handle);
+  }, []);
 
   return (
     <div className={`source-card ${selected ? 'selected' : ''}`} onClick={onClick}>
@@ -53,7 +65,7 @@ export default function SourceCard({ s, selected, onClick, onToggleInclude, onEd
       </div>
 
       <div style={{ minWidth: 0 }}>
-        <div className="source-citation" dangerouslySetInnerHTML={{ __html: html }} />
+        <div ref={citationRef} className="source-citation" dangerouslySetInnerHTML={{ __html: html }} />
 
         <div className="source-meta-row">
           <label style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
