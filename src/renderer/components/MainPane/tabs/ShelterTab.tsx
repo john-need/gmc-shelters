@@ -535,8 +535,12 @@ export default function ShelterTab() {
     setIsDeleting(true);
     try {
       const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
-      await dispatch(deleteShelterThunk({ id: s.id, slug: s.slug, sheltersRoot }));
-      dispatch(showToast({ id: Date.now().toString(), message: `Deleted ${s.name}` }));
+      const result = await dispatch(deleteShelterThunk({ id: s.id, slug: s.slug, sheltersRoot }));
+      if (deleteShelterThunk.fulfilled.match(result)) {
+        dispatch(showToast({ id: Date.now().toString(), message: `Deleted ${s.name}` }));
+      } else {
+        dispatch(showToast({ id: Date.now().toString(), message: result.error.message ?? 'Could not delete shelter.' }));
+      }
     } finally {
       setIsDeleting(false);
       setDeleteOpen(false);

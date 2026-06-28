@@ -50,7 +50,16 @@ const SCHEMA = `
     type TEXT, author TEXT, title TEXT
   );
   CREATE TABLE shelter_sources (
-    shelter_id INTEGER, source_id INTEGER
+    shelter_id INTEGER REFERENCES shelters(id) ON DELETE CASCADE,
+    source_id INTEGER
+  );
+  CREATE TABLE map_markers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shelter_id INTEGER NOT NULL REFERENCES shelters(id) ON DELETE CASCADE,
+    photo_id INTEGER REFERENCES photos(id),
+    latitude REAL, longitude REAL, name TEXT,
+    start_year INTEGER, end_year INTEGER,
+    change_type TEXT, is_extant INTEGER, notes TEXT
   );
 `;
 
@@ -59,6 +68,7 @@ describe('db/shelters', () => {
 
   beforeEach(() => {
     db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
     db.exec(SCHEMA);
     (getDb as jest.Mock).mockReturnValue(db);
   });
@@ -204,6 +214,15 @@ describe('db/shelters', () => {
     it('removes the shelter', () => {
       const s = createShelter({ name: 'ToDelete', start_year: 1930, category: 'Lodge', is_gmc: false, sheltersRoot: '/tmp' });
       deleteShelter(s.id);
+      expect(getShelterById(s.id)).toBeNull();
+    });
+
+    it('deletes shelter that has a photo referenced by a map_marker', () => {
+      const s = createShelter({ name: 'WithMarker', start_year: 1940, category: 'Lodge', is_gmc: false, sheltersRoot: '/tmp' });
+      db.exec(`INSERT INTO photos (shelter_id, file_name, created, updated) VALUES (${s.id}, 'a.jpg', '2020-01-01', '2020-01-01')`);
+      const photo = db.prepare('SELECT id FROM photos WHERE shelter_id = ?').get(s.id) as { id: number };
+      db.exec(`INSERT INTO map_markers (shelter_id, photo_id, latitude, longitude, name, start_year, change_type, is_extant) VALUES (${s.id}, ${photo.id}, 44.0, -72.0, 'Camp', 1940, 'Original', 1)`);
+      expect(() => deleteShelter(s.id)).not.toThrow();
       expect(getShelterById(s.id)).toBeNull();
     });
   });

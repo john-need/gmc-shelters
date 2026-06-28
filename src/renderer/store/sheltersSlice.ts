@@ -91,9 +91,7 @@ export const createShelter = createAsyncThunk(
 export const deleteShelterThunk = createAsyncThunk(
   'shelters/delete',
   async ({ id, slug, sheltersRoot }: { id: number; slug: string; sheltersRoot: string }) => {
-    if (typeof window !== 'undefined' && window.api) {
-      await window.api.shelters.delete(id, slug, sheltersRoot);
-    }
+    await window.api.shelters.delete(id, slug, sheltersRoot);
     return id;
   },
 );
