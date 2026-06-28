@@ -201,6 +201,7 @@ export function deleteShelter(id: number): void {
   ).map((r) => r.source_id);
 
   db.transaction(() => {
+    db.prepare('DELETE FROM map_markers WHERE shelter_id = ?').run(id);
     db.prepare('DELETE FROM photos WHERE shelter_id = ?').run(id);
     db.prepare('DELETE FROM shelters WHERE id = ?').run(id);
     if (sourceIds.length > 0) {

@@ -14,7 +14,7 @@ export default function NewShelterModal({ onClose }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const catList = useSelector((s: RootState) => s.categories.list);
   const [name, setName] = useState('');
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(new Date().getFullYear());
   const [category, setCategory] = useState('');
   const [isGmc, setIsGmc] = useState(true);
 
@@ -71,8 +71,8 @@ export default function NewShelterModal({ onClose }: Props) {
               <input
                 className="input mono"
                 type="number"
-                value={year}
-                onChange={(e) => setYear(+e.target.value)}
+                value={year ?? ''}
+                onChange={(e) => setYear(e.target.value === '' ? null : +e.target.value)}
               />
             </div>
             <div className="field">
@@ -115,7 +115,7 @@ export default function NewShelterModal({ onClose }: Props) {
         </div>
         <div className="modal-foot">
           <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn primary" disabled={!name.trim()}>
+          <button type="submit" className="btn primary" disabled={!name.trim() || year === null}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14"/>
             </svg>

@@ -26,8 +26,10 @@ interface TransformSidebarProps {
   zoom: number;
   onRotateLeft: () => void;
   onRotateRight: () => void;
+  onRotationChange: (deg: number) => void;
   onFlip: () => void;
   onToggleCrop: () => void;
+  onCancelCrop: () => void;
   onZoomOut: () => void;
   onZoomIn: () => void;
   setCropRect: React.Dispatch<React.SetStateAction<{ x: number; y: number; w: number; h: number }>>;
@@ -36,8 +38,8 @@ interface TransformSidebarProps {
 }
 
 function TransformSidebar({
-  rotation: _rotation, flipped, cropping, naturalSize, cropRect, zoom,
-  onRotateLeft, onRotateRight, onFlip, onToggleCrop,
+  rotation, flipped, cropping, naturalSize, cropRect, zoom,
+  onRotateLeft, onRotateRight, onRotationChange, onFlip, onToggleCrop, onCancelCrop,
   onZoomOut, onZoomIn,
 }: TransformSidebarProps) {
   return (
@@ -58,21 +60,42 @@ function TransformSidebar({
                 <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/>
               </svg>
             </button>
+            <input
+              type="number"
+              min={-360}
+              max={360}
+              value={rotation}
+              onChange={(e) => {
+                const v = Math.max(-360, Math.min(360, parseInt(e.target.value, 10) || 0));
+                onRotationChange(v);
+              }}
+              style={{ width: 48, fontFamily: 'var(--font-mono)', fontSize: 10, textAlign: 'center' }}
+              title="Rotation in degrees"
+            />
             <button className="btn icon sm" title="Flip horizontal" aria-pressed={flipped} onClick={onFlip}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3v18"/><path d="M16 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"/><path d="M8 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h3"/>
               </svg>
             </button>
           </div>
-          <button
-            className={`btn sm ${cropping ? 'primary' : ''}`}
-            onClick={() => onToggleCrop()}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
-            </svg>
-            {' '}{cropping ? 'Done' : 'Crop'}
-          </button>
+          {cropping ? (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button className="btn sm primary" onClick={() => onToggleCrop()}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                </svg>
+                {' '}Done
+              </button>
+              <button className="btn sm ghost" onClick={onCancelCrop}>Cancel</button>
+            </div>
+          ) : (
+            <button className="btn sm" onClick={() => onToggleCrop()}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+              </svg>
+              {' '}Crop
+            </button>
+          )}
           {cropping && naturalSize && (
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-4)', marginTop: 2 }}>
               {Math.round(naturalSize.w * cropRect.w / 100)}×{Math.round(naturalSize.h * cropRect.h / 100)}px
@@ -438,6 +461,8 @@ export default function PhotoEditorDialog({
             zoom={zoom}
             onRotateLeft={() => setRotation((r) => r - 90)}
             onRotateRight={() => setRotation((r) => r + 90)}
+            onRotationChange={setRotation}
+            onCancelCrop={() => setCropping(false)}
             onFlip={() => setFlipped((x) => !x)}
             onToggleCrop={() => {
               if (cropping) {

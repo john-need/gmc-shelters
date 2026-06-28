@@ -98,6 +98,15 @@ describe('SourceCard', () => {
     expect(screen.getByText('example.com')).toBeInTheDocument();
   });
 
+  it('clicking citation link calls openExternal, not browser nav', () => {
+    const openExternal = jest.spyOn(window.api.shell, 'openExternal');
+    render(<SourceCard s={makeSource({ type: 'journal', url: 'https://example.com' })} {...baseProps} />);
+    const link = document.querySelector('.source-citation a') as HTMLAnchorElement;
+    expect(link).not.toBeNull();
+    fireEvent.click(link);
+    expect(openExternal).toHaveBeenCalledWith(expect.stringContaining('example.com'));
+  });
+
   it('applies "selected" class when selected is true', () => {
     render(<SourceCard s={makeSource()} {...baseProps} selected />);
     expect(document.querySelector('.source-card')).toHaveClass('selected');
