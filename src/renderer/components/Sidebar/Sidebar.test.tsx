@@ -30,7 +30,7 @@ function makeShelter(name: string, overrides: Partial<Shelter> = {}): Shelter {
   };
 }
 
-function renderSidebar(shelters: Shelter[]) {
+function renderSidebar(shelters: Shelter[], advOverrides: Partial<UiState['advancedFilters']> = {}) {
   const store = configureStore({
     reducer: {
       shelters: sheltersReducer,
@@ -61,6 +61,8 @@ function renderSidebar(shelters: Shelter[]) {
           builtBy: '',
           category: '',
           showOnWeb: 'any',
+          noDefaultPhoto: false,
+          ...advOverrides,
         },
         toast: null,
       } as UiState,
@@ -84,6 +86,44 @@ describe('Sidebar', () => {
 
     const names = screen.getAllByText(/Apple Camp|Birch Lodge|Zephyr Shelter/).map((node) => node.textContent);
     expect(names).toEqual(['Apple Camp', 'Birch Lodge', 'Zephyr Shelter']);
+  });
+
+  it('category __none__ shows only shelters with empty/null category', () => {
+    renderSidebar(
+      [
+        makeShelter('Has Category', { id: 1, category: 'Lean-to' }),
+        makeShelter('No Category', { id: 2, category: '' }),
+        makeShelter('Null Category', { id: 3, category: null as unknown as string }),
+      ],
+      { category: '__none__' },
+    );
+    expect(screen.getByText('No Category')).toBeInTheDocument();
+    expect(screen.getByText('Null Category')).toBeInTheDocument();
+    expect(screen.queryByText('Has Category')).not.toBeInTheDocument();
+  });
+
+  it('architecture __none__ shows only shelters with empty/null architecture', () => {
+    renderSidebar(
+      [
+        makeShelter('Has Arch', { id: 1, architecture: 'Log' }),
+        makeShelter('No Arch', { id: 2, architecture: '' }),
+      ],
+      { architecture: '__none__' },
+    );
+    expect(screen.getByText('No Arch')).toBeInTheDocument();
+    expect(screen.queryByText('Has Arch')).not.toBeInTheDocument();
+  });
+
+  it('noDefaultPhoto shows only shelters with no default photo', () => {
+    renderSidebar(
+      [
+        makeShelter('Has Photo', { id: 1, default_photo_id: 42 }),
+        makeShelter('No Photo', { id: 2, default_photo_id: null }),
+      ],
+      { noDefaultPhoto: true },
+    );
+    expect(screen.getByText('No Photo')).toBeInTheDocument();
+    expect(screen.queryByText('Has Photo')).not.toBeInTheDocument();
   });
 
   it('does not render extant/lost section headers in the shelter list', () => {

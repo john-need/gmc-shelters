@@ -12,6 +12,9 @@ import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
 import { registerExportHandlers } from './ipc/export';
 import { registerPublishHandlers } from './ipc/publish';
+import { registerWikiSearchHandlers } from './ipc/wiki-search';
+import { registerAiSettingsHandlers } from './ipc/ai-settings';
+import { registerCollectionsHandlers } from './ipc/collections';
 import { getThumbnailPath, type ThumbnailSizeClass } from './fs/thumbnails';
 
 protocol.registerSchemesAsPrivileged([
@@ -160,6 +163,9 @@ if (!app.requestSingleInstanceLock()) {
     registerCategoryHandlers();
     registerExportHandlers();
     registerPublishHandlers();
+    registerWikiSearchHandlers();
+    registerAiSettingsHandlers();
+    registerCollectionsHandlers();
     createWindow();
   });
 

@@ -7,11 +7,12 @@ export interface AdvancedFilters {
   builtBy: string;
   category: string;
   showOnWeb: 'any' | 'yes' | 'no';
+  noDefaultPhoto: boolean;
 }
 
 export interface UiState {
   sidebarCollapsed: boolean;
-  activeTab: 'shelter' | 'history' | 'sources' | 'photos' | 'markers';
+  activeTab: 'shelter' | 'history' | 'sources' | 'photos' | 'markers' | 'research';
   query: string;
   filter: 'all' | 'extant' | 'gone' | 'gmc';
   advancedFilters: AdvancedFilters;
@@ -30,6 +31,7 @@ const initialState: UiState = {
     builtBy: '',
     category: '',
     showOnWeb: 'any',
+    noDefaultPhoto: false,
   },
   toast: null,
 };

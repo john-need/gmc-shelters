@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, WikiIndexReport } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -91,6 +91,33 @@ const api: ElectronAPI = {
       const handler = (_e: Electron.IpcRendererEvent, p: PublishProgress) => callback(p);
       ipcRenderer.on(CHANNELS.PUBLISH_PROGRESS, handler);
       return () => ipcRenderer.removeListener(CHANNELS.PUBLISH_PROGRESS, handler);
+    },
+  },
+  wiki: {
+    search: (query: string): Promise<WikiSearchResult[]> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_SEARCH, query),
+    openPdf: (resource: string, page: number): Promise<{ ok: boolean }> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_OPEN_PDF, { resource, page }),
+    indexReport: (): Promise<WikiIndexReport | null> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_INDEX_REPORT),
+    getHeader: (resource: string): Promise<string | null> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_GET_HEADER, { resource }),
+    saveHeader: (resource: string, header: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_SAVE_HEADER, { resource, header }),
+  },
+  ai: {
+    getApiKey: (): Promise<string> => ipcRenderer.invoke(CHANNELS.AI_GET_API_KEY),
+    setApiKey: (key: string): Promise<void> => ipcRenderer.invoke(CHANNELS.AI_SET_API_KEY, { key }),
+  },
+  collections: {
+    status: (): Promise<CollectionStatus[]> => ipcRenderer.invoke(CHANNELS.COLLECTIONS_STATUS),
+    run: (request: CollectionsRunRequest): Promise<CollectionsRunResult> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_RUN, request),
+    cancel: (): Promise<void> => ipcRenderer.invoke(CHANNELS.COLLECTIONS_CANCEL),
+    onProgress: (callback: (progress: CollectionsProgress) => void) => {
+      const handler = (_e: Electron.IpcRendererEvent, p: CollectionsProgress) => callback(p);
+      ipcRenderer.on(CHANNELS.COLLECTIONS_PROGRESS, handler);
+      return () => ipcRenderer.removeListener(CHANNELS.COLLECTIONS_PROGRESS, handler);
     },
   },
   shell: {

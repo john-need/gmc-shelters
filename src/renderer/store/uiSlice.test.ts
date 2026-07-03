@@ -21,6 +21,7 @@ describe('uiSlice', () => {
       builtBy: '',
       category: '',
       showOnWeb: 'any',
+      noDefaultPhoto: false,
     },
     toast: null,
   };

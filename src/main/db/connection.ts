@@ -143,4 +143,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 009-add-photo-sort-order.sql');
     }
   }
+
+  // Apply 010-add-categories-timestamps.sql if categories.created column doesn't exist
+  const categoryCreatedCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('categories') WHERE name='created'")
+    .get() as { n: number };
+
+  if (categoryCreatedCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '010-add-categories-timestamps.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 010-add-categories-timestamps.sql');
+    }
+  }
 }

@@ -15,6 +15,8 @@ const mockSharp = {
   rotate: jest.fn().mockReturnThis(),
   flop: jest.fn().mockReturnThis(),
   extract: jest.fn().mockReturnThis(),
+  linear: jest.fn().mockReturnThis(),
+  modulate: jest.fn().mockReturnThis(),
   toBuffer: jest.fn().mockResolvedValue(Buffer.from('transformed')),
 };
 jest.mock('sharp', () => jest.fn(() => mockSharp));
@@ -461,5 +463,39 @@ describe('transformPhoto', () => {
     expect(mockSharp.rotate).toHaveBeenCalledWith(90);
     expect(mockSharp.flop).not.toHaveBeenCalled();
     expect(mockSharp.extract).not.toHaveBeenCalled();
+  });
+
+  it('applies linear() for non-zero contrast', async () => {
+    jest.clearAllMocks();
+    (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
+    await transformPhoto('/path/to/img.jpg', { contrast: 50 });
+    const a = 1.5;
+    const b = 127.5 * (1 - a);
+    expect(mockSharp.linear).toHaveBeenCalledWith(a, b);
+  });
+
+  it('skips linear() when contrast is 0 or absent', async () => {
+    jest.clearAllMocks();
+    (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
+    await transformPhoto('/path/to/img.jpg', { contrast: 0 });
+    expect(mockSharp.linear).not.toHaveBeenCalled();
+    await transformPhoto('/path/to/img.jpg', {});
+    expect(mockSharp.linear).not.toHaveBeenCalled();
+  });
+
+  it('applies modulate() for non-zero brightness', async () => {
+    jest.clearAllMocks();
+    (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
+    await transformPhoto('/path/to/img.jpg', { brightness: 50 });
+    expect(mockSharp.modulate).toHaveBeenCalledWith({ brightness: 1.5 });
+  });
+
+  it('skips modulate() when brightness is 0 or absent', async () => {
+    jest.clearAllMocks();
+    (fsp.writeFile as jest.Mock).mockResolvedValue(undefined);
+    await transformPhoto('/path/to/img.jpg', { brightness: 0 });
+    expect(mockSharp.modulate).not.toHaveBeenCalled();
+    await transformPhoto('/path/to/img.jpg', {});
+    expect(mockSharp.modulate).not.toHaveBeenCalled();
   });
 });

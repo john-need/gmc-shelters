@@ -65,7 +65,76 @@ export const CHANNELS = {
   PUBLISH_CHECK_CREDENTIALS: 'publish:checkCredentials',
   PUBLISH_IMPORT_CREDENTIALS: 'publish:importCredentials',
   PUBLISH_PROGRESS: 'publish:progress',
+  WIKI_SEARCH: 'wiki:search',
+  WIKI_OPEN_PDF: 'wiki:openPdf',
+  WIKI_INDEX_REPORT: 'wiki:indexReport',
+  WIKI_GET_HEADER: 'wiki:getHeader',
+  WIKI_SAVE_HEADER: 'wiki:saveHeader',
+  AI_GET_API_KEY: 'ai:getApiKey',
+  AI_SET_API_KEY: 'ai:setApiKey',
+  COLLECTIONS_STATUS: 'collections:status',
+  COLLECTIONS_RUN: 'collections:run',
+  COLLECTIONS_CANCEL: 'collections:cancel',
+  COLLECTIONS_PROGRESS: 'collections:progress',
 } as const;
+
+export interface CollectionFileStatus {
+  name: string;
+  status: 'missing' | 'raw' | 'clean';
+}
+
+export interface CollectionStatus {
+  name: string;
+  total: number;
+  added: number;
+  cleaned: number;
+  files: CollectionFileStatus[];
+}
+
+export type CollectionsRunMode = 'add' | 'clean';
+
+export interface CollectionsRunRequest {
+  mode: CollectionsRunMode;
+  files: string[]; // repo-relative PDF paths
+  force: boolean;
+}
+
+export interface CollectionsProgress {
+  kind: 'proc' | 'ok' | 'cache' | 'fail' | 'index';
+  file?: string;
+}
+
+export interface CollectionsRunResult {
+  ok: boolean;
+  converted: number;
+  cached: number;
+  failed: number;
+  canceled?: boolean;
+  error?: string;
+}
+
+export interface WikiIndexReport {
+  indexed: number;
+  skipped: number;
+  builtAt: string;
+}
+
+export interface WikiSearchResult {
+  path: string;
+  okf_type: string;
+  title: string;
+  publisher: string;
+  volume: string;
+  edition: string;
+  printed_volume: string;
+  printed_issue: string;
+  resource: string;
+  citation_type: string;
+  kind: 'page' | 'illustration';
+  page: number;
+  image: string;
+  snippet: string;
+}
 
 export interface Architecture {
   id: number;
@@ -238,6 +307,8 @@ export interface PhotoTransformInput {
   rotation?: number;
   flipped?: boolean;
   crop?: { x: number; y: number; width: number; height: number } | null;
+  contrast?: number;
+  brightness?: number;
 }
 
 export type PhotoUpdateInput = Omit<Photo, 'id' | 'shelter_id' | 'created' | 'file_name' | 'file_path'> & PhotoTransformInput;
@@ -449,6 +520,23 @@ export interface ElectronAPI {
     checkCredentials: () => Promise<{ exists: boolean; path: string }>;
     importCredentials: () => Promise<{ ok: boolean; path: string; message?: string } | null>;
     onProgress: (callback: (progress: PublishProgress) => void) => () => void;
+  };
+  wiki: {
+    search: (query: string) => Promise<WikiSearchResult[]>;
+    openPdf: (resource: string, page: number) => Promise<{ ok: boolean }>;
+    indexReport: () => Promise<WikiIndexReport | null>;
+    getHeader: (resource: string) => Promise<string | null>;
+    saveHeader: (resource: string, header: string) => Promise<{ ok: boolean; error?: string }>;
+  };
+  ai: {
+    getApiKey: () => Promise<string>;
+    setApiKey: (key: string) => Promise<void>;
+  };
+  collections: {
+    status: () => Promise<CollectionStatus[]>;
+    run: (request: CollectionsRunRequest) => Promise<CollectionsRunResult>;
+    cancel: () => Promise<void>;
+    onProgress: (callback: (progress: CollectionsProgress) => void) => () => void;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;
