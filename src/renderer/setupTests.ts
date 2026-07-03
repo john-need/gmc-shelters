@@ -77,6 +77,20 @@ const mockApi: ElectronAPI = {
     importCredentials: jest.fn().mockResolvedValue(null),
     onProgress: jest.fn().mockReturnValue(jest.fn()),
   },
+  wiki: {
+    search: jest.fn().mockResolvedValue([]),
+    openPdf: jest.fn().mockResolvedValue({ ok: true }),
+    indexReport: jest.fn().mockResolvedValue(null),
+    getHeader: jest.fn().mockResolvedValue(null),
+    saveHeader: jest.fn().mockResolvedValue({ ok: true }),
+  },
+  ai: { getApiKey: jest.fn().mockResolvedValue(''), setApiKey: jest.fn().mockResolvedValue(undefined) },
+  collections: {
+    status: jest.fn().mockResolvedValue([]),
+    run: jest.fn().mockResolvedValue({ ok: true, converted: 0, cached: 0, failed: 0 }),
+    cancel: jest.fn().mockResolvedValue(undefined),
+    onProgress: jest.fn().mockReturnValue(jest.fn()),
+  },
   shell: { openExternal: noop },
   app: {
     getVersion: jest.fn().mockResolvedValue('0.1.0'),

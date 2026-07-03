@@ -156,6 +156,44 @@ describe('US2 — Save Edits from Dialog', () => {
     });
   });
 
+  it('T010b: Save with non-zero contrast dispatches savePhotoMetadata with contrast value', async () => {
+    mockUpdate.mockResolvedValue(makePhoto());
+    const onSave = jest.fn();
+    renderDialog(makePhoto(), { onSave });
+
+    fireEvent.change(screen.getByRole('slider', { name: /contrast/i }), { target: { value: '40' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    });
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ contrast: 40 }),
+      );
+      expect(onSave).toHaveBeenCalled();
+    });
+  });
+
+  it('T010c: Save with non-zero brightness dispatches savePhotoMetadata with brightness value', async () => {
+    mockUpdate.mockResolvedValue(makePhoto());
+    const onSave = jest.fn();
+    renderDialog(makePhoto(), { onSave });
+
+    fireEvent.change(screen.getByRole('slider', { name: /brightness/i }), { target: { value: '30' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    });
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ brightness: 30 }),
+      );
+      expect(onSave).toHaveBeenCalled();
+    });
+  });
+
   it('T011: Save with no edits calls onSave without dispatching savePhotoMetadata', () => {
     const onSave = jest.fn();
     renderDialog(makePhoto(), { onSave });

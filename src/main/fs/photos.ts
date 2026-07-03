@@ -266,6 +266,13 @@ export async function transformPhoto(
     if (transform.flipped) {
       pipeline = pipeline.flop();
     }
+    if (transform.contrast) {
+      const a = 1 + transform.contrast / 100;
+      pipeline = pipeline.linear(a, 127.5 * (1 - a));
+    }
+    if (transform.brightness) {
+      pipeline = pipeline.modulate({ brightness: 1 + transform.brightness / 100 });
+    }
 
     const buffer = await pipeline.toBuffer();
     await fs.writeFile(filePath, buffer);

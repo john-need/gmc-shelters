@@ -24,6 +24,20 @@ const noopApi: ElectronAPI = {
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   export: { build: noop },
   publish: { preflight: noop, toWeb: () => Promise.resolve(undefined as never), cancel: noop, testConnection: noop, checkCredentials: noop, importCredentials: noop, onProgress: () => () => {} },
+  wiki: {
+    search: () => Promise.resolve([]),
+    openPdf: () => Promise.resolve({ ok: true }),
+    indexReport: () => Promise.resolve(null),
+    getHeader: () => Promise.resolve(null),
+    saveHeader: () => Promise.resolve({ ok: true }),
+  },
+  ai: { getApiKey: () => Promise.resolve(''), setApiKey: noop },
+  collections: {
+    status: () => Promise.resolve([]),
+    run: noop,
+    cancel: noop,
+    onProgress: () => () => {},
+  },
   shell: { openExternal: noop },
   app: {
     getVersion: noop,

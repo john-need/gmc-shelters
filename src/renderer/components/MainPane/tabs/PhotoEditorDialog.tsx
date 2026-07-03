@@ -24,6 +24,8 @@ interface TransformSidebarProps {
   naturalSize: { w: number; h: number } | null;
   cropRect: { x: number; y: number; w: number; h: number };
   zoom: number;
+  contrast: number;
+  brightness: number;
   onRotateLeft: () => void;
   onRotateRight: () => void;
   onRotationChange: (deg: number) => void;
@@ -32,15 +34,17 @@ interface TransformSidebarProps {
   onCancelCrop: () => void;
   onZoomOut: () => void;
   onZoomIn: () => void;
+  onContrastChange: (v: number) => void;
+  onBrightnessChange: (v: number) => void;
   setCropRect: React.Dispatch<React.SetStateAction<{ x: number; y: number; w: number; h: number }>>;
   setCrop: (v: { x: number; y: number; width: number; height: number } | null) => void;
   setCropping: (v: boolean) => void;
 }
 
 function TransformSidebar({
-  rotation, flipped, cropping, naturalSize, cropRect, zoom,
+  rotation, flipped, cropping, naturalSize, cropRect, zoom, contrast, brightness,
   onRotateLeft, onRotateRight, onRotationChange, onFlip, onToggleCrop, onCancelCrop,
-  onZoomOut, onZoomIn,
+  onZoomOut, onZoomIn, onContrastChange, onBrightnessChange,
 }: TransformSidebarProps) {
   return (
     <div className="photo-editor-sidebar">
@@ -116,6 +120,56 @@ function TransformSidebar({
           <button className="btn icon sm" onClick={onZoomIn}>+</button>
         </div>
       </div>
+
+      <div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+          Contrast
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="range"
+            min={-100}
+            max={100}
+            value={contrast}
+            aria-label="Contrast"
+            onChange={(e) => onContrastChange(parseInt(e.target.value, 10))}
+            style={{ flex: 1 }}
+          />
+          <input
+            type="number"
+            min={-100}
+            max={100}
+            value={contrast}
+            onChange={(e) => onContrastChange(Math.max(-100, Math.min(100, parseInt(e.target.value, 10) || 0)))}
+            style={{ width: 44, fontFamily: 'var(--font-mono)', fontSize: 10, textAlign: 'center' }}
+          />
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>
+          Brightness
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="range"
+            min={-100}
+            max={100}
+            value={brightness}
+            aria-label="Brightness"
+            onChange={(e) => onBrightnessChange(parseInt(e.target.value, 10))}
+            style={{ flex: 1 }}
+          />
+          <input
+            type="number"
+            min={-100}
+            max={100}
+            value={brightness}
+            onChange={(e) => onBrightnessChange(Math.max(-100, Math.min(100, parseInt(e.target.value, 10) || 0)))}
+            style={{ width: 44, fontFamily: 'var(--font-mono)', fontSize: 10, textAlign: 'center' }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -180,6 +234,8 @@ export default function PhotoEditorDialog({
 
   const [rotation, setRotation] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [contrast, setContrast] = useState(0);
+  const [brightness, setBrightness] = useState(0);
   const [cropping, setCropping] = useState(false);
   const [cropRect, setCropRect] = useState({ x: 12, y: 14, w: 70, h: 68 });
   const [crop, setCrop] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -287,7 +343,7 @@ export default function PhotoEditorDialog({
 
   // FR-004: Save persists only image edits; zero-delta is a no-op close (FR-009)
   const handleSave = async () => {
-    if (rotation === 0 && !flipped && crop === null) {
+    if (rotation === 0 && !flipped && crop === null && contrast === 0 && brightness === 0) {
       onSave();
       return;
     }
@@ -309,6 +365,8 @@ export default function PhotoEditorDialog({
         rotation: rotation % 360,
         flipped,
         crop,
+        contrast,
+        brightness,
       }));
       if (savePhotoMetadata.fulfilled.match(result)) {
         onSave();
@@ -396,6 +454,10 @@ export default function PhotoEditorDialog({
                 width: '90%',
                 height: '90%',
                 transform: `rotate(${rotation}deg) scale(${zoom}) scaleX(${flipped ? -1 : 1})`,
+                filter: [
+                  contrast !== 0 && `contrast(${1 + contrast / 100})`,
+                  brightness !== 0 && `brightness(${1 + brightness / 100})`,
+                ].filter(Boolean).join(' ') || undefined,
                 position: 'relative',
                 overflow: cropping ? 'visible' : 'hidden',
               }}
@@ -459,9 +521,13 @@ export default function PhotoEditorDialog({
             naturalSize={naturalSize}
             cropRect={cropRect}
             zoom={zoom}
+            contrast={contrast}
+            brightness={brightness}
             onRotateLeft={() => setRotation((r) => r - 90)}
             onRotateRight={() => setRotation((r) => r + 90)}
             onRotationChange={setRotation}
+            onContrastChange={setContrast}
+            onBrightnessChange={setBrightness}
             onCancelCrop={() => setCropping(false)}
             onFlip={() => setFlipped((x) => !x)}
             onToggleCrop={() => {

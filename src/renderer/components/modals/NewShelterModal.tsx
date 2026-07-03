@@ -27,7 +27,7 @@ export default function NewShelterModal({ onClose }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || year === null) return;
     const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
     const result = await dispatch(
       createShelter({ name: name.trim(), start_year: +year, category, is_gmc: isGmc, sheltersRoot }),

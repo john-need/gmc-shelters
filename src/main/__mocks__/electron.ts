@@ -12,6 +12,7 @@ const app = {
 class BrowserWindowMock {
   static getAllWindows = jest.fn(() => []);
   static fromWebContents = jest.fn();
+  static instances: BrowserWindowMock[] = [];
 
   loadURL = jest.fn();
   loadFile = jest.fn();
@@ -30,6 +31,7 @@ class BrowserWindowMock {
   };
 
   constructor(_options?: unknown) {
+    BrowserWindowMock.instances.push(this);
     BrowserWindowMock.fromWebContents.mockImplementation((webContents: unknown) =>
       webContents === this.webContents ? this : null,
     );

@@ -10,6 +10,7 @@ import ShelterTab from './tabs/ShelterTab';
 import HistoryTab from './tabs/HistoryTab';
 import PhotosTab from './tabs/PhotosTab';
 import SourcesTab from './tabs/SourcesTab';
+import ResearchTab from './tabs/ResearchTab';
 import MapMarkersTab from './tabs/MapMarkersTab';
 
 const EMPTY: never[] = [];
@@ -88,6 +89,16 @@ export default function MainPane() {
       count: sources.length,
     },
     {
+      id: 'research' as const,
+      label: 'Research',
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+      ),
+      count: null,
+    },
+    {
       id: 'photos' as const,
       label: 'Photos',
       icon: (
@@ -152,6 +163,7 @@ export default function MainPane() {
         {activeTab === 'shelter' && <ShelterTab />}
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'sources' && <SourcesTab />}
+        {activeTab === 'research' && <ResearchTab />}
         {activeTab === 'photos' && <PhotosTab />}
         {activeTab === 'markers' && s && <MapMarkersTab shelterId={s.id} shelter={s} />}
       </div>

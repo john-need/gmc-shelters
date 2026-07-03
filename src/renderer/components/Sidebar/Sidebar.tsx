@@ -51,6 +51,7 @@ function AdvancedFilterPanel({ adv, advActiveCount, archOptions, catOptions, set
           onChange={(e) => setAdvKey('category')(e.target.value)}
         >
           <option value="">Any category</option>
+          <option value="__none__">No category</option>
           {catOptions.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -65,6 +66,7 @@ function AdvancedFilterPanel({ adv, advActiveCount, archOptions, catOptions, set
           onChange={(e) => setAdvKey('architecture')(e.target.value)}
         >
           <option value="">Any architecture</option>
+          <option value="__none__">No architecture</option>
           {archOptions.map((a) => (
             <option key={a} value={a}>{a}</option>
           ))}
@@ -94,6 +96,17 @@ function AdvancedFilterPanel({ adv, advActiveCount, archOptions, catOptions, set
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="adv-field">
+        <label className="adv-checkbox">
+          <input
+            type="checkbox"
+            checked={adv.noDefaultPhoto}
+            onChange={(e) => setAdvKey('noDefaultPhoto')(e.target.checked)}
+          />
+          No default photo
+        </label>
       </div>
 
       {advActiveCount > 0 && (
@@ -136,6 +149,7 @@ export default function Sidebar() {
     if (adv.builtBy.trim()) n++;
     if (adv.category) n++;
     if (adv.showOnWeb !== 'any') n++;
+    if (adv.noDefaultPhoto) n++;
     return n;
   }, [adv]);
 
@@ -148,6 +162,7 @@ export default function Sidebar() {
         builtBy: '',
         category: '',
         showOnWeb: 'any',
+        noDefaultPhoto: false,
       }),
     );
 
@@ -182,12 +197,15 @@ export default function Sidebar() {
       const ymax = +adv.yearMax;
       xs = xs.filter((s) => (s.start_year ?? 0) <= ymax);
     }
-    if (adv.architecture) xs = xs.filter((s) => s.architecture === adv.architecture);
+    if (adv.architecture === '__none__') xs = xs.filter((s) => !s.architecture);
+    else if (adv.architecture) xs = xs.filter((s) => s.architecture === adv.architecture);
     if (adv.builtBy.trim()) {
       const q = adv.builtBy.toLowerCase().trim();
       xs = xs.filter((s) => (s.built_by || '').toLowerCase().includes(q));
     }
-    if (adv.category) xs = xs.filter((s) => s.category === adv.category);
+    if (adv.category === '__none__') xs = xs.filter((s) => !s.category);
+    else if (adv.category) xs = xs.filter((s) => s.category === adv.category);
+    if (adv.noDefaultPhoto) xs = xs.filter((s) => !s.default_photo_id);
     if (adv.showOnWeb === 'yes') xs = xs.filter((s) => s.show_on_web);
     if (adv.showOnWeb === 'no') xs = xs.filter((s) => !s.show_on_web);
     return xs;

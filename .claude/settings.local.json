@@ -97,7 +97,15 @@
       "Bash(sed -n '1112,1132p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
       "Bash(sed -n '1140,1161p' /Users/johnneed/Projects/gmc-shelters/src/renderer/components/MainPane/tabs/PhotosTab.tsx)",
       "Bash(.specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"shelter-slug-rename\" \"Allow safe shelter slug renames\")",
-      "Bash(xargs ls)"
+      "Bash(xargs ls)",
+      "Bash(pip show *)",
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "Skill(run)",
+      "Bash(node_modules/.bin/electron --version)",
+      "Bash(./node_modules/.bin/electron *)",
+      "Bash(npx playwright *)",
+      "Bash(awk '{print $1}')"
     ]
   }
 }
