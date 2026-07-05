@@ -327,6 +327,32 @@ def load_collection_meta(collection_dir: Path) -> dict:
     return meta
 
 
+_META_CITATION_RE = re.compile(r'^citation_type: ".*"$', re.MULTILINE)
+
+
+def set_collection_citation_type(collection_dir: Path, citation_type: str) -> None:
+    """Set the collection-level citation_type default in metadata.yaml.
+
+    Targeted line patch (mirrors scripts/patch_citation_types.py's technique
+    for markdown frontmatter) — never a full parse/re-serialize — so
+    `organization:`, `files:`, and comments are preserved untouched. Only
+    touches this collection's metadata.yaml; never touches wiki/ output.
+    """
+    path = collection_dir / 'metadata.yaml'
+    new_line = f'citation_type: "{citation_type}"'
+    if not path.exists():
+        collection_dir.mkdir(parents=True, exist_ok=True)
+        path.write_text(new_line + '\n', encoding='utf-8')
+        return
+
+    text = path.read_text(encoding='utf-8')
+    if _META_CITATION_RE.search(text):
+        path.write_text(_META_CITATION_RE.sub(new_line, text, count=1), encoding='utf-8')
+    else:
+        sep = '' if text.endswith('\n') or not text else '\n'
+        path.write_text(text + sep + new_line + '\n', encoding='utf-8')
+
+
 def okf_header(*, collection: str, stem: str, pdf_relpath: str, page_count: int,
                coll_meta: dict, timestamp: str | None = None) -> str:
     okf_type = coll_meta.get('type') or FOLDER_TYPES.get(collection, 'Publication')

@@ -5,395 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="640b6f65-20cc-436a-b3de-e207754fc91e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/collections/Books/Marjorie-Holmes-History-GMC-BTV.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Books/Trails and Summits of the Green Mountains.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Books/history-of-stratton-vt.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1922_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1923_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1923_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1924_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1924_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1925_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1925_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1926_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1926_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1927_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1928_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1928_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1928_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1928_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1929_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1929_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1929_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1929_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1930_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1930_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1930_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1930_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1930_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1931_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1931_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1931_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1931_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1931_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1932_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1932_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1932_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1932_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1933_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1933_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1933_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1934_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1934_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1935_01_Jan.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1935_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1935_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1936_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1936_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1936_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1936_12_Dec.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1937_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1937_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1937_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1938_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1938_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1938_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1939_01_Jan.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1939_03_Mar.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1939_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1939_10_Oct.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1940_03_Mar.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1940_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1940_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1941_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1941_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1941_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1941_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1942_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1942_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1942_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1942_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1943_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1943_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1944_04_Apr.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1944_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1944_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1945_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1945_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1945_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1945_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1946_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1946_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1946_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1946_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1947_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1947_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1947_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1947_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1948_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1948_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1948_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1948_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1949_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1949_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1949_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1949_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1950_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1950_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1950_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1950_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1951_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1951_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1951_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1951_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1952_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1952_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1952_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1952_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1953_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1953_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1953_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1953_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1954_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1954_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1954_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1954_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1955_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1955_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1955_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1955_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1956_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1956_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1956_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1956_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1957_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1957_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1957_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1957_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1958_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1958_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1958_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1958_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1959_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1959_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1959_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1959_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1960_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1960_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1960_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1960_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1961_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1961_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1961_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1961_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1962_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1962_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1962_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1962_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1963_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1963_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1963_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1963_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1964_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1964_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1964_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1964_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1965_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1965_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1965_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1965_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1966_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1966_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1966_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1966_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1967_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1967_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1967_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1967_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1968_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1968_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1968_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1968_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1969_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1969_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1969_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1969_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1970_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1970_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1970_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1970_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1971_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1971_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1971_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1971_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1972_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1972_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1972_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1972_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1973_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1973_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1973_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1973_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1974_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1974_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1974_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1974_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1975_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1975_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1975_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1975_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1976_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1976_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1976_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1976_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1977_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1977_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1977_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1977_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1978_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1978_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1978_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1978_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1979_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1979_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1979_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1979_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1980_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1980_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1980_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1980_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1981_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1981_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1981_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1981_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1982_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1982_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1982_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1982_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1983_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1983_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1983_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1983_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1984_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1984_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1984_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1984_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1985_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1985_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1986_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1986_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1986_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1986_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1987_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1987_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1987_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1987_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1988_02_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1988_05_May.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1988_08_Aug.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1988_11_Nov.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Long Trail News/1989_01_Feb.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2020_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2021_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2021_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2021_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2022_Autumn.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2023_Autumn.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2023_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2023_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2023_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2024_Autumn.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2024_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2024_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2025_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2025_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2025_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/SteppingStone_2026_SpringSummer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/Stepping Stone (Bennington)/download_stepping_stone.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_1999_April.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_1999_August.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_1999_December.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_1999_June.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_1999_October.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2000_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2000_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2000_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2000_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2001_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2001_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2001_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2001_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2002_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2002_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2002_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2002_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2003_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2003_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2003_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2003_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2004_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2004_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2004_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2004_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2005_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2005_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2005_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2005_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2006_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2006_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2006_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2006_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2007_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2007_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2007_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2007_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2008_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2008_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2008_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2008_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2009_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2009_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2009_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2009_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2010_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2010_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2010_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2010_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2011_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2011_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2011_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2011_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2012_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2012_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2012_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2013_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2013_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2013_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2013_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2014_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2014_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2014_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2014_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2015_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2015_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2015_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2016_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2016_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2016_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2016_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2017_Fall-1.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2017_Fall-2.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2017_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2017_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2017_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2018_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2018_Spring-1.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2018_Spring-2.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2018_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2019_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2019_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2020_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2020_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2020_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2020_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2021_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2021_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2021_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2021_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2022_Fall.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2022_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2022_Summer.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2022_Winter.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2023_Spring.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/collections/The Trail Talk (Connecticut)/Trail_Talk_2023_Winter.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gmc-shelters.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gmc-shelters.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.specify/feature.json" beforeDir="false" afterPath="$PROJECT_DIR$/.specify/feature.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" afterPath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__mocks__/electron.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/db/connection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/db/connection.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/fs/photos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/fs/photos.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/preload.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/gmc_shelters.sqlite-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/lib/collection_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/lib/collection_status.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/lib/wiki_convert.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/lib/wiki_convert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/collections.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/collections.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/collections.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/collections.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/wiki-search.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/wiki-search.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/wiki-search.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/wiki-search.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/preload.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/AppShell/AppHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/MainPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/MainPane.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/MainPane/tabs/PhotoEditorDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Settings/SettingsLayout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Settings/SettingsLayout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Sidebar/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/modals/NewShelterModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/Settings/CollectionsManagementPage.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Settings/CollectionsManagementPage.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/Settings/CollectionsManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/Settings/CollectionsManagementPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/hooks/useIpc.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/setupTests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/setupTests.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/uiSlice.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/uiSlice.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/uiSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/uiSlice.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/shared/ipc-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/shared/ipc-types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/test_collection_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/test_collection_status.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/test_wiki_convert.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/test_wiki_convert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wiki/books/Long Trail System Shelter History.md" beforeDir="false" afterPath="$PROJECT_DIR$/wiki/books/Long Trail System Shelter History.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -406,7 +39,7 @@
     </persistenceIdMap>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="4639" />
+    <option name="cachedIndexableFilesCount" value="5220" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -448,7 +81,7 @@
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
     &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;tweaks2&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;014-wiki-header-schema-form&quot;,
     &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/johnneed/Projects/gmc-shelters&quot;,
@@ -457,7 +90,9 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.lint.executor&quot;: &quot;Run&quot;,
     &quot;npm.start.executor&quot;: &quot;Run&quot;,
+    &quot;npm.test.executor&quot;: &quot;Run&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;ts.external.directory.path&quot;: &quot;/Users/johnneed/Projects/gmc-shelters/node_modules/typescript/lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
@@ -551,6 +186,19 @@
       </EXTENSION>
       <method v="2" />
     </configuration>
+    <configuration name="test" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="test" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <EXTENSION ID="com.intellij.javascript.debugger.execution.StartBrowserRunConfigurationExtension">
+        <browser with-js-debugger="true" />
+      </EXTENSION>
+      <method v="2" />
+    </configuration>
     <configuration name="typecheck" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -572,6 +220,7 @@
       <item itemvalue="npm.rebuild:electron" />
       <item itemvalue="npm.typecheck" />
       <item itemvalue="npm.start" />
+      <item itemvalue="npm.test" />
     </list>
   </component>
   <component name="SharedIndexes">
@@ -592,6 +241,8 @@
       <workItem from="1782602760446" duration="31706000" />
       <workItem from="1782992907044" duration="10198000" />
       <workItem from="1783005828414" duration="18043000" />
+      <workItem from="1783086641902" duration="2978000" />
+      <workItem from="1783217549145" duration="1259000" />
     </task>
     <servers />
   </component>

@@ -5,7 +5,8 @@ import os from 'os';
 import path from 'path';
 import Database from 'better-sqlite3';
 import { CHANNELS } from '@shared/ipc-types';
-import type { WikiSearchResult } from '@shared/ipc-types';
+import type { WikiSearchResult, WikiHeaderPayload } from '@shared/ipc-types';
+import { parseFrontmatter, serializeFrontmatter } from './wiki-search';
 
 type ElectronMock = {
   ipcMain: { handle: jest.Mock };
@@ -157,48 +158,146 @@ describe('ipc/wiki-search', () => {
     expect(await handler(null)).toBeNull();
   });
 
-  function writeWikiDoc(resource: string, extra = '') {
+  function writeWikiDoc(resource: string, frontmatter: string, extra = '') {
     const collection = resource.split('/')[1];
     const stem = path.basename(resource, '.pdf');
     const mdDir = path.join(tmpDir, 'wiki', collection);
     fs.mkdirSync(mdDir, { recursive: true });
     fs.writeFileSync(
       path.join(mdDir, `${stem}.md`),
-      `---\ntype: "Newsletter"\ntitle: "Long Trail News"\nresource: "${resource}"\n---\n\n<!-- page: 1 -->\nBody.\n${extra}`,
+      `${frontmatter}\n<!-- page: 1 -->\nBody.\n${extra}`,
     );
   }
 
-  it('WIKI_GET_HEADER returns the frontmatter block for an added file', async () => {
-    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf');
+  const FULL_HEADER = [
+    '---',
+    'type: "Newsletter"',
+    'citation_type: "magazine"',
+    'title: "Long Trail News"',
+    'description: "Long Trail News, April 1923."',
+    'resource: "collections/Long Trail News/1923_04_Apr.pdf"',
+    'timestamp: "2026-07-02T00:00:00Z"',
+    'publisher: "Green Mountain Club"',
+    'pages: "8"',
+    'language: "en"',
+    '---',
+    '',
+  ].join('\n');
+
+  describe('parseFrontmatter / serializeFrontmatter', () => {
+    it('parses a fenced frontmatter block into fields, stripping quotes', () => {
+      const { fields } = parseFrontmatter('---\ntitle: "Hello"\npages: "3"\n---\nbody text');
+      expect(fields).toEqual({ title: 'Hello', pages: '3' });
+    });
+
+    it('returns no fields for text with no frontmatter fences', () => {
+      expect(parseFrontmatter('just a body, no fences').fields).toEqual({});
+    });
+
+    it('serializes fields into a fenced block with one key/value line each', () => {
+      const block = serializeFrontmatter({ title: 'Hello', pages: '3' });
+      expect(block).toBe('---\ntitle: "Hello"\npages: "3"\n---\n');
+    });
+
+    it('round-trips values containing embedded quotes', () => {
+      const fields = { title: 'A "Quoted" Title' };
+      expect(parseFrontmatter(serializeFrontmatter(fields)).fields).toEqual(fields);
+    });
+  });
+
+  it('WIKI_GET_HEADER returns a structured payload for an added file', async () => {
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
     register();
     const handler = getHandler(CHANNELS.WIKI_GET_HEADER);
-    const header = await handler(null, { resource: 'collections/Long Trail News/1923_04_Apr.pdf' });
-    expect(header).toContain('type: "Newsletter"');
-    expect(header).toMatch(/^---\n[\s\S]*\n---\n$/);
-    expect(header).not.toContain('Body.');
+    const payload = (await handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+    })) as WikiHeaderPayload;
+    expect(payload.citationType).toBe('magazine');
+    expect(payload.fields.title).toBe('Long Trail News');
+    expect(payload.fields.publisher).toBe('Green Mountain Club');
+    expect(payload.preserved).toEqual({
+      type: 'Newsletter',
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+      timestamp: '2026-07-02T00:00:00Z',
+      pages: '8',
+    });
   });
 
   it('WIKI_GET_HEADER returns null when the file has not been added to the wiki yet', async () => {
     register();
     const handler = getHandler(CHANNELS.WIKI_GET_HEADER);
-    const header = await handler(null, { resource: 'collections/Long Trail News/never-added.pdf' });
-    expect(header).toBeNull();
+    const payload = await handler(null, { resource: 'collections/Long Trail News/never-added.pdf' });
+    expect(payload).toBeNull();
   });
 
-  it('WIKI_SAVE_HEADER rewrites the frontmatter and preserves the body', async () => {
-    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf');
+  it('WIKI_GET_HEADER still returns a payload when the on-disk citation type is unrecognized', async () => {
+    const header = FULL_HEADER.replace('citation_type: "magazine"', 'citation_type: "not-a-real-type"');
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', header);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_GET_HEADER);
+    const payload = (await handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+    })) as WikiHeaderPayload;
+    expect(payload.citationType).toBe('not-a-real-type');
+    expect(payload.fields.title).toBe('Long Trail News');
+  });
+
+  it('WIKI_GET_HEADER returns an empty string for a property missing from the on-disk header', async () => {
+    const header = FULL_HEADER.split('\n').filter((l) => !l.startsWith('publisher:')).join('\n');
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', header);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_GET_HEADER);
+    const payload = (await handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+    })) as WikiHeaderPayload;
+    expect(payload.fields.publisher).toBe('');
+  });
+
+  it('WIKI_SAVE_HEADER validates, rewrites the frontmatter, and preserves the body', async () => {
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
     register();
     const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
     const result = await handler(null, {
       resource: 'collections/Long Trail News/1923_04_Apr.pdf',
-      header: '---\ntype: "Magazine"\ntitle: "Long Trail News"\n---\n',
+      citationType: 'magazine',
+      fields: {
+        title: 'Long Trail News — Revised',
+        description: 'Long Trail News, April 1923.',
+        language: 'en',
+        publisher: 'Green Mountain Club',
+      },
     });
     expect(result).toEqual({ ok: true });
     const saved = fs.readFileSync(
       path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
     );
-    expect(saved).toContain('type: "Magazine"');
+    expect(saved).toContain('title: "Long Trail News — Revised"');
+    // preserved fields round-trip unchanged
+    expect(saved).toContain('type: "Newsletter"');
+    expect(saved).toContain('resource: "collections/Long Trail News/1923_04_Apr.pdf"');
+    expect(saved).toContain('timestamp: "2026-07-02T00:00:00Z"');
+    expect(saved).toContain('pages: "8"');
     expect(saved).toContain('Body.');
+  });
+
+  it('WIKI_SAVE_HEADER rejects a payload missing a required property and does not modify the file', async () => {
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
+    const before = fs.readFileSync(
+      path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
+    );
+    const result = (await handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+      citationType: 'magazine',
+      fields: { title: '', description: 'x', language: 'en', publisher: 'GMC' },
+    })) as { ok: boolean; errors?: string[] };
+    expect(result.ok).toBe(false);
+    expect(result.errors).toBeDefined();
+    const after = fs.readFileSync(
+      path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
+    );
+    expect(after).toBe(before);
   });
 
   it('WIKI_SAVE_HEADER fails when the file has not been added to the wiki yet', async () => {
@@ -206,19 +305,9 @@ describe('ipc/wiki-search', () => {
     const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
     const result = await handler(null, {
       resource: 'collections/Long Trail News/never-added.pdf',
-      header: '---\ntype: "Magazine"\n---\n',
+      citationType: 'magazine',
+      fields: { title: 'x', description: 'x', language: 'en' },
     });
     expect(result).toEqual({ ok: false, error: expect.stringContaining('not been added') });
-  });
-
-  it('WIKI_SAVE_HEADER rejects a header missing the --- frontmatter fences', async () => {
-    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf');
-    register();
-    const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
-    const result = (await handler(null, {
-      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
-      header: 'type: "Magazine"',
-    })) as { ok: boolean };
-    expect(result.ok).toBe(false);
   });
 });

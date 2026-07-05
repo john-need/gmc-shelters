@@ -1,6 +1,27 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import CollectionsManagementPage from './CollectionsManagementPage';
-import type { CollectionStatus } from '../../../shared/ipc-types';
+import type { CollectionStatus, WikiHeaderPayload } from '../../../shared/ipc-types';
+
+const MAGAZINE_HEADER: WikiHeaderPayload = {
+  citationType: 'magazine',
+  fields: {
+    title: 'Long Trail News',
+    description: 'Long Trail News, December 1922.',
+    language: 'en',
+    author: '',
+    publisher: 'Green Mountain Club',
+    edition: 'December',
+    volume: '1922',
+    printed_volume: '5',
+    printed_issue: '2',
+  },
+  preserved: {
+    type: 'Newsletter',
+    resource: 'collections/long-trail-news/a_clean.pdf',
+    timestamp: '2026-07-02T00:00:00Z',
+    pages: '6',
+  },
+};
 
 const STATUS: CollectionStatus[] = [
   {
@@ -8,6 +29,7 @@ const STATUS: CollectionStatus[] = [
     total: 3,
     added: 2,
     cleaned: 1,
+    citationType: null,
     files: [
       { name: 'a_clean.pdf', status: 'clean' },
       { name: 'b_raw.pdf', status: 'raw' },
@@ -63,6 +85,26 @@ describe('CollectionsManagementPage', () => {
     expect(screen.getByText('cleaned')).toBeInTheDocument();
     expect(screen.getByText('needs cleanup')).toBeInTheDocument();
     expect(screen.getByText('needs addition')).toBeInTheDocument();
+  });
+
+  it('shows a citation type select per collection, pre-filled from its current setting', async () => {
+    (window.api.collections.status as jest.Mock).mockResolvedValue([
+      { ...STATUS[0], citationType: 'magazine' },
+    ]);
+    (window.api.collections.setCitationType as jest.Mock).mockResolvedValue({ ok: true });
+    render(<CollectionsManagementPage />);
+    await screen.findByText('long-trail-news');
+    expect(screen.getByLabelText(/citation type.*long-trail-news/i)).toHaveValue('magazine');
+
+    fireEvent.change(screen.getByLabelText(/citation type.*long-trail-news/i), { target: { value: 'report' } });
+    await waitFor(() => {
+      expect(window.api.collections.setCitationType).toHaveBeenCalledWith('long-trail-news', 'report');
+    });
+  });
+
+  it('shows a placeholder when a collection has no citation type set yet', async () => {
+    await renderPage();
+    expect(screen.getByLabelText(/citation type.*long-trail-news/i)).toHaveValue('');
   });
 
   it('runs addition immediately when only pending files are selected', async () => {
@@ -223,43 +265,111 @@ describe('CollectionsManagementPage', () => {
     expect(window.api.wiki.getHeader).not.toHaveBeenCalled();
   });
 
-  it('clicking Edit header on an added file opens the header editor with its contents', async () => {
-    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue('---\ntype: "Newsletter"\n---\n');
+  async function openHeaderEditor() {
     await renderPage();
     fireEvent.click(screen.getByText('long-trail-news'));
     const row = (await screen.findByText('a_clean.pdf')).closest('div')!;
     fireEvent.click(within(row).getByRole('button', { name: /edit header/i }));
+  }
+
+  it('renders one labeled control per applicable header property instead of a single text block', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
     expect(window.api.wiki.getHeader).toHaveBeenCalledWith('collections/long-trail-news/a_clean.pdf');
-    expect(await screen.findByRole('textbox')).toHaveValue('---\ntype: "Newsletter"\n---\n');
+    expect(await screen.findByLabelText(/^title/i)).toHaveValue('Long Trail News');
+    expect(screen.getByLabelText(/description/i)).toHaveValue('Long Trail News, December 1922.');
+    expect(screen.getByLabelText(/^publisher/i)).toHaveValue('Green Mountain Club');
+    expect(screen.getAllByRole('textbox').length).toBeGreaterThan(1);
+    // preserved/system-derived fields are shown as text, not editable controls
+    expect(screen.getByText(/collections\/long-trail-news\/a_clean\.pdf/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^resource$/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^type$/i)).not.toBeInTheDocument();
   });
 
-  it('saves the edited header and closes the modal', async () => {
-    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue('---\ntype: "Newsletter"\n---\n');
+  it('still opens and flags an unrecognized on-disk citation type instead of erroring', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue({
+      ...MAGAZINE_HEADER,
+      citationType: 'not-a-real-type',
+    });
+    await openHeaderEditor();
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(/unrecognized/i);
+    expect(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i })).toBeDisabled();
+  });
+
+  it('blocks Save when a required field is cleared', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    fireEvent.change(await screen.findByLabelText(/^publisher/i), { target: { value: '' } });
+    const saveButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i });
+    expect(saveButton).toBeDisabled();
+    fireEvent.click(saveButton);
+    expect(window.api.wiki.saveHeader).not.toHaveBeenCalled();
+  });
+
+  it('blocks Save when a number field holds a non-numeric value', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    fireEvent.change(await screen.findByLabelText(/printed volume/i), { target: { value: 'not-a-number' } });
+    expect(await screen.findByText(/printed_volume.*must be a number/i)).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i })).toBeDisabled();
+  });
+
+  it('saves exactly the schema-applicable fields and closes the modal', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
     (window.api.wiki.saveHeader as jest.Mock).mockResolvedValue({ ok: true });
-    await renderPage();
-    fireEvent.click(screen.getByText('long-trail-news'));
-    const row = (await screen.findByText('a_clean.pdf')).closest('div')!;
-    fireEvent.click(within(row).getByRole('button', { name: /edit header/i }));
-    const textarea = await screen.findByRole('textbox');
-    fireEvent.change(textarea, { target: { value: '---\ntype: "Magazine"\n---\n' } });
+    await openHeaderEditor();
+    fireEvent.change(await screen.findByLabelText(/^title/i), { target: { value: 'Long Trail News (Revised)' } });
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i }));
     await waitFor(() => expect(window.api.wiki.saveHeader).toHaveBeenCalledWith(
-      'collections/long-trail-news/a_clean.pdf', '---\ntype: "Magazine"\n---\n',
+      'collections/long-trail-news/a_clean.pdf',
+      { citationType: 'magazine', fields: { ...MAGAZINE_HEADER.fields, title: 'Long Trail News (Revised)' } },
     ));
-    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('shows an error and keeps the modal open when saving the header fails', async () => {
-    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue('---\ntype: "Newsletter"\n---\n');
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
     (window.api.wiki.saveHeader as jest.Mock).mockResolvedValue({ ok: false, error: 'disk is full' });
-    await renderPage();
-    fireEvent.click(screen.getByText('long-trail-news'));
-    const row = (await screen.findByText('a_clean.pdf')).closest('div')!;
-    fireEvent.click(within(row).getByRole('button', { name: /edit header/i }));
-    await screen.findByRole('textbox');
+    await openHeaderEditor();
+    await screen.findByLabelText(/^title/i);
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i }));
     expect(await screen.findByText(/disk is full/i)).toBeInTheDocument();
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('hides fields not applicable to a newly selected citation type', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    await screen.findByLabelText(/^title/i);
+    expect(screen.getByLabelText(/^volume/i)).toBeInTheDocument();
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/citation type/i), { target: { value: 'map' } });
+    expect(screen.queryByLabelText(/^volume/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/printed volume/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/printed issue/i)).not.toBeInTheDocument();
+  });
+
+  it('retains a value in a field shared between the old and new citation type', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    await screen.findByLabelText(/^title/i);
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/citation type/i), { target: { value: 'map' } });
+    expect(screen.getByLabelText(/^title/i)).toHaveValue('Long Trail News');
+  });
+
+  it('does not send a value from a field the newly selected citation type marks n/a', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    (window.api.wiki.saveHeader as jest.Mock).mockResolvedValue({ ok: true });
+    await openHeaderEditor();
+    await screen.findByLabelText(/^title/i);
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/citation type/i), { target: { value: 'map' } });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i }));
+    await waitFor(() => expect(window.api.wiki.saveHeader).toHaveBeenCalled());
+    const [, payload] = (window.api.wiki.saveHeader as jest.Mock).mock.calls[0];
+    expect(payload.fields.volume).toBeUndefined();
+    expect(payload.fields.printed_volume).toBeUndefined();
+    expect(payload.fields.printed_issue).toBeUndefined();
+    expect(payload.fields.title).toBe('Long Trail News');
   });
 
   it('refreshes status after a run completes', async () => {

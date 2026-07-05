@@ -14,7 +14,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.lib.wiki_convert import PIPELINE_VERSION
+from scripts.lib.wiki_convert import PIPELINE_VERSION, load_collection_meta
 
 MEMO_NAME = 'hashes.json'
 EXCLUDED_DIRS = {'originals', '__pycache__'}
@@ -73,6 +73,7 @@ def scan(repo_root: Path) -> list[dict]:
             'added': sum(f['status'] != 'missing' for f in files),
             'cleaned': sum(f['status'] == 'clean' for f in files),
             'files': files,
+            'citation_type': load_collection_meta(folder).get('citation_type'),
         })
 
     cache_dir.mkdir(parents=True, exist_ok=True)

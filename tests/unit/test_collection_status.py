@@ -84,3 +84,20 @@ def test_hidden_dirs_and_originals_excluded(tmp_path: Path):
     assert 'long-trail-news' in names
     all_files = [f['name'] for c in result for f in c['files']]
     assert 'combined.pdf' not in all_files
+
+
+def test_citation_type_included_when_set_in_metadata(tmp_path: Path):
+    repo = setup_repo(tmp_path)
+    (repo / 'collections' / 'long-trail-news' / 'metadata.yaml').write_text(
+        'organization: "Green Mountain Club"\ncitation_type: "magazine"\n'
+    )
+    add_pdf(repo, 'a.pdf', b'%PDF-a', None)
+    result = cs.scan(repo)
+    assert result[0]['citation_type'] == 'magazine'
+
+
+def test_citation_type_is_none_when_not_set_in_metadata(tmp_path: Path):
+    repo = setup_repo(tmp_path)
+    add_pdf(repo, 'a.pdf', b'%PDF-a', None)
+    result = cs.scan(repo)
+    assert result[0]['citation_type'] is None

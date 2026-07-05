@@ -1,8 +1,8 @@
 ---
 type: "Book"
 citation_type: "book"
-title: "Books"
-description: "Books."
+title: "Long Trail System Shelter History"
+description: "A compilation of shelter references in GMC publications"
 resource: "collections/Books/Long Trail System Shelter History.pdf"
 timestamp: "2026-07-02T18:58:43Z"
 publisher: "Green Mountain Club"

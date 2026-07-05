@@ -132,4 +132,26 @@ describe('ipc/collections', () => {
     expect(result.ok).toBe(false);
     expect(result.error).toContain('boom');
   });
+
+  it('COLLECTIONS_SET_CITATION_TYPE spawns the setter script and reports success', async () => {
+    const handler = getHandler(CHANNELS.COLLECTIONS_SET_CITATION_TYPE);
+    const promise = handler(makeEvent(), { name: 'long-trail-news', citationType: 'magazine' });
+    children[0].emit('close', 0);
+    const result = (await promise) as { ok: boolean; error?: string };
+    expect(result).toEqual({ ok: true });
+    const args = (spawn as jest.Mock).mock.calls[0][1] as string[];
+    expect(args).toEqual([
+      '/repo/scripts/set_collection_citation_type.py', 'long-trail-news', 'magazine',
+    ]);
+  });
+
+  it('COLLECTIONS_SET_CITATION_TYPE reports failure without throwing on a nonzero exit', async () => {
+    const handler = getHandler(CHANNELS.COLLECTIONS_SET_CITATION_TYPE);
+    const promise = handler(makeEvent(), { name: 'missing-collection', citationType: 'magazine' });
+    children[0].stderr.emit('data', Buffer.from('no such collection'));
+    children[0].emit('close', 1);
+    const result = (await promise) as { ok: boolean; error?: string };
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain('no such collection');
+  });
 });

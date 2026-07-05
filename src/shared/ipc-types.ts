@@ -76,6 +76,7 @@ export const CHANNELS = {
   COLLECTIONS_RUN: 'collections:run',
   COLLECTIONS_CANCEL: 'collections:cancel',
   COLLECTIONS_PROGRESS: 'collections:progress',
+  COLLECTIONS_SET_CITATION_TYPE: 'collections:setCitationType',
 } as const;
 
 export interface CollectionFileStatus {
@@ -89,6 +90,7 @@ export interface CollectionStatus {
   added: number;
   cleaned: number;
   files: CollectionFileStatus[];
+  citationType: string | null;
 }
 
 export type CollectionsRunMode = 'add' | 'clean';
@@ -118,6 +120,24 @@ export interface WikiIndexReport {
   skipped: number;
   builtAt: string;
 }
+
+export interface WikiHeaderPreserved {
+  type: string;
+  resource: string;
+  timestamp: string;
+  pages: string;
+}
+
+export interface WikiHeaderPayload {
+  citationType: string;
+  fields: Record<string, string>;
+  preserved: WikiHeaderPreserved;
+}
+
+export type WikiSaveHeaderResult =
+  | { ok: true }
+  | { ok: false; errors: string[] }
+  | { ok: false; error: string };
 
 export interface WikiSearchResult {
   path: string;
@@ -525,8 +545,11 @@ export interface ElectronAPI {
     search: (query: string) => Promise<WikiSearchResult[]>;
     openPdf: (resource: string, page: number) => Promise<{ ok: boolean }>;
     indexReport: () => Promise<WikiIndexReport | null>;
-    getHeader: (resource: string) => Promise<string | null>;
-    saveHeader: (resource: string, header: string) => Promise<{ ok: boolean; error?: string }>;
+    getHeader: (resource: string) => Promise<WikiHeaderPayload | null>;
+    saveHeader: (
+      resource: string,
+      payload: { citationType: string; fields: Record<string, string> },
+    ) => Promise<WikiSaveHeaderResult>;
   };
   ai: {
     getApiKey: () => Promise<string>;
@@ -537,6 +560,7 @@ export interface ElectronAPI {
     run: (request: CollectionsRunRequest) => Promise<CollectionsRunResult>;
     cancel: () => Promise<void>;
     onProgress: (callback: (progress: CollectionsProgress) => void) => () => void;
+    setCitationType: (name: string, citationType: string) => Promise<{ ok: boolean; error?: string }>;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;

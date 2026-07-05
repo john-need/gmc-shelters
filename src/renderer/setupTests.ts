@@ -90,6 +90,7 @@ const mockApi: ElectronAPI = {
     run: jest.fn().mockResolvedValue({ ok: true, converted: 0, cached: 0, failed: 0 }),
     cancel: jest.fn().mockResolvedValue(undefined),
     onProgress: jest.fn().mockReturnValue(jest.fn()),
+    setCitationType: jest.fn().mockResolvedValue({ ok: true }),
   },
   shell: { openExternal: noop },
   app: {

@@ -3,8 +3,17 @@ import type {
     CollectionsProgress,
     CollectionsRunMode,
     CollectionStatus,
+    SourceType,
+    WikiHeaderPreserved,
     WikiIndexReport,
 } from '../../../shared/ipc-types';
+import {
+    HEADER_PROPERTIES,
+    HEADER_PROPERTY_CONTROL,
+    HEADER_SCHEMA,
+    SOURCE_TYPES,
+    validateHeader,
+} from '../../../shared/wiki-header-schema';
 
 const STATUS_LABEL: Record<string, string> = {
     missing: 'needs addition',
@@ -107,6 +116,11 @@ function CollectionsCard() {
 
     const openHeaderEditor = (path: string) => {
         setHeaderEdit({path, notAdded: statusOf(path) === 'missing'});
+    };
+
+    const setCollectionCitationType = async (name: string, citationType: string) => {
+        await window.api.collections.setCitationType(name, citationType);
+        refresh();
     };
 
     const execute = async (mode: CollectionsRunMode, files: string[], force: boolean) => {
@@ -244,6 +258,20 @@ function CollectionsCard() {
                                 >▸ </span>
                                 <span>{c.name}</span>
                             </button>
+                            <label htmlFor={`citation-type-${c.name}`} style={{fontSize: 11, color: 'var(--ink-3)'}}>
+                                Citation type <em>· {c.name}</em>
+                            </label>
+                            <select
+                                id={`citation-type-${c.name}`}
+                                value={c.citationType ?? ''}
+                                onChange={(e) => setCollectionCitationType(c.name, e.target.value)}
+                                style={{fontSize: 11}}
+                            >
+                                <option value="" disabled>— none set —</option>
+                                {SOURCE_TYPES.map((t) => (
+                                    <option key={t} value={t}>{t}</option>
+                                ))}
+                            </select>
                             <span style={{fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)'}}>
                 {c.total - c.added} of {c.total} to add
               </span>
@@ -320,31 +348,66 @@ function CollectionsCard() {
     );
 }
 
+function isKnownSourceType(value: string): value is SourceType {
+    return (SOURCE_TYPES as string[]).includes(value);
+}
+
+function propertyLabel(key: string): string {
+    return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+}
+
 function HeaderEditorDialog({path, notAdded, onClose}: {
     path: string;
     notAdded: boolean;
     onClose: () => void;
 }) {
-    const [text, setText] = useState('');
     const [loading, setLoading] = useState(!notAdded);
+    const [loaded, setLoaded] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [citationType, setCitationType] = useState('');
+    const [fields, setFields] = useState<Record<string, string>>({});
+    const [preserved, setPreserved] = useState<WikiHeaderPreserved | null>(null);
+    const [saveErrors, setSaveErrors] = useState<string[] | null>(null);
 
     useEffect(() => {
         if (notAdded) return;
-        window.api.wiki.getHeader(path).then((h) => {
-            setText(h ?? '');
+        window.api.wiki.getHeader(path).then((payload) => {
+            if (payload) {
+                setCitationType(payload.citationType);
+                setFields(payload.fields);
+                setPreserved(payload.preserved);
+                setLoaded(true);
+            }
             setLoading(false);
         });
     }, [path, notAdded]);
 
+    const knownType = isKnownSourceType(citationType);
+    const schemaRow = knownType ? HEADER_SCHEMA[citationType] : null;
+    const validation = knownType ? validateHeader(citationType, fields) : null;
+    const canSave = !!validation && validation.ok;
+
+    const setField = (key: string, value: string) =>
+        setFields((f) => ({...f, [key]: value}));
+
     const save = async () => {
         setSaving(true);
-        setError(null);
-        const result = await window.api.wiki.saveHeader(path, text);
+        setSaveErrors(null);
+        // Drop values left over from a previously selected citation type before sending —
+        // the schema, not the save-time payload, is the source of truth for what applies now.
+        const toSend: Record<string, string> = {};
+        if (schemaRow) {
+            for (const prop of HEADER_PROPERTIES) {
+                if (schemaRow[prop] !== 'n/a') toSend[prop] = fields[prop] ?? '';
+            }
+        }
+        const result = await window.api.wiki.saveHeader(path, {citationType, fields: toSend});
         setSaving(false);
-        if (result.ok) onClose();
-        else setError(result.error ?? 'Save failed.');
+        if (result.ok) {
+            onClose();
+            return;
+        }
+        setSaveErrors('errors' in result ? result.errors : [result.error]);
     };
 
     return (
@@ -358,6 +421,7 @@ function HeaderEditorDialog({path, notAdded, onClose}: {
         >
             <div style={{
                 background: 'var(--bg-1, #fff)', borderRadius: 8, padding: 20, width: 560, maxWidth: '90vw',
+                maxHeight: '85vh', overflowY: 'auto',
                 boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
             }}>
                 <div style={{fontWeight: 600, marginBottom: 8}}>
@@ -376,23 +440,87 @@ function HeaderEditorDialog({path, notAdded, onClose}: {
                     </>
                 ) : loading ? (
                     <div style={{fontSize: 13, color: 'var(--ink-3)'}}>Loading…</div>
+                ) : !loaded ? (
+                    <div style={{fontSize: 13, color: 'var(--ink-3)'}}>Could not load this file&rsquo;s header.</div>
                 ) : (
                     <>
-                        <textarea
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            spellCheck={false}
-                            style={{
-                                width: '100%', height: 260, fontFamily: 'var(--font-mono)', fontSize: 12,
-                                boxSizing: 'border-box',
-                            }}
-                        />
-                        {error && (
-                            <div style={{marginTop: 8, fontSize: 12, color: 'var(--danger, #c0392b)'}}>{error}</div>
+                        <div style={{marginBottom: 12}}>
+                            <label htmlFor="header-citation-type" className="label">Citation type</label>
+                            <select
+                                id="header-citation-type"
+                                className="input"
+                                value={citationType}
+                                onChange={(e) => setCitationType(e.target.value)}
+                                style={{display: 'block', width: '100%', marginTop: 4}}
+                            >
+                                {!knownType && citationType && (
+                                    <option value={citationType} disabled>{citationType} (unrecognized)</option>
+                                )}
+                                {SOURCE_TYPES.map((t) => (
+                                    <option key={t} value={t}>{t}</option>
+                                ))}
+                            </select>
+                            {!knownType && (
+                                <div role="alert" style={{fontSize: 12, color: 'var(--danger, #c0392b)', marginTop: 4}}>
+                                    Unrecognized citation type — choose one above to continue.
+                                </div>
+                            )}
+                        </div>
+
+                        {schemaRow && HEADER_PROPERTIES.filter((prop) => schemaRow[prop] !== 'n/a').map((prop) => {
+                            const control = HEADER_PROPERTY_CONTROL[prop];
+                            const id = `header-${prop}`;
+                            return (
+                                <div key={prop} style={{marginBottom: 12}}>
+                                    <label htmlFor={id} className="label">
+                                        {propertyLabel(prop)}
+                                        {schemaRow[prop] === 'required' && <span aria-hidden="true"> *</span>}
+                                    </label>
+                                    {control === 'multiline' ? (
+                                        <textarea
+                                            id={id}
+                                            className="input"
+                                            value={fields[prop] ?? ''}
+                                            onChange={(e) => setField(prop, e.target.value)}
+                                            style={{display: 'block', width: '100%', marginTop: 4, minHeight: 60, boxSizing: 'border-box'}}
+                                        />
+                                    ) : (
+                                        <input
+                                            id={id}
+                                            className="input"
+                                            type="text"
+                                            value={fields[prop] ?? ''}
+                                            onChange={(e) => setField(prop, e.target.value)}
+                                            style={{display: 'block', width: '100%', marginTop: 4, boxSizing: 'border-box'}}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        {preserved && (
+                            <div style={{fontSize: 12, color: 'var(--ink-3)', marginTop: 4, marginBottom: 8}}>
+                                <div>Type: {preserved.type || '—'}</div>
+                                <div>Resource: {preserved.resource}</div>
+                                <div>Timestamp: {preserved.timestamp}</div>
+                                <div>Pages: {preserved.pages}</div>
+                            </div>
                         )}
+
+                        {validation && !validation.ok && (
+                            <div role="alert" style={{marginTop: 8, fontSize: 12, color: 'var(--danger, #c0392b)'}}>
+                                {validation.errors.join(' ')}
+                            </div>
+                        )}
+                        {saveErrors && (
+                            <div style={{marginTop: 8, fontSize: 12, color: 'var(--danger, #c0392b)'}}>
+                                {saveErrors.join(' ')}
+                            </div>
+                        )}
+
                         <div style={{display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12}}>
                             <button className="btn" onClick={onClose} disabled={saving}>Cancel</button>
-                            <button className="btn primary" onClick={save} disabled={saving}>Save</button>
+                            <button className="btn primary" onClick={save} disabled={saving || !canSave}>Save</button>
                         </div>
                     </>
                 )}
