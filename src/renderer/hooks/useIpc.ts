@@ -37,6 +37,7 @@ const noopApi: ElectronAPI = {
     run: noop,
     cancel: noop,
     onProgress: () => () => {},
+    setCitationType: () => Promise.resolve({ ok: true }),
   },
   shell: { openExternal: noop },
   app: {

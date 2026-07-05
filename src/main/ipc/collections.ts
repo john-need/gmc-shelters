@@ -103,4 +103,16 @@ export function registerCollectionsHandlers(): void {
       activeChild.kill();
     }
   });
+
+  ipcMain.handle(
+    CHANNELS.COLLECTIONS_SET_CITATION_TYPE,
+    async (_e, { name, citationType }: { name: string; citationType: string }): Promise<{ ok: boolean; error?: string }> => {
+      const root = app.getAppPath();
+      const { code, stderr } = await python([
+        path.join(root, 'scripts', 'set_collection_citation_type.py'), name, citationType,
+      ]);
+      if (code !== 0) return { ok: false, error: stderr.slice(-500) || `exit code ${code}` };
+      return { ok: true };
+    },
+  );
 }

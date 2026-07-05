@@ -137,6 +137,59 @@ class TestCollectionMetadata:
         assert meta == {'organization': '', 'files': {}}
 
 
+class TestSetCollectionCitationType:
+    def test_inserts_citation_type_when_absent_preserving_the_rest(self, tmp_path: Path):
+        original = (
+            'organization: "Green Mountain Club"\n'
+            'files:\n'
+            '  history-of-stratton-vt.pdf:\n'
+            '    # TODO: verify author\n'
+            '    author: "Unknown"\n'
+            '    title: "History of Stratton, Vermont"\n'
+        )
+        (tmp_path / 'metadata.yaml').write_text(original, encoding='utf-8')
+        wc.set_collection_citation_type(tmp_path, 'book')
+        text = (tmp_path / 'metadata.yaml').read_text(encoding='utf-8')
+        assert 'citation_type: "book"' in text
+        assert '# TODO: verify author' in text
+        assert 'files:' in text
+        assert 'history-of-stratton-vt.pdf' in text
+        meta = wc.load_collection_meta(tmp_path)
+        assert meta['citation_type'] == 'book'
+        assert meta['organization'] == 'Green Mountain Club'
+        assert meta['files']['history-of-stratton-vt.pdf']['author'] == 'Unknown'
+
+    def test_replaces_an_existing_citation_type_line_only(self, tmp_path: Path):
+        (tmp_path / 'metadata.yaml').write_text(
+            'organization: "Green Mountain Club"\ncitation_type: "magazine"\n',
+            encoding='utf-8',
+        )
+        wc.set_collection_citation_type(tmp_path, 'report')
+        text = (tmp_path / 'metadata.yaml').read_text(encoding='utf-8')
+        assert text.count('citation_type:') == 1
+        assert 'citation_type: "report"' in text
+        assert 'organization: "Green Mountain Club"' in text
+
+    def test_creates_metadata_yaml_when_missing(self, tmp_path: Path):
+        wc.set_collection_citation_type(tmp_path, 'map')
+        meta = wc.load_collection_meta(tmp_path)
+        assert meta['citation_type'] == 'map'
+
+    def test_does_not_touch_sibling_wiki_files(self, tmp_path: Path):
+        (tmp_path / 'metadata.yaml').write_text('organization: "Green Mountain Club"\n', encoding='utf-8')
+        wiki_dir = tmp_path.parent / 'wiki' / tmp_path.name
+        wiki_dir.mkdir(parents=True)
+        wiki_file = wiki_dir / 'issue.md'
+        wiki_file.write_text('---\ncitation_type: "magazine"\n---\nbody\n', encoding='utf-8')
+        before_mtime = wiki_file.stat().st_mtime
+        before_text = wiki_file.read_text(encoding='utf-8')
+
+        wc.set_collection_citation_type(tmp_path, 'report')
+
+        assert wiki_file.read_text(encoding='utf-8') == before_text
+        assert wiki_file.stat().st_mtime == before_mtime
+
+
 class TestPageMarkers:
     def test_pdftotext_form_feeds_become_page_markers(self):
         raw = 'first page text\fsecond page text\fthird page text'

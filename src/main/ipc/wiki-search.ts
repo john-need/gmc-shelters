@@ -2,8 +2,9 @@ import { ipcMain, app, BrowserWindow } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import type { WikiIndexReport, WikiSearchResult } from '../../shared/ipc-types';
+import type { WikiHeaderPayload, WikiIndexReport, WikiSaveHeaderResult, WikiSearchResult } from '../../shared/ipc-types';
 import { CHANNELS } from '../../shared/ipc-types';
+import { HEADER_PROPERTIES, validateHeader } from '../../shared/wiki-header-schema';
 
 // ponytail: lazy-open, never close — app lifetime matches DB lifetime
 let db: ReturnType<typeof openDb> | null = null;
@@ -25,12 +26,58 @@ function getDb() {
 }
 
 const FRONTMATTER_RE = /^(---\n[\s\S]*?\n---\n)/;
+const FRONTMATTER_BLOCK_RE = /^---\n([\s\S]*?)\n---\n/;
+const FRONTMATTER_LINE_RE = /^([A-Za-z_]+):\s*"((?:[^"\\]|\\.)*)"\s*$/;
 
 function wikiMdPath(root: string, resource: string): string {
   const pdfPath = path.resolve(root, resource);
   const collection = path.relative(path.join(root, 'collections'), pdfPath).split(path.sep)[0];
   const stem = path.basename(pdfPath, path.extname(pdfPath));
   return path.join(root, 'wiki', collection, `${stem}.md`);
+}
+
+/** Parses the flat `key: "value"` frontmatter block this pipeline emits (see scripts/lib/wiki_convert.py). */
+export function parseFrontmatter(raw: string): { fields: Record<string, string> } {
+  const block = FRONTMATTER_BLOCK_RE.exec(raw);
+  const fields: Record<string, string> = {};
+  if (!block) return { fields };
+  for (const line of block[1].split('\n')) {
+    const m = FRONTMATTER_LINE_RE.exec(line);
+    if (m) fields[m[1]] = m[2].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  }
+  return { fields };
+}
+
+export function serializeFrontmatter(fields: Record<string, string>): string {
+  const lines = ['---'];
+  for (const [key, value] of Object.entries(fields)) {
+    const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    lines.push(`${key}: "${escaped}"`);
+  }
+  lines.push('---', '');
+  return lines.join('\n');
+}
+
+// Canonical write order — mirrors scripts/lib/wiki_convert.py's okf_header() field order.
+const FRONTMATTER_ORDER = [
+  'type', 'citation_type', 'title', 'description', 'resource', 'timestamp',
+  'publisher', 'volume', 'edition', 'printed_volume', 'printed_issue', 'author', 'pages', 'language',
+];
+
+interface PreservedFields {
+  type: string;
+  resource: string;
+  timestamp: string;
+  pages: string;
+}
+
+function readPreserved(fields: Record<string, string>): PreservedFields {
+  return {
+    type: fields.type ?? '',
+    resource: fields.resource ?? '',
+    timestamp: fields.timestamp ?? '',
+    pages: fields.pages ?? '',
+  };
 }
 
 export function registerWikiSearchHandlers(): void {
@@ -86,25 +133,49 @@ export function registerWikiSearchHandlers(): void {
     }
   });
 
-  ipcMain.handle(CHANNELS.WIKI_GET_HEADER, (_e, { resource }: { resource: string }): string | null => {
+  ipcMain.handle(CHANNELS.WIKI_GET_HEADER, (_e, { resource }: { resource: string }): WikiHeaderPayload | null => {
     const mdPath = wikiMdPath(app.getAppPath(), resource);
     if (!fs.existsSync(mdPath)) return null;
-    const m = FRONTMATTER_RE.exec(fs.readFileSync(mdPath, 'utf-8'));
-    return m ? m[1] : null;
+    const { fields: all } = parseFrontmatter(fs.readFileSync(mdPath, 'utf-8'));
+    const fields: Record<string, string> = {};
+    for (const prop of HEADER_PROPERTIES) fields[prop] = all[prop] ?? '';
+    return {
+      citationType: all.citation_type ?? '',
+      fields,
+      preserved: readPreserved(all),
+    };
   });
 
   ipcMain.handle(
     CHANNELS.WIKI_SAVE_HEADER,
-    (_e, { resource, header }: { resource: string; header: string }): { ok: boolean; error?: string } => {
+    (
+      _e,
+      { resource, citationType, fields }: { resource: string; citationType: string; fields: Record<string, string> },
+    ): WikiSaveHeaderResult => {
       const mdPath = wikiMdPath(app.getAppPath(), resource);
       if (!fs.existsSync(mdPath)) {
         return { ok: false, error: 'This file has not been added to the wiki yet.' };
       }
-      if (!/^---\n[\s\S]*?\n---\n$/.test(header)) {
-        return { ok: false, error: 'Header must be a --- wrapped frontmatter block.' };
+      const validated = validateHeader(citationType, fields);
+      if (!validated.ok) return { ok: false, errors: validated.errors };
+
+      const raw = fs.readFileSync(mdPath, 'utf-8');
+      const preserved = readPreserved(parseFrontmatter(raw).fields);
+      const merged: Record<string, string> = {
+        ...(preserved.type ? { type: preserved.type } : {}),
+        citation_type: citationType,
+        ...validated.fields,
+        ...(preserved.resource ? { resource: preserved.resource } : {}),
+        ...(preserved.timestamp ? { timestamp: preserved.timestamp } : {}),
+        ...(preserved.pages ? { pages: preserved.pages } : {}),
+      };
+      const out: Record<string, string> = {};
+      for (const key of FRONTMATTER_ORDER) {
+        if (merged[key]) out[key] = merged[key];
       }
-      const body = fs.readFileSync(mdPath, 'utf-8').replace(FRONTMATTER_RE, '');
-      fs.writeFileSync(mdPath, header + body, 'utf-8');
+
+      const body = raw.replace(FRONTMATTER_RE, '');
+      fs.writeFileSync(mdPath, serializeFrontmatter(out) + body, 'utf-8');
       return { ok: true };
     },
   );

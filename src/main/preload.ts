@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, WikiIndexReport } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -100,10 +100,10 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.WIKI_OPEN_PDF, { resource, page }),
     indexReport: (): Promise<WikiIndexReport | null> =>
       ipcRenderer.invoke(CHANNELS.WIKI_INDEX_REPORT),
-    getHeader: (resource: string): Promise<string | null> =>
+    getHeader: (resource: string): Promise<WikiHeaderPayload | null> =>
       ipcRenderer.invoke(CHANNELS.WIKI_GET_HEADER, { resource }),
-    saveHeader: (resource: string, header: string): Promise<{ ok: boolean; error?: string }> =>
-      ipcRenderer.invoke(CHANNELS.WIKI_SAVE_HEADER, { resource, header }),
+    saveHeader: (resource: string, payload: { citationType: string; fields: Record<string, string> }): Promise<WikiSaveHeaderResult> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_SAVE_HEADER, { resource, ...payload }),
   },
   ai: {
     getApiKey: (): Promise<string> => ipcRenderer.invoke(CHANNELS.AI_GET_API_KEY),
@@ -119,6 +119,8 @@ const api: ElectronAPI = {
       ipcRenderer.on(CHANNELS.COLLECTIONS_PROGRESS, handler);
       return () => ipcRenderer.removeListener(CHANNELS.COLLECTIONS_PROGRESS, handler);
     },
+    setCitationType: (name: string, citationType: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_SET_CITATION_TYPE, { name, citationType }),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),
