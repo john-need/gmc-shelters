@@ -30,6 +30,7 @@ const STATUS: CollectionStatus[] = [
     added: 2,
     cleaned: 1,
     citationType: null,
+    defaults: { title: '', description: '', language: '', author: '', publisher: '' },
     files: [
       { name: 'a_clean.pdf', status: 'clean' },
       { name: 'b_raw.pdf', status: 'raw' },
@@ -54,9 +55,23 @@ describe('CollectionsManagementPage', () => {
     (window.api.collections.onProgress as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  it('shows the Collections Management title and keeps the API key card', async () => {
+  it('shows a loading spinner until collections have loaded, then the list', async () => {
+    let resolveStatus!: (data: CollectionStatus[]) => void;
+    (window.api.collections.status as jest.Mock).mockReturnValue(
+      new Promise((resolve) => { resolveStatus = resolve; }),
+    );
+    render(<CollectionsManagementPage />);
+    expect(screen.getByText(/loading collections/i)).toBeInTheDocument();
+    expect(screen.queryByText('long-trail-news')).not.toBeInTheDocument();
+
+    await act(async () => resolveStatus(STATUS));
+    expect(screen.queryByText(/loading collections/i)).not.toBeInTheDocument();
+    expect(screen.getByText('long-trail-news')).toBeInTheDocument();
+  });
+
+  it('shows the Collections title and keeps the API key card', async () => {
     await renderPage();
-    expect(screen.getByText('§ Settings / Collections Management')).toBeInTheDocument();
+    expect(screen.getByText('§ Settings / Collections')).toBeInTheDocument();
     expect(screen.getByLabelText(/anthropic api key/i)).toBeInTheDocument();
   });
 
@@ -87,24 +102,154 @@ describe('CollectionsManagementPage', () => {
     expect(screen.getByText('needs addition')).toBeInTheDocument();
   });
 
-  it('shows a citation type select per collection, pre-filled from its current setting', async () => {
-    (window.api.collections.status as jest.Mock).mockResolvedValue([
-      { ...STATUS[0], citationType: 'magazine' },
-    ]);
-    (window.api.collections.setCitationType as jest.Mock).mockResolvedValue({ ok: true });
-    render(<CollectionsManagementPage />);
-    await screen.findByText('long-trail-news');
-    expect(screen.getByLabelText(/citation type.*long-trail-news/i)).toHaveValue('magazine');
-
-    fireEvent.change(screen.getByLabelText(/citation type.*long-trail-news/i), { target: { value: 'report' } });
+  it('clicking Open PDF opens the source PDF for that exact file', async () => {
+    await renderPage();
+    fireEvent.click(screen.getByText('long-trail-news'));
+    const row = (await screen.findByText('b_raw.pdf')).closest('div')!;
+    fireEvent.click(within(row).getByRole('button', { name: /open pdf/i }));
     await waitFor(() => {
-      expect(window.api.collections.setCitationType).toHaveBeenCalledWith('long-trail-news', 'report');
+      expect(window.api.wiki.openPdf).toHaveBeenCalledWith('collections/long-trail-news/b_raw.pdf', 1);
     });
   });
 
-  it('shows a placeholder when a collection has no citation type set yet', async () => {
+  it('shows an error message when the PDF for that file is missing on disk', async () => {
+    (window.api.wiki.openPdf as jest.Mock).mockResolvedValue({ ok: false });
     await renderPage();
-    expect(screen.getByLabelText(/citation type.*long-trail-news/i)).toHaveValue('');
+    fireEvent.click(screen.getByText('long-trail-news'));
+    const row = (await screen.findByText('b_raw.pdf')).closest('div')!;
+    fireEvent.click(within(row).getByRole('button', { name: /open pdf/i }));
+    expect(await screen.findByText(/collections\/long-trail-news\/b_raw\.pdf is missing on disk/i)).toBeInTheDocument();
+  });
+
+  async function openCollectionDefaults() {
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /edit collection defaults/i }));
+  }
+
+  it('opens a collection-defaults modal pre-filled from the collection\'s citation type and defaults', async () => {
+    (window.api.collections.status as jest.Mock).mockResolvedValue([
+      {
+        ...STATUS[0],
+        citationType: 'magazine',
+        defaults: { title: 'Long Trail News', description: '', language: 'en', author: '', publisher: 'GMC' },
+      },
+    ]);
+    render(<CollectionsManagementPage />);
+    await screen.findByText('long-trail-news');
+    fireEvent.click(screen.getByRole('button', { name: /edit collection defaults/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/citation type/i)).toHaveValue('magazine');
+    expect(screen.getByLabelText(/^title/i)).toHaveValue('Long Trail News');
+    expect(screen.getByLabelText(/^publisher/i)).toHaveValue('GMC');
+  });
+
+  it('hides fields not applicable to the selected citation type', async () => {
+    await openCollectionDefaults();
+    fireEvent.change(screen.getByLabelText(/citation type/i), { target: { value: 'manuscript' } });
+    expect(screen.queryByLabelText(/^publisher/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^author/i)).toBeInTheDocument();
+  });
+
+  it('saves citation type and defaults together, then refreshes', async () => {
+    (window.api.collections.setDefaults as jest.Mock).mockResolvedValue({ ok: true, updated: 2 });
+    await openCollectionDefaults();
+    fireEvent.change(screen.getByLabelText(/citation type/i), { target: { value: 'magazine' } });
+    fireEvent.change(screen.getByLabelText(/^title/i), { target: { value: 'Long Trail News' } });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i }));
+    await waitFor(() => expect(window.api.collections.setDefaults).toHaveBeenCalledWith({
+      name: 'long-trail-news',
+      oldCitationType: '',
+      citationType: 'magazine',
+      oldDefaults: { title: '', description: '', language: '', author: '', publisher: '' },
+      defaults: { title: 'Long Trail News', description: '', language: '', author: '', publisher: '' },
+    }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(window.api.collections.status).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows an error and keeps the modal open when saving collection defaults fails', async () => {
+    (window.api.collections.setDefaults as jest.Mock).mockResolvedValue({ ok: false, updated: 0, error: 'disk is full' });
+    await openCollectionDefaults();
+    fireEvent.change(screen.getByLabelText(/citation type/i), { target: { value: 'magazine' } });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i }));
+    expect(await screen.findByText(/disk is full/i)).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('Add collection button opens a create dialog with an empty folder-name field', async () => {
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /add collection/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/folder name/i)).toHaveValue('');
+  });
+
+  it('rejects a duplicate or invalid folder name and blocks Create', async () => {
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /add collection/i }));
+    fireEvent.change(screen.getByLabelText(/folder name/i), { target: { value: 'long-trail-news' } });
+    expect(await screen.findByText(/already exists/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/citation type/i), { target: { value: 'magazine' } });
+    expect(within(screen.getByRole('dialog')).getByRole('button', { name: /create/i })).toBeDisabled();
+  });
+
+  it('creates a new collection, calling setDefaults with the typed name and no cascade', async () => {
+    (window.api.collections.setDefaults as jest.Mock).mockResolvedValue({ ok: true, updated: 0 });
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /add collection/i }));
+    fireEvent.change(screen.getByLabelText(/folder name/i), { target: { value: 'camels-hump-notes' } });
+    fireEvent.change(screen.getByLabelText(/citation type/i), { target: { value: 'manuscript' } });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /create/i }));
+    await waitFor(() => expect(window.api.collections.setDefaults).toHaveBeenCalledWith({
+      name: 'camels-hump-notes',
+      oldCitationType: '',
+      citationType: 'manuscript',
+      oldDefaults: {},
+      defaults: { title: '', description: '', language: '', author: '', publisher: '' },
+    }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(window.api.collections.status).toHaveBeenCalledTimes(2);
+  });
+
+  it('deletes a file after confirming, then refreshes', async () => {
+    (window.api.collections.deleteFile as jest.Mock).mockResolvedValue({ ok: true });
+    await renderPage();
+    fireEvent.click(screen.getByText('long-trail-news'));
+    const row = (await screen.findByText('b_raw.pdf')).closest('div')!;
+    fireEvent.click(within(row).getByRole('button', { name: /delete file/i }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }));
+    await waitFor(() => expect(window.api.collections.deleteFile).toHaveBeenCalledWith({
+      collection: 'long-trail-news', file: 'b_raw.pdf',
+    }));
+    expect(window.api.collections.status).toHaveBeenCalledTimes(2);
+  });
+
+  it('deletes a non-empty collection after a warning, then refreshes', async () => {
+    (window.api.collections.delete as jest.Mock).mockResolvedValue({ ok: true });
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /delete collection/i }));
+    expect(await screen.findByText(/3 files?/i)).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }));
+    await waitFor(() => expect(window.api.collections.delete).toHaveBeenCalledWith({ name: 'long-trail-news' }));
+    expect(window.api.collections.status).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops PDFs onto a collection, resolving real paths and calling addFiles', async () => {
+    (window.api.app.getFilePath as jest.Mock)
+      .mockReturnValueOnce('/Users/john/Desktop/new-issue.pdf')
+      .mockReturnValueOnce('/Users/john/Desktop/photo.jpg');
+    (window.api.collections.addFiles as jest.Mock).mockResolvedValue({ added: ['new-issue.pdf'], skipped: [] });
+    await renderPage();
+    fireEvent.click(screen.getByText('long-trail-news'));
+    const dropZone = await screen.findByText(/drag pdfs here/i);
+    const file1 = new File(['a'], 'new-issue.pdf', { type: 'application/pdf' });
+    const file2 = new File(['b'], 'photo.jpg', { type: 'image/jpeg' });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file1, file2] } });
+    await waitFor(() => expect(window.api.collections.addFiles).toHaveBeenCalledWith({
+      collection: 'long-trail-news',
+      sourcePaths: ['/Users/john/Desktop/new-issue.pdf'],
+    }));
+    expect(window.api.collections.status).toHaveBeenCalledTimes(2);
+    expect(await screen.findByText(/only pdfs are accepted/i)).toBeInTheDocument();
   });
 
   it('runs addition immediately when only pending files are selected', async () => {

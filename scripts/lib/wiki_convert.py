@@ -317,7 +317,7 @@ def load_collection_meta(collection_dir: Path) -> dict:
         if indent == 0:
             in_files = key == 'files'
             current_file = None
-            if not in_files and value:
+            if not in_files:
                 meta[key] = value
         elif in_files and indent == 2:
             current_file = key
@@ -327,30 +327,37 @@ def load_collection_meta(collection_dir: Path) -> dict:
     return meta
 
 
-_META_CITATION_RE = re.compile(r'^citation_type: ".*"$', re.MULTILINE)
+def _meta_key_re(key: str) -> re.Pattern[str]:
+    return re.compile(rf'^{re.escape(key)}: ".*"$', re.MULTILINE)
 
 
-def set_collection_citation_type(collection_dir: Path, citation_type: str) -> None:
-    """Set the collection-level citation_type default in metadata.yaml.
+def set_collection_defaults(collection_dir: Path, fields: dict[str, str]) -> None:
+    """Set one or more collection-level default metadata fields in metadata.yaml.
 
-    Targeted line patch (mirrors scripts/patch_citation_types.py's technique
-    for markdown frontmatter) — never a full parse/re-serialize — so
-    `organization:`, `files:`, and comments are preserved untouched. Only
-    touches this collection's metadata.yaml; never touches wiki/ output.
+    Targeted per-key line patch (mirrors scripts/patch_citation_types.py's
+    technique for markdown frontmatter) — never a full parse/re-serialize —
+    so `files:` and comments are preserved untouched. Only touches this
+    collection's metadata.yaml; never touches wiki/ output. An empty string
+    value is still written explicitly (an intentionally-cleared default),
+    not dropped.
     """
     path = collection_dir / 'metadata.yaml'
-    new_line = f'citation_type: "{citation_type}"'
     if not path.exists():
         collection_dir.mkdir(parents=True, exist_ok=True)
-        path.write_text(new_line + '\n', encoding='utf-8')
-        return
-
-    text = path.read_text(encoding='utf-8')
-    if _META_CITATION_RE.search(text):
-        path.write_text(_META_CITATION_RE.sub(new_line, text, count=1), encoding='utf-8')
+        text = ''
     else:
-        sep = '' if text.endswith('\n') or not text else '\n'
-        path.write_text(text + sep + new_line + '\n', encoding='utf-8')
+        text = path.read_text(encoding='utf-8')
+
+    for key, value in fields.items():
+        new_line = f'{key}: "{value}"'
+        pattern = _meta_key_re(key)
+        if pattern.search(text):
+            text = pattern.sub(new_line, text, count=1)
+        else:
+            sep = '' if text == '' or text.endswith('\n') else '\n'
+            text = text + sep + new_line + '\n'
+
+    path.write_text(text, encoding='utf-8')
 
 
 def okf_header(*, collection: str, stem: str, pdf_relpath: str, page_count: int,

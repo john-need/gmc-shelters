@@ -37,7 +37,10 @@ const noopApi: ElectronAPI = {
     run: noop,
     cancel: noop,
     onProgress: () => () => {},
-    setCitationType: () => Promise.resolve({ ok: true }),
+    setDefaults: () => Promise.resolve({ ok: true, updated: 0 }),
+    addFiles: () => Promise.resolve({ added: [], skipped: [] }),
+    deleteFile: noop,
+    delete: noop,
   },
   shell: { openExternal: noop },
   app: {

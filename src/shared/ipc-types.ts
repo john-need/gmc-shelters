@@ -76,7 +76,10 @@ export const CHANNELS = {
   COLLECTIONS_RUN: 'collections:run',
   COLLECTIONS_CANCEL: 'collections:cancel',
   COLLECTIONS_PROGRESS: 'collections:progress',
-  COLLECTIONS_SET_CITATION_TYPE: 'collections:setCitationType',
+  COLLECTIONS_SET_DEFAULTS: 'collections:setDefaults',
+  COLLECTIONS_ADD_FILES: 'collections:addFiles',
+  COLLECTIONS_DELETE_FILE: 'collections:deleteFile',
+  COLLECTIONS_DELETE: 'collections:delete',
 } as const;
 
 export interface CollectionFileStatus {
@@ -91,6 +94,40 @@ export interface CollectionStatus {
   cleaned: number;
   files: CollectionFileStatus[];
   citationType: string | null;
+  defaults: Record<string, string>;
+}
+
+export interface CollectionDefaultsRequest {
+  name: string;
+  oldCitationType: string;
+  citationType: string;
+  oldDefaults: Record<string, string>;
+  defaults: Record<string, string>;
+}
+
+export interface CollectionDefaultsResult {
+  ok: boolean;
+  updated: number;
+  error?: string;
+}
+
+export interface CollectionsAddFilesRequest {
+  collection: string;
+  sourcePaths: string[];
+}
+
+export interface CollectionsAddFilesResult {
+  added: string[];
+  skipped: string[];
+}
+
+export interface CollectionsDeleteFileRequest {
+  collection: string;
+  file: string;
+}
+
+export interface CollectionsDeleteRequest {
+  name: string;
 }
 
 export type CollectionsRunMode = 'add' | 'clean';
@@ -560,7 +597,10 @@ export interface ElectronAPI {
     run: (request: CollectionsRunRequest) => Promise<CollectionsRunResult>;
     cancel: () => Promise<void>;
     onProgress: (callback: (progress: CollectionsProgress) => void) => () => void;
-    setCitationType: (name: string, citationType: string) => Promise<{ ok: boolean; error?: string }>;
+    setDefaults: (request: CollectionDefaultsRequest) => Promise<CollectionDefaultsResult>;
+    addFiles: (request: CollectionsAddFilesRequest) => Promise<CollectionsAddFilesResult>;
+    deleteFile: (request: CollectionsDeleteFileRequest) => Promise<{ ok: boolean }>;
+    delete: (request: CollectionsDeleteRequest) => Promise<{ ok: boolean }>;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;

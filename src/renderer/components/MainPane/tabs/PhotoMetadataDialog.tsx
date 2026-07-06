@@ -223,11 +223,11 @@ export default function PhotoMetadataDialog({ photo, shelterId: _shelterId, slug
                       }}
                     >
                       <svg
-                        width="10" height="10" viewBox="0 0 10 10"
+                        width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                         style={{ flexShrink: 0, transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', color: 'var(--ink-3)' }}
-                        fill="currentColor"
                       >
-                        <path d="M3 2l4 3-4 3V2z"/>
+                        <path d="m9 6 6 6-6 6"/>
                       </svg>
                       <span style={LABEL_STYLE}>{group}</span>
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-4)', marginLeft: 4 }}>

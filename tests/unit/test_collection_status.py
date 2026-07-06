@@ -93,11 +93,52 @@ def test_citation_type_included_when_set_in_metadata(tmp_path: Path):
     )
     add_pdf(repo, 'a.pdf', b'%PDF-a', None)
     result = cs.scan(repo)
-    assert result[0]['citation_type'] == 'magazine'
+    assert result[0]['citationType'] == 'magazine'
 
 
 def test_citation_type_is_none_when_not_set_in_metadata(tmp_path: Path):
     repo = setup_repo(tmp_path)
     add_pdf(repo, 'a.pdf', b'%PDF-a', None)
     result = cs.scan(repo)
-    assert result[0]['citation_type'] is None
+    assert result[0]['citationType'] is None
+
+
+def test_defaults_included_from_metadata(tmp_path: Path):
+    repo = setup_repo(tmp_path)
+    (repo / 'collections' / 'long-trail-news' / 'metadata.yaml').write_text(
+        'organization: "Green Mountain Club"\n'
+        'title: "Long Trail News"\n'
+        'description: "Quarterly bulletin."\n'
+        'language: "en"\n'
+        'author: "GMC Staff"\n'
+    )
+    add_pdf(repo, 'a.pdf', b'%PDF-a', None)
+    result = cs.scan(repo)
+    assert result[0]['defaults'] == {
+        'title': 'Long Trail News',
+        'description': 'Quarterly bulletin.',
+        'language': 'en',
+        'author': 'GMC Staff',
+        'publisher': 'Green Mountain Club',
+    }
+
+
+def test_empty_collection_folder_is_listed(tmp_path: Path):
+    repo = setup_repo(tmp_path)
+    (repo / 'collections' / 'new-collection').mkdir()
+    (repo / 'collections' / 'new-collection' / 'metadata.yaml').write_text('citation_type: "book"\n')
+    result = cs.scan(repo)
+    empty = next(c for c in result if c['name'] == 'new-collection')
+    assert empty['total'] == 0
+    assert empty['files'] == []
+    assert empty['citationType'] == 'book'
+
+
+def test_defaults_are_empty_strings_when_not_set(tmp_path: Path):
+    repo = setup_repo(tmp_path)
+    add_pdf(repo, 'a.pdf', b'%PDF-a', None)
+    result = cs.scan(repo)
+    assert result[0]['defaults'] == {
+        'title': '', 'description': '', 'language': '', 'author': '',
+        'publisher': 'Green Mountain Club',
+    }

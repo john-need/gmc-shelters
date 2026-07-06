@@ -14,6 +14,14 @@ export const HEADER_PROPERTIES = [
 ] as const;
 export type HeaderProperty = (typeof HEADER_PROPERTIES)[number];
 
+// Properties a collection can set a shared default for. Excludes edition/volume/
+// printed_volume/printed_issue — those are unique per document (e.g. each issue
+// of a newsletter has its own volume/issue number), never collection-wide.
+export const COLLECTION_DEFAULT_PROPERTIES = [
+  'title', 'description', 'language', 'author', 'publisher',
+] as const;
+export type CollectionDefaultProperty = (typeof COLLECTION_DEFAULT_PROPERTIES)[number];
+
 export const HEADER_PROPERTY_CONTROL: Record<HeaderProperty, HeaderControl> = {
   title: 'text',
   description: 'multiline',
