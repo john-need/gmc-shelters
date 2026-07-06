@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -119,8 +119,14 @@ const api: ElectronAPI = {
       ipcRenderer.on(CHANNELS.COLLECTIONS_PROGRESS, handler);
       return () => ipcRenderer.removeListener(CHANNELS.COLLECTIONS_PROGRESS, handler);
     },
-    setCitationType: (name: string, citationType: string): Promise<{ ok: boolean; error?: string }> =>
-      ipcRenderer.invoke(CHANNELS.COLLECTIONS_SET_CITATION_TYPE, { name, citationType }),
+    setDefaults: (request: CollectionDefaultsRequest): Promise<CollectionDefaultsResult> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_SET_DEFAULTS, request),
+    addFiles: (request: CollectionsAddFilesRequest): Promise<CollectionsAddFilesResult> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_ADD_FILES, request),
+    deleteFile: (request: CollectionsDeleteFileRequest): Promise<{ ok: boolean }> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_DELETE_FILE, request),
+    delete: (request: CollectionsDeleteRequest): Promise<{ ok: boolean }> =>
+      ipcRenderer.invoke(CHANNELS.COLLECTIONS_DELETE, request),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),

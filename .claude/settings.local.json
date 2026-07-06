@@ -121,7 +121,15 @@
       "Bash(pkill -f \"electron-forge-start\")",
       "Bash(pkill -f \"node_modules/electron/dist/Electron.app\")",
       "Bash(pkill -9 -f \"Electron\")",
-      "Bash(pkill -9 -f \"electron-forge\")"
+      "Bash(pkill -9 -f \"electron-forge\")",
+      "Bash(awk '{ print length, NR }' \"/Users/johnneed/Projects/gmc-shelters/GMC Shelters App _standalone_.html\")",
+      "Bash(cd *)",
+      "Bash(awk '{ print length, NR }' prototype/index.html)",
+      "Read(//private/tmp/proto_dump/**)",
+      "Bash(grep -l \"Settings\\\\|Sidebar\\\\|nav-item\\\\|Shelter\" *.js)",
+      "Bash(npm ls *)",
+      "Bash(pkill -f \"http.server 8934\")",
+      "Bash(awk '{print length, NR}' index.html)"
     ]
   }
 }

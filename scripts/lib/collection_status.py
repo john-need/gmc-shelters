@@ -55,8 +55,6 @@ def scan(repo_root: Path) -> list[dict]:
         if folder.name.startswith('.') or folder.name in EXCLUDED_DIRS:
             continue
         pdfs = sorted(p for p in folder.glob('*.pdf'))
-        if not pdfs:
-            continue
         files = []
         for pdf in pdfs:
             variants = cached_variants.get(_sha256(pdf, memo), set())
@@ -67,13 +65,21 @@ def scan(repo_root: Path) -> list[dict]:
             else:
                 status = 'missing'
             files.append({'name': pdf.name, 'status': status})
+        meta = load_collection_meta(folder)
         result.append({
             'name': folder.name,
             'total': len(files),
             'added': sum(f['status'] != 'missing' for f in files),
             'cleaned': sum(f['status'] == 'clean' for f in files),
             'files': files,
-            'citation_type': load_collection_meta(folder).get('citation_type'),
+            'citationType': meta.get('citation_type'),
+            'defaults': {
+                'title': meta.get('title', ''),
+                'description': meta.get('description', ''),
+                'language': meta.get('language', ''),
+                'author': meta.get('author', ''),
+                'publisher': meta.get('organization', ''),
+            },
         })
 
     cache_dir.mkdir(parents=True, exist_ok=True)

@@ -90,7 +90,10 @@ const mockApi: ElectronAPI = {
     run: jest.fn().mockResolvedValue({ ok: true, converted: 0, cached: 0, failed: 0 }),
     cancel: jest.fn().mockResolvedValue(undefined),
     onProgress: jest.fn().mockReturnValue(jest.fn()),
-    setCitationType: jest.fn().mockResolvedValue({ ok: true }),
+    setDefaults: jest.fn().mockResolvedValue({ ok: true, updated: 0 }),
+    addFiles: jest.fn().mockResolvedValue({ added: [], skipped: [] }),
+    deleteFile: jest.fn().mockResolvedValue({ ok: true }),
+    delete: jest.fn().mockResolvedValue({ ok: true }),
   },
   shell: { openExternal: noop },
   app: {

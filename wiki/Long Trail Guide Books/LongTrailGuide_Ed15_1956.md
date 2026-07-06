@@ -7,6 +7,7 @@ resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed15_1956.pdf"
 timestamp: "2026-07-02T18:59:15Z"
 publisher: "Green Mountain Club"
 volume: "1956"
+author: "Green Mountain Club"
 pages: "67"
 language: "en"
 ---

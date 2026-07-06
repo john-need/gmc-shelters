@@ -8,12 +8,26 @@ import type {
     WikiIndexReport,
 } from '../../../shared/ipc-types';
 import {
+    COLLECTION_DEFAULT_PROPERTIES,
     HEADER_PROPERTIES,
     HEADER_PROPERTY_CONTROL,
     HEADER_SCHEMA,
     SOURCE_TYPES,
     validateHeader,
 } from '../../../shared/wiki-header-schema';
+
+const EDIT_ICON = (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+);
+
+const TRASH_ICON = (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    </svg>
+);
 
 const STATUS_LABEL: Record<string, string> = {
     missing: 'needs addition',
@@ -34,9 +48,9 @@ export default function CollectionsManagementPage() {
                 <div>
                     <div
                         className="settings-page-title"
-                        dangerouslySetInnerHTML={{__html: 'Collections Management <em>· wiki &amp; AI</em>'}}
+                        dangerouslySetInnerHTML={{__html: 'Collections <em>· Primary Source Management</em>'}}
                     />
-                    <div className="settings-page-sub">§ Settings / Collections Management</div>
+                    <div className="settings-page-sub">§ Settings / Collections</div>
                 </div>
             </div>
 
@@ -50,6 +64,7 @@ export default function CollectionsManagementPage() {
 
 function CollectionsCard() {
     const [collections, setCollections] = useState<CollectionStatus[]>([]);
+    const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [pendingRun, setPendingRun] = useState<PendingRun | null>(null);
@@ -60,10 +75,18 @@ function CollectionsCard() {
     const [liveLabel, setLiveLabel] = useState<Record<string, string>>({});
     const [indexReport, setIndexReport] = useState<WikiIndexReport | null>(null);
     const [headerEdit, setHeaderEdit] = useState<{ path: string; notAdded: boolean } | null>(null);
+    const [collectionEdit, setCollectionEdit] = useState<string | null>(null);
+    const [addingCollection, setAddingCollection] = useState(false);
+    const [deleteFile, setDeleteFile] = useState<{ collection: string; file: string } | null>(null);
+    const [deleteCollectionName, setDeleteCollectionName] = useState<string | null>(null);
+    const [dropNote, setDropNote] = useState<Record<string, string>>({});
     const runRef = useRef<{ mode: CollectionsRunMode; files: string[] }>({mode: 'add', files: []});
 
     const refresh = useCallback(() => {
-        window.api.collections.status().then(setCollections);
+        window.api.collections.status().then((data) => {
+            setCollections(data);
+            setLoading(false);
+        });
         window.api.wiki.indexReport().then(setIndexReport);
     }, []);
 
@@ -118,9 +141,29 @@ function CollectionsCard() {
         setHeaderEdit({path, notAdded: statusOf(path) === 'missing'});
     };
 
-    const setCollectionCitationType = async (name: string, citationType: string) => {
-        await window.api.collections.setCitationType(name, citationType);
-        refresh();
+    const dropFiles = async (collectionName: string, fileList: FileList | File[]) => {
+        const incoming = [...fileList];
+        const pdfs = incoming.filter((f) => /\.pdf$/i.test(f.name));
+        const nonPdfCount = incoming.length - pdfs.length;
+        const sourcePaths = pdfs.map((f) => window.api.app.getFilePath(f)).filter(Boolean);
+
+        const result = sourcePaths.length
+            ? await window.api.collections.addFiles({collection: collectionName, sourcePaths})
+            : {added: [], skipped: []};
+
+        const notes: string[] = [];
+        if (result.added.length) notes.push(`${result.added.length} file${result.added.length === 1 ? '' : 's'} added`);
+        if (result.skipped.length) notes.push(`${result.skipped.length} skipped — already in this collection`);
+        if (nonPdfCount) notes.push(`${nonPdfCount} skipped — only PDFs are accepted`);
+        if (notes.length) {
+            setDropNote((n) => ({...n, [collectionName]: notes.join('; ') + '.'}));
+            setTimeout(() => setDropNote((n) => {
+                const next = {...n};
+                delete next[collectionName];
+                return next;
+            }), 2600);
+        }
+        if (result.added.length) refresh();
     };
 
     const execute = async (mode: CollectionsRunMode, files: string[], force: boolean) => {
@@ -164,7 +207,12 @@ function CollectionsCard() {
 
     return (
         <div className="settings-card">
-            <h3>Collections <em>· wiki addition &amp; LLM cleanup</em></h3>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8}}>
+                <h3 style={{margin: 0}}>Collections <em>· wiki addition &amp; LLM cleanup</em></h3>
+                <button type="button" className="btn sm" onClick={() => setAddingCollection(true)}>
+                    + Add collection
+                </button>
+            </div>
             <div className="desc">
                 Add converts PDFs to searchable wiki text (fast, offline, keeps OCR artifacts).
                 Clean up runs the Anthropic cleanup pass — fixes reading order and OCR errors and
@@ -179,6 +227,16 @@ function CollectionsCard() {
                 </div>
             )}
 
+            {loading ? (
+                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '20px 0'}}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{animation: 'spin 1s linear infinite'}}>
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                    <div style={{fontSize: 12, color: 'var(--ink-3)'}}>Loading collections…</div>
+                </div>
+            ) : (
+            <>
             <div style={{display: 'flex', gap: 8, margin: '12px 0'}}>
                 <button
                     className="btn primary"
@@ -248,36 +306,42 @@ function CollectionsCard() {
                                     textAlign: 'left',
                                 }}
                             >
-                                <span
+                                <svg
+                                    width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                                     aria-hidden="true"
                                     style={{
-                                        display: 'inline-block',
+                                        display: 'inline-block', flexShrink: 0, marginRight: 4,
                                         transition: 'transform 180ms ease',
                                         transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
                                     }}
-                                >▸ </span>
+                                >
+                                    <path d="m9 6 6 6-6 6"/>
+                                </svg>
                                 <span>{c.name}</span>
                             </button>
-                            <label htmlFor={`citation-type-${c.name}`} style={{fontSize: 11, color: 'var(--ink-3)'}}>
-                                Citation type <em>· {c.name}</em>
-                            </label>
-                            <select
-                                id={`citation-type-${c.name}`}
-                                value={c.citationType ?? ''}
-                                onChange={(e) => setCollectionCitationType(c.name, e.target.value)}
-                                style={{fontSize: 11}}
-                            >
-                                <option value="" disabled>— none set —</option>
-                                {SOURCE_TYPES.map((t) => (
-                                    <option key={t} value={t}>{t}</option>
-                                ))}
-                            </select>
                             <span style={{fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)'}}>
                 {c.total - c.added} of {c.total} to add
               </span>
                             <span style={{fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)'}}>
                 {c.total - c.cleaned} of {c.total} to clean
               </span>
+                            <button
+                                type="button"
+                                className="btn icon sm"
+                                title="Edit collection defaults"
+                                onClick={() => setCollectionEdit(c.name)}
+                            >
+                                {EDIT_ICON}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn icon sm"
+                                title="Delete collection"
+                                onClick={() => setDeleteCollectionName(c.name)}
+                            >
+                                {TRASH_ICON}
+                            </button>
                         </div>
                         <div style={{
                             display: 'grid',
@@ -311,20 +375,51 @@ function CollectionsCard() {
                   </span>
                                             <button
                                                 type="button"
-                                                className="btn"
-                                                style={{fontSize: 10, padding: '2px 6px'}}
+                                                className="btn icon sm"
+                                                title="Open PDF"
+                                                onClick={async () => {
+                                                    const {ok} = await window.api.wiki.openPdf(p, 1);
+                                                    if (!ok) setSummary(`PDF not found — ${p} is missing on disk.`);
+                                                }}
+                                            >
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+                                                </svg>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn icon sm"
+                                                title="Edit header"
                                                 onClick={() => openHeaderEditor(p)}
                                             >
-                                                Edit header
+                                                {EDIT_ICON}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn icon sm"
+                                                title="Delete file"
+                                                onClick={() => setDeleteFile({collection: c.name, file: f.name})}
+                                            >
+                                                {TRASH_ICON}
                                             </button>
                                         </div>
                                     );
                                 })}
+                                <CollectionDropZone
+                                    onDrop={(files) => dropFiles(c.name, files)}
+                                />
+                                {dropNote[c.name] && (
+                                    <div style={{fontSize: 11, color: 'var(--ink-3)', margin: '-4px 0 8px 26px'}}>
+                                        {dropNote[c.name]}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 );
             })}
+            </>
+            )}
 
             {pendingRun && (
                 <RerunDialog
@@ -342,6 +437,66 @@ function CollectionsCard() {
                     path={headerEdit.path}
                     notAdded={headerEdit.notAdded}
                     onClose={() => setHeaderEdit(null)}
+                />
+            )}
+
+            {collectionEdit && (() => {
+                const c = collections.find((x) => x.name === collectionEdit);
+                if (!c) return null;
+                return (
+                    <CollectionDefaultsDialog
+                        name={c.name}
+                        citationType={c.citationType ?? ''}
+                        defaults={c.defaults}
+                        onClose={() => setCollectionEdit(null)}
+                        onSaved={() => {
+                            setCollectionEdit(null);
+                            refresh();
+                        }}
+                    />
+                );
+            })()}
+
+            {deleteFile && (
+                <FileDeleteModal
+                    fileName={deleteFile.file}
+                    onCancel={() => setDeleteFile(null)}
+                    onConfirm={async () => {
+                        await window.api.collections.deleteFile(deleteFile);
+                        setDeleteFile(null);
+                        refresh();
+                    }}
+                />
+            )}
+
+            {deleteCollectionName && (() => {
+                const c = collections.find((x) => x.name === deleteCollectionName);
+                if (!c) return null;
+                return (
+                    <CollectionDeleteModal
+                        name={c.name}
+                        fileCount={c.total}
+                        onCancel={() => setDeleteCollectionName(null)}
+                        onConfirm={async () => {
+                            await window.api.collections.delete({name: c.name});
+                            setDeleteCollectionName(null);
+                            refresh();
+                        }}
+                    />
+                );
+            })()}
+
+            {addingCollection && (
+                <CollectionDefaultsDialog
+                    creating
+                    existingNames={collections.map((c) => c.name)}
+                    citationType=""
+                    defaults={{}}
+                    onClose={() => setAddingCollection(false)}
+                    onSaved={() => {
+                        setAddingCollection(false);
+                        refresh();
+                    }}
                 />
             )}
         </div>
@@ -524,6 +679,275 @@ function HeaderEditorDialog({path, notAdded, onClose}: {
                         </div>
                     </>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function validateCollectionName(name: string, existingNames: string[]): string | null {
+    const trimmed = name.trim();
+    if (!trimmed) return 'Folder name is required.';
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(trimmed)) {
+        return 'Use lowercase letters, digits, and hyphens only (e.g. camels-hump-survey-notes).';
+    }
+    if (existingNames.includes(trimmed)) return `A collection named "${trimmed}" already exists.`;
+    return null;
+}
+
+function CollectionDefaultsDialog({name, citationType, defaults, existingNames = [], creating, onClose, onSaved}: {
+    name?: string;
+    citationType: string;
+    defaults: Record<string, string>;
+    existingNames?: string[];
+    creating?: boolean;
+    onClose: () => void;
+    onSaved: () => void;
+}) {
+    const [nextName, setNextName] = useState(name ?? '');
+    const [nextCitationType, setNextCitationType] = useState(citationType);
+    const [fields, setFields] = useState<Record<string, string>>(defaults);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const knownType = isKnownSourceType(nextCitationType);
+    const schemaRow = knownType ? HEADER_SCHEMA[nextCitationType] : null;
+    const nameError = creating ? validateCollectionName(nextName, existingNames) : null;
+    const canSave = !!nextCitationType && !(creating && nameError);
+
+    const setField = (key: string, value: string) =>
+        setFields((f) => ({...f, [key]: value}));
+
+    const save = async () => {
+        if (!canSave) return;
+        setSaving(true);
+        setError(null);
+        const toSend: Record<string, string> = {};
+        for (const prop of COLLECTION_DEFAULT_PROPERTIES) {
+            toSend[prop] = schemaRow && schemaRow[prop] !== 'n/a' ? (fields[prop] ?? '') : '';
+        }
+        const result = await window.api.collections.setDefaults({
+            name: creating ? nextName.trim() : (name as string),
+            oldCitationType: creating ? '' : citationType,
+            citationType: nextCitationType,
+            oldDefaults: defaults,
+            defaults: toSend,
+        });
+        setSaving(false);
+        if (result.ok) {
+            onSaved();
+            return;
+        }
+        setError(result.error ?? 'Save failed.');
+    };
+
+    return (
+        <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+            }}
+        >
+            <div style={{
+                background: 'var(--bg-1, #fff)', borderRadius: 8, padding: 20, width: 560, maxWidth: '90vw',
+                maxHeight: '85vh', overflowY: 'auto',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+            }}>
+                <div style={{fontWeight: 600, marginBottom: 8}}>
+                    {creating ? 'New collection' : <>Collection defaults <em>· {name}</em></>}
+                </div>
+
+                {creating ? (
+                    <div style={{marginBottom: 12}}>
+                        <label htmlFor="new-collection-name" className="label">Folder name</label>
+                        <input
+                            id="new-collection-name"
+                            className="input"
+                            type="text"
+                            autoFocus
+                            value={nextName}
+                            onChange={(e) => setNextName(e.target.value)}
+                            placeholder="e.g. camels-hump-survey-notes"
+                            style={{display: 'block', width: '100%', marginTop: 4, fontFamily: 'var(--font-mono)'}}
+                        />
+                        {nameError && nextName && (
+                            <div role="alert" style={{fontSize: 12, color: 'var(--danger, #c0392b)', marginTop: 4}}>
+                                {nameError}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div style={{fontSize: 12, color: 'var(--ink-3)', marginBottom: 14}}>
+                        Saving updates every document in this collection whose field is currently blank or still
+                        matches the old default — customized documents are left alone.
+                    </div>
+                )}
+
+                <div style={{marginBottom: 12}}>
+                    <label htmlFor="collection-citation-type" className="label">Citation type</label>
+                    <select
+                        id="collection-citation-type"
+                        className="input"
+                        value={nextCitationType}
+                        onChange={(e) => setNextCitationType(e.target.value)}
+                        style={{display: 'block', width: '100%', marginTop: 4}}
+                    >
+                        <option value="" disabled>— none set —</option>
+                        {SOURCE_TYPES.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {schemaRow && COLLECTION_DEFAULT_PROPERTIES.filter((prop) => schemaRow[prop] !== 'n/a').map((prop) => {
+                    const control = HEADER_PROPERTY_CONTROL[prop];
+                    const id = `collection-default-${prop}`;
+                    return (
+                        <div key={prop} style={{marginBottom: 12}}>
+                            <label htmlFor={id} className="label">{propertyLabel(prop)}</label>
+                            {control === 'multiline' ? (
+                                <textarea
+                                    id={id}
+                                    className="input"
+                                    value={fields[prop] ?? ''}
+                                    onChange={(e) => setField(prop, e.target.value)}
+                                    style={{display: 'block', width: '100%', marginTop: 4, minHeight: 60, boxSizing: 'border-box'}}
+                                />
+                            ) : (
+                                <input
+                                    id={id}
+                                    className="input"
+                                    type="text"
+                                    value={fields[prop] ?? ''}
+                                    onChange={(e) => setField(prop, e.target.value)}
+                                    style={{display: 'block', width: '100%', marginTop: 4, boxSizing: 'border-box'}}
+                                />
+                            )}
+                        </div>
+                    );
+                })}
+
+                {error && (
+                    <div style={{marginTop: 8, fontSize: 12, color: 'var(--danger, #c0392b)'}}>{error}</div>
+                )}
+
+                <div style={{display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12}}>
+                    <button className="btn" onClick={onClose} disabled={saving}>Cancel</button>
+                    <button className="btn primary" onClick={save} disabled={saving || !canSave}>
+                        {creating ? 'Create' : 'Save'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CollectionDropZone({onDrop}: { onDrop: (files: FileList) => void }) {
+    const [dragOver, setDragOver] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    return (
+        <div
+            className={`upload-zone ${dragOver ? 'drag' : ''}`}
+            style={{margin: '4px 0 8px 26px', padding: 12}}
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                if (e.dataTransfer.files.length) onDrop(e.dataTransfer.files);
+            }}
+        >
+            <input
+                ref={inputRef}
+                type="file"
+                accept="application/pdf"
+                multiple
+                style={{display: 'none'}}
+                onChange={(e) => {
+                    if (e.target.files?.length) onDrop(e.target.files);
+                    e.target.value = '';
+                }}
+            />
+            <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>
+                </svg>
+                <span className="upload-sub">Drag PDFs here, or click to browse</span>
+            </div>
+        </div>
+    );
+}
+
+function FileDeleteModal({fileName, onCancel, onConfirm}: {
+    fileName: string;
+    onCancel: () => void;
+    onConfirm: () => void;
+}) {
+    return (
+        <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+            }}
+        >
+            <div style={{
+                background: 'var(--bg-1, #fff)', borderRadius: 8, padding: 20, maxWidth: 440,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+            }}>
+                <div style={{fontWeight: 600, marginBottom: 8}}>Delete &quot;{fileName}&quot;?</div>
+                <div style={{fontSize: 12, color: 'var(--ink-3)', marginBottom: 14}}>
+                    This removes the file from the collection and can&rsquo;t be undone.
+                </div>
+                <div style={{display: 'flex', gap: 8, justifyContent: 'flex-end'}}>
+                    <button className="btn" onClick={onCancel}>Cancel</button>
+                    <button className="btn rust" onClick={onConfirm}>Delete</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CollectionDeleteModal({name, fileCount, onCancel, onConfirm}: {
+    name: string;
+    fileCount: number;
+    onCancel: () => void;
+    onConfirm: () => void;
+}) {
+    const hasFiles = fileCount > 0;
+    return (
+        <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+            }}
+        >
+            <div style={{
+                background: 'var(--bg-1, #fff)', borderRadius: 8, padding: 20, maxWidth: 440,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+            }}>
+                <div style={{fontWeight: 600, marginBottom: 8}}>Delete &quot;{name}&quot;?</div>
+                {hasFiles ? (
+                    <div style={{fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.55, marginBottom: 14}}>
+                        This collection has <strong>{fileCount} file{fileCount === 1 ? '' : 's'}</strong>.
+                        Deleting it removes all of them — and any wiki entries already built from them —
+                        and can&rsquo;t be undone.
+                    </div>
+                ) : (
+                    <div style={{fontSize: 12, color: 'var(--ink-3)', marginBottom: 14}}>
+                        This collection is empty — safe to remove.
+                    </div>
+                )}
+                <div style={{display: 'flex', gap: 8, justifyContent: 'flex-end'}}>
+                    <button className="btn" onClick={onCancel}>Cancel</button>
+                    <button className="btn rust" onClick={onConfirm}>Delete</button>
+                </div>
             </div>
         </div>
     );

@@ -137,8 +137,8 @@ class TestCollectionMetadata:
         assert meta == {'organization': '', 'files': {}}
 
 
-class TestSetCollectionCitationType:
-    def test_inserts_citation_type_when_absent_preserving_the_rest(self, tmp_path: Path):
+class TestSetCollectionDefaults:
+    def test_inserts_new_keys_preserving_the_rest(self, tmp_path: Path):
         original = (
             'organization: "Green Mountain Club"\n'
             'files:\n'
@@ -148,32 +148,41 @@ class TestSetCollectionCitationType:
             '    title: "History of Stratton, Vermont"\n'
         )
         (tmp_path / 'metadata.yaml').write_text(original, encoding='utf-8')
-        wc.set_collection_citation_type(tmp_path, 'book')
+        wc.set_collection_defaults(tmp_path, {'citation_type': 'book', 'title': 'Stratton History'})
         text = (tmp_path / 'metadata.yaml').read_text(encoding='utf-8')
         assert 'citation_type: "book"' in text
+        assert 'title: "Stratton History"' in text
         assert '# TODO: verify author' in text
         assert 'files:' in text
         assert 'history-of-stratton-vt.pdf' in text
         meta = wc.load_collection_meta(tmp_path)
         assert meta['citation_type'] == 'book'
+        assert meta['title'] == 'Stratton History'
         assert meta['organization'] == 'Green Mountain Club'
         assert meta['files']['history-of-stratton-vt.pdf']['author'] == 'Unknown'
 
-    def test_replaces_an_existing_citation_type_line_only(self, tmp_path: Path):
+    def test_replaces_existing_keys_in_place_only(self, tmp_path: Path):
         (tmp_path / 'metadata.yaml').write_text(
             'organization: "Green Mountain Club"\ncitation_type: "magazine"\n',
             encoding='utf-8',
         )
-        wc.set_collection_citation_type(tmp_path, 'report')
+        wc.set_collection_defaults(tmp_path, {'citation_type': 'report'})
         text = (tmp_path / 'metadata.yaml').read_text(encoding='utf-8')
         assert text.count('citation_type:') == 1
         assert 'citation_type: "report"' in text
         assert 'organization: "Green Mountain Club"' in text
 
+    def test_writes_an_explicit_empty_value_rather_than_dropping_the_key(self, tmp_path: Path):
+        (tmp_path / 'metadata.yaml').write_text('language: "en"\n', encoding='utf-8')
+        wc.set_collection_defaults(tmp_path, {'language': ''})
+        meta = wc.load_collection_meta(tmp_path)
+        assert meta['language'] == ''
+
     def test_creates_metadata_yaml_when_missing(self, tmp_path: Path):
-        wc.set_collection_citation_type(tmp_path, 'map')
+        wc.set_collection_defaults(tmp_path, {'citation_type': 'map', 'author': 'GMC Staff'})
         meta = wc.load_collection_meta(tmp_path)
         assert meta['citation_type'] == 'map'
+        assert meta['author'] == 'GMC Staff'
 
     def test_does_not_touch_sibling_wiki_files(self, tmp_path: Path):
         (tmp_path / 'metadata.yaml').write_text('organization: "Green Mountain Club"\n', encoding='utf-8')
@@ -184,7 +193,7 @@ class TestSetCollectionCitationType:
         before_mtime = wiki_file.stat().st_mtime
         before_text = wiki_file.read_text(encoding='utf-8')
 
-        wc.set_collection_citation_type(tmp_path, 'report')
+        wc.set_collection_defaults(tmp_path, {'citation_type': 'report'})
 
         assert wiki_file.read_text(encoding='utf-8') == before_text
         assert wiki_file.stat().st_mtime == before_mtime

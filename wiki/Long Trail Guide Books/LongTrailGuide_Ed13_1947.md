@@ -7,6 +7,7 @@ resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed13_1947.pdf"
 timestamp: "2026-07-02T18:59:14Z"
 publisher: "Green Mountain Club"
 volume: "1947"
+author: "Green Mountain Club"
 pages: "75"
 language: "en"
 ---
