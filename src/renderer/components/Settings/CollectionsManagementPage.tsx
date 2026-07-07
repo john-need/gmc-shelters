@@ -42,7 +42,7 @@ type PendingRun = {
     pending: string[];  // subset that actually needs this operation
 };
 
-export default function CollectionsManagementPage() {
+export default function CollectionsManagementPage({onOpenAiSettings}: {onOpenAiSettings?: () => void}) {
     return (
         <>
             <div className="settings-page-head">
@@ -56,14 +56,30 @@ export default function CollectionsManagementPage() {
             </div>
 
             <div className="settings-body">
-                <CollectionsCard/>
-                <ApiKeyCard/>
+                <CollectionsCard onOpenAiSettings={onOpenAiSettings}/>
+                <ApiKeyNote onOpenAiSettings={onOpenAiSettings}/>
             </div>
         </>
     );
 }
 
-function CollectionsCard() {
+function ApiKeyNote({onOpenAiSettings}: {onOpenAiSettings?: () => void}) {
+    return (
+        <div className="settings-card">
+            <h3>Anthropic API key <em>· OCR cleanup &amp; photo captions</em></h3>
+            <div className="desc">
+                Clean-up runs above use Anthropic&rsquo;s Claude and require an API key. Manage
+                the key and which model is used on the{' '}
+                <button type="button" className="btn ghost sm" onClick={onOpenAiSettings}>
+                    AI Settings
+                </button>{' '}
+                page.
+            </div>
+        </div>
+    );
+}
+
+function CollectionsCard({onOpenAiSettings}: {onOpenAiSettings?: () => void}) {
     const [collections, setCollections] = useState<CollectionStatus[]>([]);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -431,7 +447,15 @@ function CollectionsCard() {
                 />
             )}
 
-            {needsApiKey && <NeedsApiKeyDialog onClose={() => setNeedsApiKey(false)}/>}
+            {needsApiKey && (
+                <NeedsApiKeyDialog
+                    onClose={() => setNeedsApiKey(false)}
+                    onOpenAiSettings={() => {
+                        setNeedsApiKey(false);
+                        onOpenAiSettings?.();
+                    }}
+                />
+            )}
 
             {headerEdit && (
                 <HeaderEditorDialog
@@ -986,7 +1010,7 @@ function CollectionDeleteModal({name, fileCount, onCancel, onConfirm}: {
     );
 }
 
-function NeedsApiKeyDialog({onClose}: { onClose: () => void }) {
+function NeedsApiKeyDialog({onClose, onOpenAiSettings}: { onClose: () => void; onOpenAiSettings?: () => void }) {
     return (
         <div
             role="dialog"
@@ -1002,14 +1026,14 @@ function NeedsApiKeyDialog({onClose}: { onClose: () => void }) {
             }}>
                 <div style={{fontWeight: 600, marginBottom: 8}}>
                     <p>This function uses Anthropic&rsquo;s Claude to scan and clean documents. </p>
-                    <p>An Anthropic API key is required. </p>
-                    <p> Add it below</p>
+                    <p>An Anthropic API key is required.</p>
                 </div>
                 <div style={{fontSize: 12, color: 'var(--ink-3)', marginBottom: 14}}>
-                    Enter API key below.
+                    Add one on the AI Settings page.
                 </div>
-                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                    <button className="btn primary" onClick={onClose}>OK</button>
+                <div style={{display: 'flex', justifyContent: 'flex-end', gap: 8}}>
+                    <button className="btn" onClick={onClose}>Cancel</button>
+                    <button className="btn primary" onClick={onOpenAiSettings}>Go to AI Settings</button>
                 </div>
             </div>
         </div>
@@ -1051,107 +1075,6 @@ function RerunDialog({run, onRerunAll, onPendingOnly, onCancel}: {
                         Re-run all {run.all.length}
                     </button>
                 </div>
-            </div>
-        </div>
-    );
-}
-
-function ApiKeyCard() {
-    const [saved, setSaved] = useState('');
-    const [draft, setDraft] = useState('');
-    const [reveal, setReveal] = useState(false);
-    const [toast, setToast] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        window.api.ai.getApiKey().then((key) => {
-            setSaved(key);
-            setDraft(key);
-        });
-    }, []);
-
-    const flash = (msg: string) => {
-        setToast(msg);
-        setTimeout(() => setToast(null), 1600);
-    };
-
-    const save = async () => {
-        const key = draft.trim();
-        if (key && !key.startsWith('sk-ant-')) {
-            setError('That does not look like an Anthropic key — it should start with sk-ant-.');
-            return;
-        }
-        setError(null);
-        await window.api.ai.setApiKey(key);
-        setSaved(key);
-        setDraft(key);
-        flash(key ? 'API key saved' : 'API key removed');
-    };
-
-    const remove = async () => {
-        setError(null);
-        await window.api.ai.setApiKey('');
-        setSaved('');
-        setDraft('');
-        flash('API key removed');
-    };
-
-    return (
-        <div className="settings-card">
-            <h3>Anthropic API key <em>· OCR cleanup &amp; photo captions</em></h3>
-            <div className="desc">
-                Used by the clean-up runs above. Stored locally in{' '}
-                <code style={{fontFamily: 'var(--font-mono)'}}>.anthropic_api_key</code> at the
-                repository root — gitignored, owner-readable only, and never leaves this machine
-                except in requests to the Anthropic API. An{' '}
-                <code style={{fontFamily: 'var(--font-mono)'}}>ANTHROPIC_API_KEY</code> environment
-                variable, when set, takes precedence.
-            </div>
-
-            <div style={{display: 'flex', gap: 8, alignItems: 'center', marginTop: 12}}>
-                <label htmlFor="anthropic-api-key" className="label" style={{minWidth: 130}}>
-                    Anthropic API key
-                </label>
-                <input
-                    id="anthropic-api-key"
-                    className="input"
-                    style={{flex: 1, fontFamily: 'var(--font-mono)'}}
-                    type={reveal ? 'text' : 'password'}
-                    placeholder="sk-ant-…"
-                    value={draft}
-                    onChange={(e) => {
-                        setError(null);
-                        setDraft(e.target.value);
-                    }}
-                    autoComplete="off"
-                    spellCheck={false}
-                />
-                <button className="btn" type="button" onClick={() => setReveal((r) => !r)}>
-                    {reveal ? 'Hide' : 'Show'}
-                </button>
-            </div>
-
-            {error && (
-                <div style={{marginTop: 8, fontSize: 12, color: 'var(--danger, #c0392b)'}}>{error}</div>
-            )}
-
-            <div style={{display: 'flex', gap: 8, marginTop: 14}}>
-                <button
-                    className="btn primary"
-                    type="button"
-                    onClick={save}
-                    disabled={draft.trim() === saved}
-                >
-                    Save
-                </button>
-                {saved && (
-                    <button className="btn" type="button" onClick={remove}>
-                        Remove key
-                    </button>
-                )}
-                {toast && (
-                    <span style={{alignSelf: 'center', fontSize: 12, color: 'var(--ink-3)'}}>{toast}</span>
-                )}
             </div>
         </div>
     );

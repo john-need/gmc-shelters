@@ -42,6 +42,56 @@ def test_escalation_model_used_when_requested():
     assert transport.requests[0]['body']['model'] == llm_client.ESCALATION_MODEL
 
 
+def test_primary_model_used_for_non_escalated_calls():
+    transport = FakeTransport()
+    client = llm_client.AnthropicClient(
+        api_key='sk-test', transport=transport, primary_model=llm_client.ESCALATION_MODEL,
+    )
+    client.complete('normal page')
+    assert transport.requests[0]['body']['model'] == llm_client.ESCALATION_MODEL
+
+
+def test_escalation_model_unaffected_by_primary_model_override():
+    transport = FakeTransport()
+    client = llm_client.AnthropicClient(
+        api_key='sk-test', transport=transport, primary_model=llm_client.ESCALATION_MODEL,
+    )
+    client.complete('hard page', escalate=True)
+    assert transport.requests[0]['body']['model'] == llm_client.ESCALATION_MODEL
+
+
+def test_primary_model_defaults_to_default_model():
+    transport = FakeTransport()
+    client = llm_client.AnthropicClient(api_key='sk-test', transport=transport)
+    client.complete('normal page')
+    assert transport.requests[0]['body']['model'] == llm_client.DEFAULT_MODEL
+
+
+class TestLoadModelTier:
+    def test_returns_default_when_file_missing(self, tmp_path):
+        assert llm_client.load_model_tier(tmp_path) == 'default'
+
+    def test_returns_saved_tier(self, tmp_path):
+        (tmp_path / '.ai_model').write_text('escalation\n', encoding='utf-8')
+        assert llm_client.load_model_tier(tmp_path) == 'escalation'
+
+    def test_returns_default_for_unrecognized_content(self, tmp_path):
+        (tmp_path / '.ai_model').write_text('not-a-real-tier', encoding='utf-8')
+        assert llm_client.load_model_tier(tmp_path) == 'default'
+
+    def test_returns_default_for_empty_file(self, tmp_path):
+        (tmp_path / '.ai_model').write_text('', encoding='utf-8')
+        assert llm_client.load_model_tier(tmp_path) == 'default'
+
+
+class TestResolvePrimaryModel:
+    def test_default_tier_maps_to_default_model(self):
+        assert llm_client.resolve_primary_model('default') == llm_client.DEFAULT_MODEL
+
+    def test_escalation_tier_maps_to_escalation_model(self):
+        assert llm_client.resolve_primary_model('escalation') == llm_client.ESCALATION_MODEL
+
+
 class TestLoadApiKey:
     def test_environment_variable_wins(self, tmp_path, monkeypatch):
         (tmp_path / '.anthropic_api_key').write_text('sk-from-file\n', encoding='utf-8')

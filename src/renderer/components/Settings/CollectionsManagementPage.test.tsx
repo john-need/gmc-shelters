@@ -40,9 +40,11 @@ const STATUS: CollectionStatus[] = [
   },
 ];
 
+let onOpenAiSettings: jest.Mock;
+
 async function renderPage() {
   (window.api.collections.status as jest.Mock).mockResolvedValue(STATUS);
-  render(<CollectionsManagementPage />);
+  render(<CollectionsManagementPage onOpenAiSettings={onOpenAiSettings} />);
   await waitFor(() => expect(window.api.collections.status).toHaveBeenCalled());
   return screen.findByText('long-trail-news');
 }
@@ -50,6 +52,7 @@ async function renderPage() {
 describe('CollectionsManagementPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    onOpenAiSettings = jest.fn();
     (window.api.ai.getApiKey as jest.Mock).mockResolvedValue('sk-ant-x');
     (window.api.collections.run as jest.Mock).mockResolvedValue(
       { ok: true, converted: 1, cached: 0, failed: 0 });
@@ -70,10 +73,17 @@ describe('CollectionsManagementPage', () => {
     expect(screen.getByText('long-trail-news')).toBeInTheDocument();
   });
 
-  it('shows the Collections title and keeps the API key card', async () => {
+  it('shows the Collections title and no longer embeds the API key field', async () => {
     await renderPage();
     expect(screen.getByText('§ Settings / Collections')).toBeInTheDocument();
-    expect(screen.getByLabelText(/anthropic api key/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/anthropic api key/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a link-back note pointing to AI Settings in place of the key field', async () => {
+    await renderPage();
+    expect(screen.getByText(/anthropic api key/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /ai settings/i }));
+    expect(onOpenAiSettings).toHaveBeenCalledTimes(1);
   });
 
   it('shows no stale-index warning when the last build had no skips', async () => {
@@ -307,27 +317,16 @@ describe('CollectionsManagementPage', () => {
     });
   });
 
-  it('still saves the API key from this page', async () => {
+  it('prompts for a key with a link to AI Settings when cleaning up without one configured', async () => {
     (window.api.ai.getApiKey as jest.Mock).mockResolvedValue('');
     await renderPage();
-    fireEvent.change(screen.getByLabelText(/anthropic api key/i), {
-      target: { value: 'sk-ant-new456' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-    await waitFor(() => {
-      expect(window.api.ai.setApiKey).toHaveBeenCalledWith('sk-ant-new456');
-    });
-  });
-
-  it('still rejects a malformed API key', async () => {
-    (window.api.ai.getApiKey as jest.Mock).mockResolvedValue('');
-    await renderPage();
-    fireEvent.change(screen.getByLabelText(/anthropic api key/i), {
-      target: { value: 'not-a-key' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-    expect(await screen.findByText(/should start with/i)).toBeInTheDocument();
-    expect(window.api.ai.setApiKey).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('long-trail-news'));
+    fireEvent.click(screen.getByRole('checkbox', { name: /select long-trail-news/i }));
+    fireEvent.click(screen.getByRole('button', { name: /clean up \(3\)/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.queryByText(/add it below/i)).not.toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /ai settings/i }));
+    expect(onOpenAiSettings).toHaveBeenCalledTimes(1);
   });
 
   it('shows a file as cleaning then cleaned as progress events arrive', async () => {

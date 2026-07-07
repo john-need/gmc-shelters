@@ -3,6 +3,7 @@ import ArchitecturesPage from './ArchitecturesPage';
 import CategoriesPage from './CategoriesPage';
 import PathsPage from './PathsPage';
 import CollectionsManagementPage from './CollectionsManagementPage';
+import AiSettingsPage from './AiSettingsPage';
 import AboutPage from './AboutPage';
 
 interface Props {
@@ -69,6 +70,17 @@ const pages = [
     ),
   },
   {
+    id: 'ai-settings',
+    label: 'AI Settings',
+    sub: 'model & api key',
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        <circle cx="12" cy="12" r="4"/>
+      </svg>
+    ),
+  },
+  {
     id: 'about',
     label: 'About',
     sub: 'version & credits',
@@ -119,7 +131,8 @@ export default function SettingsLayout({ page, setPage, onClose }: Props) {
         {page === 'architectures' && <ArchitecturesPage />}
         {page === 'categories' && <CategoriesPage />}
         {page === 'paths' && <PathsPage />}
-        {page === 'ai' && <CollectionsManagementPage />}
+        {page === 'ai' && <CollectionsManagementPage onOpenAiSettings={() => setPage('ai-settings')} />}
+        {page === 'ai-settings' && <AiSettingsPage />}
         {page === 'about' && <AboutPage />}
       </div>
     </div>

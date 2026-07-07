@@ -31,7 +31,7 @@ const noopApi: ElectronAPI = {
     getHeader: () => Promise.resolve(null),
     saveHeader: () => Promise.resolve({ ok: true }),
   },
-  ai: { getApiKey: () => Promise.resolve(''), setApiKey: noop },
+  ai: { getApiKey: () => Promise.resolve(''), setApiKey: noop, getModel: () => Promise.resolve('default'), setModel: noop },
   collections: {
     status: () => Promise.resolve([]),
     run: noop,

@@ -72,6 +72,8 @@ export const CHANNELS = {
   WIKI_SAVE_HEADER: 'wiki:saveHeader',
   AI_GET_API_KEY: 'ai:getApiKey',
   AI_SET_API_KEY: 'ai:setApiKey',
+  AI_GET_MODEL: 'ai:getModel',
+  AI_SET_MODEL: 'ai:setModel',
   COLLECTIONS_STATUS: 'collections:status',
   COLLECTIONS_RUN: 'collections:run',
   COLLECTIONS_CANCEL: 'collections:cancel',
@@ -516,6 +518,15 @@ export interface ConnectionTestResult {
   message: string;
 }
 
+// The two Claude models already wired into scripts/lib/llm_client.py (DEFAULT_MODEL/ESCALATION_MODEL).
+// Keep labels in sync with that file if either model changes.
+export type AiModelTier = 'default' | 'escalation';
+
+export const AI_MODEL_OPTIONS: { id: AiModelTier; label: string }[] = [
+  { id: 'default', label: 'Fast (default)' },
+  { id: 'escalation', label: 'Capable (escalation)' },
+];
+
 export interface ElectronAPI {
   architectures: {
     getAll: () => Promise<Architecture[]>;
@@ -594,6 +605,8 @@ export interface ElectronAPI {
   ai: {
     getApiKey: () => Promise<string>;
     setApiKey: (key: string) => Promise<void>;
+    getModel: () => Promise<AiModelTier>;
+    setModel: (tier: AiModelTier) => Promise<void>;
   };
   collections: {
     status: () => Promise<CollectionStatus[]>;

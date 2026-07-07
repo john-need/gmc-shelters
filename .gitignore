@@ -193,3 +193,6 @@ wiki/search.db
 
 # Anthropic API key saved by the app (Settings > AI Integration) — never commit
 .anthropic_api_key
+
+# Selected AI model tier saved by the app (Settings > AI Settings) — never commit
+.ai_model

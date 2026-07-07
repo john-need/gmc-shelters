@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -108,6 +108,8 @@ const api: ElectronAPI = {
   ai: {
     getApiKey: (): Promise<string> => ipcRenderer.invoke(CHANNELS.AI_GET_API_KEY),
     setApiKey: (key: string): Promise<void> => ipcRenderer.invoke(CHANNELS.AI_SET_API_KEY, { key }),
+    getModel: (): Promise<AiModelTier> => ipcRenderer.invoke(CHANNELS.AI_GET_MODEL),
+    setModel: (tier: AiModelTier): Promise<void> => ipcRenderer.invoke(CHANNELS.AI_SET_MODEL, { tier }),
   },
   collections: {
     status: (): Promise<CollectionStatus[]> => ipcRenderer.invoke(CHANNELS.COLLECTIONS_STATUS),
