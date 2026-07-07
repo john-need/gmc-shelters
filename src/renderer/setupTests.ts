@@ -84,7 +84,12 @@ const mockApi: ElectronAPI = {
     getHeader: jest.fn().mockResolvedValue(null),
     saveHeader: jest.fn().mockResolvedValue({ ok: true }),
   },
-  ai: { getApiKey: jest.fn().mockResolvedValue(''), setApiKey: jest.fn().mockResolvedValue(undefined) },
+  ai: {
+    getApiKey: jest.fn().mockResolvedValue(''),
+    setApiKey: jest.fn().mockResolvedValue(undefined),
+    getModel: jest.fn().mockResolvedValue('default'),
+    setModel: jest.fn().mockResolvedValue(undefined),
+  },
   collections: {
     status: jest.fn().mockResolvedValue([]),
     run: jest.fn().mockResolvedValue({ ok: true, converted: 0, cached: 0, failed: 0 }),

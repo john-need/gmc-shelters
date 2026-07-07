@@ -37,7 +37,7 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from scripts.lib import wiki_convert as wc
-from scripts.lib.llm_client import AnthropicClient, load_api_key
+from scripts.lib.llm_client import AnthropicClient, load_api_key, load_model_tier, resolve_primary_model
 
 COLLECTIONS = REPO / 'collections'
 WIKI = REPO / 'wiki'
@@ -193,7 +193,10 @@ def main() -> None:
     if args.no_clean:
         llm = lambda prompt: prompt.rsplit('OCR text:\n', 1)[-1]  # noqa: E731 identity pass
     else:
-        client = AnthropicClient(api_key=load_api_key(REPO))
+        client = AnthropicClient(
+            api_key=load_api_key(REPO),
+            primary_model=resolve_primary_model(load_model_tier(REPO)),
+        )
         llm = client.complete
 
     extract_ills = None if args.no_images else make_illustration_extractor(client, WIKI)

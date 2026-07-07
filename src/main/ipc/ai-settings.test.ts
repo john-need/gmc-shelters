@@ -51,4 +51,34 @@ describe('ipc/ai-settings', () => {
     expect(await get(null)).toBe('');
     expect(fs.existsSync(path.join(tmpDir, '.anthropic_api_key'))).toBe(false);
   });
+
+  it('AI_GET_MODEL returns "default" when no .ai_model file exists', async () => {
+    const get = getHandler(CHANNELS.AI_GET_MODEL);
+    expect(await get(null)).toBe('default');
+  });
+
+  it('AI_SET_MODEL/AI_GET_MODEL round-trip a valid tier through the model file', async () => {
+    const set = getHandler(CHANNELS.AI_SET_MODEL);
+    const get = getHandler(CHANNELS.AI_GET_MODEL);
+    await set(null, { tier: 'escalation' });
+    expect(await get(null)).toBe('escalation');
+
+    const modelFile = path.join(tmpDir, '.ai_model');
+    expect(fs.readFileSync(modelFile, 'utf8').trim()).toBe('escalation');
+    expect(fs.statSync(modelFile).mode & 0o777).toBe(0o600);
+  });
+
+  it('AI_GET_MODEL returns "default" when the file holds an unrecognized value', async () => {
+    fs.writeFileSync(path.join(tmpDir, '.ai_model'), 'not-a-real-tier');
+    const get = getHandler(CHANNELS.AI_GET_MODEL);
+    expect(await get(null)).toBe('default');
+  });
+
+  it('AI_SET_MODEL rejects an invalid tier without writing the file', async () => {
+    const set = getHandler(CHANNELS.AI_SET_MODEL);
+    const get = getHandler(CHANNELS.AI_GET_MODEL);
+    await expect(set(null, { tier: 'not-a-real-tier' })).rejects.toThrow();
+    expect(fs.existsSync(path.join(tmpDir, '.ai_model'))).toBe(false);
+    expect(await get(null)).toBe('default');
+  });
 });
