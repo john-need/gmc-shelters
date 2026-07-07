@@ -1387,6 +1387,22 @@ html, body {
 .md-tool:hover { background: var(--hover); color: var(--ink-1); }
 .md-tool.active { background: var(--selected); color: var(--forest-deep); }
 .md-tool-divider { width: 1px; height: 18px; background: var(--line); margin: 0 4px; flex-shrink: 0; }
+.md-view-toggle { display: flex; gap: 2px; }
+.md-view-btn {
+  height: 24px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.md-view-btn:hover { background: var(--hover); color: var(--ink-1); }
+.md-view-btn.active { background: var(--selected); color: var(--forest-deep); }
 .md-tool-label {
   font-family: var(--font-mono);
   font-size: 9.5px;
@@ -1401,17 +1417,29 @@ html, body {
 
 .md-split {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   min-height: 0;
+  overflow: hidden;
 }
 .md-pane {
   display: flex;
   flex-direction: column;
+  width: 50%;
+  flex-shrink: 0;
   min-height: 0;
   overflow: hidden;
+  transition: width 0.28s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 .md-pane + .md-pane { border-left: 1px solid var(--line-2); }
+.md-split.mode-source .md-pane--preview,
+.md-split.mode-preview .md-pane--source {
+  width: 0;
+  border-left: none;
+}
+.md-split.mode-source .md-pane--source,
+.md-split.mode-preview .md-pane--preview {
+  width: 100%;
+}
 .md-pane-head {
   padding: 8px 18px;
   font-family: var(--font-mono);

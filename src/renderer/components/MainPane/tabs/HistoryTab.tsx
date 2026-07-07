@@ -4,6 +4,7 @@ import type { AppDispatch, RootState } from '../../../store';
 import { setHistoryContent, saveHistory, setShelterHistoryThunk, loadHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
 import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
+import { loadHistoryViewMode, saveHistoryViewMode, type HistoryViewMode } from '../../../historyViewSettings';
 
 function inline(s: string): string {
   s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -80,6 +81,12 @@ export default function HistoryTab() {
   const missing = useSelector((state: RootState) => state.shelters.historyMissing);
   const ref = useRef<HTMLTextAreaElement>(null);
   const [browsingPath, setBrowsingPath] = useState(false);
+  const [viewMode, setViewMode] = useState<HistoryViewMode>(loadHistoryViewMode);
+
+  const changeViewMode = (mode: HistoryViewMode) => {
+    setViewMode(mode);
+    saveHistoryViewMode(mode);
+  };
 
   if (!s) return null;
 
@@ -206,6 +213,21 @@ export default function HistoryTab() {
           </svg>
         </button>
 
+        <div className="md-tool-divider" />
+        <div className="md-view-toggle" role="group" aria-label="History view mode">
+          {(['source', 'both', 'preview'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className={`md-view-btn${viewMode === mode ? ' active' : ''}`}
+              aria-pressed={viewMode === mode}
+              onClick={() => changeViewMode(mode)}
+            >
+              {mode === 'source' ? 'Source' : mode === 'both' ? 'Both' : 'Preview'}
+            </button>
+          ))}
+        </div>
+
         <span className="md-tool-label">
           {dirty ? (
             <>
@@ -223,8 +245,8 @@ export default function HistoryTab() {
         </span>
       </div>
 
-      <div className="md-split">
-        <div className="md-pane">
+      <div className={`md-split mode-${viewMode}`}>
+        <div className="md-pane md-pane--source" aria-hidden={viewMode === 'preview'}>
           <div className="md-pane-head">
             <span>Source</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -250,7 +272,7 @@ export default function HistoryTab() {
           />
         </div>
 
-        <div className="md-pane">
+        <div className="md-pane md-pane--preview" aria-hidden={viewMode === 'source'}>
           <div className="md-pane-head">
             <span>Preview</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -162,4 +162,131 @@ describe('HistoryTab', () => {
     expect(screen.getByText('aeolus-view-camp/aeolus-view-camp.md')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create file/i })).toBeInTheDocument();
   });
+
+  it('defaults to the Both view mode with both panes visible', () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    const store = makeStore(makeShelter());
+
+    const { container } = render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Both' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Source' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Preview' })).toHaveAttribute('aria-pressed', 'false');
+    expect(container.querySelector('.md-pane--source')).not.toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-pane--preview')).not.toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('selecting Source hides the preview pane and keeps editing/save behavior intact', () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    const store = makeStore(makeShelter());
+    window.api.history.write = jest.fn();
+
+    const { container } = render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Source' }));
+
+    expect(screen.getByRole('button', { name: 'Source' })).toHaveAttribute('aria-pressed', 'true');
+    expect(container.querySelector('.md-pane--preview')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-split')).toHaveClass('mode-source');
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '# Updated in source view' } });
+    expect(store.getState().shelters.historyContent).toBe('# Updated in source view');
+    expect(screen.getByText(/Modified/)).toBeInTheDocument();
+
+    expect(window.api.history.write).not.toHaveBeenCalled();
+  });
+
+  it('selecting Preview hides the source editor and keeps the dirty indicator accurate', () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    const store = makeStore(makeShelter());
+
+    const { container } = render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '# Edited before switching' } });
+    expect(screen.getByText(/Modified/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+
+    expect(screen.getByRole('button', { name: 'Preview' })).toHaveAttribute('aria-pressed', 'true');
+    expect(container.querySelector('.md-pane--source')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-split')).toHaveClass('mode-preview');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByText(/Modified/)).toBeInTheDocument();
+  });
+
+  it('selecting Both restores the two-pane layout with content intact', () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    const store = makeStore(makeShelter());
+
+    const { container } = render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Source' }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '# Written in source view' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Both' }));
+
+    expect(screen.getByRole('button', { name: 'Both' })).toHaveAttribute('aria-pressed', 'true');
+    expect(container.querySelector('.md-pane--source')).not.toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-pane--preview')).not.toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-split')).not.toHaveClass('mode-source');
+    expect(container.querySelector('.md-split')).not.toHaveClass('mode-preview');
+    expect(store.getState().shelters.historyContent).toBe('# Written in source view');
+    expect(screen.getByRole('textbox')).toHaveValue('# Written in source view');
+  });
+
+  it('does not disrupt an in-progress save when the view mode changes', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    const store = makeStore(makeShelter());
+    let resolveWrite: () => void = () => {};
+    window.api.history.write = jest.fn(() => new Promise<void>((resolve) => { resolveWrite = resolve; }));
+
+    render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '# Saving this' } });
+    fireEvent.click(screen.getByRole('button', { name: /save file/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+    expect(screen.getByRole('button', { name: 'Preview' })).toHaveAttribute('aria-pressed', 'true');
+
+    resolveWrite();
+    await waitFor(() => {
+      expect(store.getState().shelters.historyDirty).toBe(false);
+    });
+    expect(screen.getByText(/Saved/)).toBeInTheDocument();
+  });
+
+  it('restores the last-selected view mode on mount, proving persistence across navigation', () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+    localStorage.setItem('gmc.historyView', 'preview');
+    const store = makeStore(makeShelter());
+
+    const { container } = render(
+      <Provider store={store}>
+        <HistoryTab />
+      </Provider>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Preview' })).toHaveAttribute('aria-pressed', 'true');
+    expect(container.querySelector('.md-pane--source')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.md-split')).toHaveClass('mode-preview');
+  });
 });
