@@ -58,6 +58,9 @@ function SourceFormFields({ s, set, showField, containerLabel, onOpenPicker }: S
             <input className="input" value={s.container_title ?? ''} onChange={set('container_title')} placeholder="Long Trail News" />
           </div>
         )}
+        {showField('container_author') && (
+          <div className="field col-span-2"><label className="label">Book author <span className="hint">if different from the chapter author or editor</span></label><input className="input" value={s.container_author ?? ''} onChange={set('container_author')} placeholder="Fisher, Dorothy Canfield" /></div>
+        )}
         {showField('editor') && (
           <div className="field"><label className="label">Editor</label><input className="input" value={s.editor ?? ''} onChange={set('editor')} /></div>
         )}

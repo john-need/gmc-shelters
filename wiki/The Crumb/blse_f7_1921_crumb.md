@@ -1,10 +1,10 @@
 ---
 type: "Newsletter"
-citation_type: "magazine"
+citation_type: "newspaper"
 title: "The Crumb"
 description: "The Crumb, 1921."
 resource: "collections/The Crumb/blse_f7_1921_crumb.pdf"
-timestamp: "2026-07-02T19:00:21Z"
+timestamp: "2026-07-07T14:04:42Z"
 publisher: "Bread Loaf School of English"
 volume: "1921"
 pages: "42"
@@ -17,2119 +17,1197 @@ language: "en"
 <!-- page: 2 -->
 MIDDLEBURY COLLEGE
 
-
-
-
 THE EGBERT STARR LIBRARY
 
-
-
-
-     ARCHIVES
-       AZG
-         1
-        FE j
-          arme|
+ARCHIVES
+AZG
+1
+FE j
+arme|
 
 <!-- page: 3 -->
-|             The Crumb
-                                                       "^ 5        Awgast 2, i928                                           UP                            AUN           i
-             “9
+The Crumb
+August 2, 1928
 
+You will all be delighted to learn that Miss Cather and Miss Lewis are to remain at Bread Loaf until Sunday.
 
-                                                                             to learn        that          Miss          Cather                and Mise: Lewis
-              eu will           all-be                delighted                                                                                                des
-            to remain           at      Bread              Leaf        until        Sunday.
-arë
-                                                                                     that     you         can        hear        Miss               Futterer                 in
-   .         Be    sare       to make                 your        plans        80
-                                                                         and Miss                         Ramsey           in a, program                                of .
- "Rosalind"by Barris                                  this        evening,
-                                                generous courtesy being
- songs.   Surely we ^ll appreciate greatly the                  by.
-                                     ld shew our aom
- extended ta the Sehool,.and we shou Eight O'clock               NS
- attending to the, last Breadloafer.
-                                                Who has                             change       of       thé Photograph                             Exchange,
-           Mr.     James           H     Burckes,
-                                    5:30 and                                                        6:00 to-day                   to deliver
- will bo at the Bookstore. between the  first                                                       play.                Proofs                of     other                 play
- prints           of     the ‘pictures                     taken        of
-                                                                                             being          put up to-day.                                 Pleasp
- pictures              will        be    possec              in the exhibit                                                                                     a           ME
-                   te     soo       lir.                at the.
-                                                  Burexes                           hour, tndicatec e
- ke        sure                                                                                                             A0                                      5            *
+Be sure to make your plans so that you can hear Miss Futterer in "Rosalind" by Barrie and Miss Ramsey in a program of songs. Surely we all appreciate greatly the generous courtesy being extended to the School, and we should show our appreciation by attending to the last Breadloafer at Eight O'clock.
 
-                                           This exhibit includes some
-                          e
-     cxhibit Twe is being posted to-day.                   suggested that
- pictwhic   ur  ed up in Exhibit One, qs it has boan
-              h were                                   of Mrs   Markham-and |
-                                         e pictures
- sume would like to see all tho availabl
-                                      If you like   some  of  the   now prints
- others before plaeing their onder.         dibe rty- to  oros s   off your
-  pethan,e         r
-                 those . you ordered, yow- are at
-                                                                  to the Exchange,
-  first order.     When yot tårn in your films for loan:                       All those
-                                            write your
-                                       and,pa              name   upon it.
-  pleasé.put them in an envelo                               in  to   -d the ayfilms ^ ,.
-  Who had up pi^tures      in Bx..ibit One please hand                           leave *
-                                                      so  alre ady.    Pkee se
-- for those picturés, if they have not done     i                  ;                  P
-   the enevilopes.on the Dean's desk.
-                                                          ntion to two pamphlåte
-       ‘The Crumb has been requested to gall atte the Exhibit Library.
-                                                  aini ng
-   which may be found on the bookcase cont                                               .
-                    dre of particul                         teachers of debating.
-                                                                              ar     interest             to
-                  pamphlets
-  These
-  They are  brief s in pampa.et form on  Immigration and AMericanization",
-                                           Doctrine", and are arranged
-  and "Our. Foreign Polic; And The Menres     each point of debate. The
-  with references to coliateral reading   oñ-
-                                                         r,: Miss E. We >
-  pamphlets  are of especial interest in that the autho g with MN. R.
-            ‘of Roxrury Uigh School, Boston(   collaboratin
-  Loughran,                                                  this summer                                                                                                         at
-         of Eras
-            on   mus Hign Schood; Prooklyn)  is a student
-  Madd                                                    19291  and were
-  the parish SChool.     the pam^ietg were "ublis^"ed iu
-                                                                  and     colleges           during             tne last                 school year. .
-  Swed.im 750 high schools                                                                       for           the       pamphlets.                            The price
- M7. Huggard will                            be        giad       to    take        orders
-                                                                        :                                                  tect                           ne         EN
- is 404 ogoh.                                             |
-                                              ^
+Mr. James H. Burckes, who has charge of the Photograph Exchange, will be at the Bookstore between 5:30 and 6:00 to-day to deliver prints of the pictures taken of the first play. Proofs of other play pictures will be possessed in the exhibit at the Burexes hour indicated. Be sure to see Mr. Burexes. Exhibit Two is being posted to-day. This exhibit includes some pictures which were put up in Exhibit One, as it has been suggested that some would like to see all the available pictures of Mrs. Markham and others before placing their order. If you like some of the new prints better than those you ordered, you are at liberty to cross off your first order. When you turn in your films for loan to the Exchange, please put them in an envelope and write your name upon it. All those who had pictures up in Exhibit One please hand in to [illegible] the envelopes for those pictures, if they have not done so already. Please leave the envelopes on the Dean's desk.
 
+The Crumb has been requested to call attention to two pamphlets which may be found on the bookcase containing the Exhibit Library. These pamphlets are of particular interest to teachers of debating. They are brief sketches in pamphlet form on "Immigration and Americanization" and "Our Foreign Policy and The Monroe Doctrine", and are arranged with references to collateral reading on each point of debate. The pamphlets are of especial interest in that the authors, Miss E. Loughran of Roxbury High School, Boston (collaborating with M.R. Maddox of Erasmus High School, Brooklyn) is a student this summer at the Parish School. The pamphlets were published in 1929 and were used in 750 high schools and colleges during the last school year. Mr. Huggard will be glad to take orders for the pamphlets. The price is 40¢ each.
 
-                                       has    beor           requested’ tw                  rint,         the    feloine Notices
-            ‘The        Crumb.                                                 ~.                                roastwillUL be carried
-  Tomerrow night.from 6:00 to 10:50 a Frankfurt                   nity  H ouse
- on by the Boy Sdou        Ripton for the benefit cf the Commu
-                        of ts                                             side
-  at Ripton village.   tee roast Will be held on the hill gust thisgravel
-                                                  , where   the sharp ;
-  cf the village; turn up the road to the right
-                      befer e  reach ing the bridg e at this end of the. ' `
-  promontory is, just
-  village. All those connected with the,Sumuer gat&bSchool or the Inn tue
-                                             The       les will be at.       |
-  may be interested are invited: to-comé.                                                                                        time               and        help          a
-   PeaBonable price.                                 Here         is    a chance        to have                a good
-                                                                                                                                                      i                          :
-   good cause.
+The Crumb has been requested to print the following Notices:
 
-                          minister                   at Ripton               is a young          man           who       is a studentat
-      -:     € Tho                                                                                                                       in the “little
-  Middlebury.                      Valiant                 efforts        have        been made recently
-                                         The Crumb wonders whether! herbers                                                                                                           ..
-   village to equip a   "omnunivy kouse.                                    .                                                                                                          j
-                                          probte1 may’ care to.coneidar
-   of fe: Søhool interested ia the rural         “bius vor the vi Fin gorse
-  ‘ofPering some form of entertainment a» sona                                                                                           Crumb.                Je cn
-   This           quéry       is       mate          purely            upon     tar    àn4tiatqve                    e    he
-                                                                                i688,         lel         a shave tiem:                             T0.                      SØ
-  apine            it    over,          and" jf you have                                                                                  LU        Mar                      a v
-           eo E T             ANES US             memset    end          "mage«s        M in M      M,e         M PeteUU
-                                                                                                                       Seld.      card              EE                       UM
+Tomorrow night, from 6:00 to 10:50 a Frankfurt roast will be carried on by the Boy Scouts of Ripton for the benefit of the Community House at Ripton village. The roast will be held on the hill side of the village, where the sharp gravel promontory is, just before reaching the bridge at this end of the village; turn up the road to the right. All those connected with the Summer School or the Inn who may be interested are invited to come. Here is a chance to have a good time and help a good cause at a reasonable price.
+
+The minister at Ripton is a young man who is a student at Middlebury. Valiant efforts have been made recently in the "little village" to equip a Community House. The Crumb wonders whether members of the School interested in the rural problem may care to consider offering some form of entertainment as soon as possible for the village. This query is made purely upon the initiative of the Crumb.
 
 <!-- page: 4 -->
-The       Grumb.
-                                                July       1, 1922
+The Grumb.
+July 1, 1922
 
-      This evening at cight o'clock in tho iusio Hall Professor Charles
-  B. Wright will lecture on "The Present Worth of Poctry*  All are
-  cordially        invitcd.                                        3
+This evening at eight o'clock in the Music Hall Professor Charles
+B. Wright will lecture on "The Present Worth of Poetry". All are
+cordially invited.
 
-         Tomorrow         (Saturday)          afternoon        there         will    be an    expedition          to
-  Lake     Ploiad,        loaving      the     Inn    at    two        o'elocLl     and   returning        in time
-  fer    suppor.          Distances      about       throo    miles          each    way--    a total       of    six
-  or seven miles, most                of it on         tho earriags road and the                     rest on           an
-  easy trail.   All are               cordially         invited to participate.                      No nood
-  of spoeial clothing or                  A  ERA Shocs.. Ali                       who would like to fo are-
-  askod to moot in front                  of the Inn promptly                      at 2:00 P. E., Saturday.
-         This     is another          oxpedition           in addition             to the    ovo
-  oxpoditions         already       announced.
+Tomorrow (Saturday) afternoon there will be an expedition to
+Lake Pleiad, leaving the Inn at two o'clock and returning in time
+for supper. Distances about three miles each way—a total of six
+or seven miles, most of it on the carriage road and the rest on an
+easy trail. All are cordially invited to participate. No need
+of special clothing or YMCA Shoes. All who would like to go are
+asked to meet in front of the Inn promptly at 2:00 P.M., Saturday.
+This is another expedition in addition to the two
+expeditions already announced.
 
-       Hikes for the present weekend have been planned to Emily Proctor
-  Lodge on Broad Loaf iountain and to Lincoln Fountain;   The start
-  will be made on both hikes on Saturday morning aftor breakfast,    The
-  night     will     be    spent    at    the    shelters              and   the    return    made    on    Sunday
-  afternoon.   To Emily Proctor Lodge and return is about 16 miles.
-  Automobiles will take the Lineoln Mountain party to the foot of the
-  mountan.    The distanec to the shelter is throc milea, so that the
-   total     walking       distanee       will       net     be more         than    eight    miles.       There       are
-  still two plecos open on the Lineoln Hountain hike.                                           Inquiries and
-  applisations should be made to either Prof. or Urs.                                          Harrington, or
-  Poof. Skillings.
+Hikes for the present weekend have been planned to Emily Proctor
+Lodge on Bread Loaf Mountain and to Lincoln Mountain. The start
+will be made on both hikes on Saturday morning after breakfast. The
+night will be spent at the shelters and the return made on Sunday
+afternoon. To Emily Proctor Lodge and return is about 16 miles.
+Automobiles will take the Lincoln Mountain party to the foot of the
+mountain. The distance to the shelter is three miles, so that the
+total walking distance will not be more than eight miles. There are
+still two places open on the Lincoln Mountain hike. Inquiries and
+applications should be made to either Prof. or Mrs. Harrington, or
+Prof. Skillings.
 
-          There    will     be a Vesper          Service          Sunday          afternoon    at    five.       Dr.    Geo
-   T.    Smart    will     preach.       Everyone          at Bread          Loaf    is invitod.-
+There will be a Vesper Service Sunday afternoon at five. Dr. Geo.
+T. Smart will preach. Everyone at Bread Loaf is invited.
 
-        Students whe have taken books from the library are asked ta
-   return them temporarily this evening in order that certain lists
-   may be checked up.
-VA      These woe hevcnot r ristor2d are ahed to sea Hr. Davison at
- 4 his office after supper tonight or tomorrow at nine oelock.
+Students who have taken books from the library are asked to
+return them temporarily this evening in order that certain lists
+may be checked up.
+Those who have not registered are asked to see Mr. Davison at
+his office after supper tonight or tomorrow at nine o'clock.
 
-        Students whe           desire laundry serviee through the !iddlebury Stcam
-   Laundry may give            thetir names to Mr. Me Fee and got price lists. Lenn
-   ary     sent   Mondays      will      be    returned           Fridays.
+Students who desire laundry service through the Middlebury Steam
+Laundry may give their names to Mr. McFee and get price lists. Laundry sent Mondays will be returned Fridays.
 
 <!-- page: 5 -->
-"ho   Cr»onb
-                                   July 5, 1922
-                  will be in his office                  iionday from 8:00 to         8:30, frem
-       The Dean
-                  and from 1:30 to 2:50                  to consult with any          students
-9:30   te 10:30                                                                                 net
-who have     not yet registered.             It is requested          that    all who have
-registered     report   at    one    of the    hours       indicatod.
+"The Second"
+July 5, 1922
 
-                                                      trations should
-      Students wishing to make changes in their regis
-                                                 hours indieated.
-consult the Dean on Honday at one of the office
-                             are    to be had      at the        library,    except    Ward's
-       The   text-books
-"hat    is English",      Lewis’s         "American       Speech",    and     "Browning".
-                                                       be given.
-As goon as the remaining books come, notice will
-                                       the  libra ry   Honday, without
-Students should get their books from
-                                    at  once   to  the   publishers all
-fail, as it is necessary to return
-unsold copies.  As the invoices have   not  all   been   received, ail
-                          Hr. iicFoe will   prese nt   state ments as
-books are being charged.
-goon as they are roady.
+The Dean will be in his office Monday from 8:00 to 8:30, from 9:30 to 10:30 and from 1:30 to 2:50 to consult with any students who have not yet registered. It is requested that all who have registered report at one of the hours indicated.
 
-        ir. Fullington will conduct a short walk Monday tafter noon
-                                                   the     on the
-                                                          walk    should     repor
-at 3:30.   Those desiring to take
-front porch promptly at 3:50.
-                                                                   gements
-      Announcement will be made shortly regarding the arran
-                              Heanwh ile  studen ts  are  reques ted   not
-for the uso of tho library.                                  by   the
-                               proper   record  being   made
-to take out books without the
-person in charge of the library.
+Students wishing to make changes in their registrations should consult the Dean on Monday at one of the office hours indicated.
+
+The text-books are to be had at the library, except Ward's "What is English", Lewis's "American Speech", and "Browning". As soon as the remaining books come, notice will be given.
+
+Students should get their books from the library Monday, without fail, as it is necessary to return at once to the publishers all unsold copies. As the invoices have not all been received, all books are being charged. Mr. McFoe will present statements as soon as they are ready.
+
+Mr. Fullington will conduct a short walk Monday afternoon at 3:30. Those desiring to take the walk should report on the front porch promptly at 3:50.
+
+Announcement will be made shortly regarding the arrangements for the use of the library. Meanwhile students are requested not to take out books without the proper record being made by the person in charge of the library.
 
 <!-- page: 6 -->
-The   Crumb   -—- July 4,    1921.
+The Crumb — July 4, 1921.
 
-          It has boon plarmed to arrange evening entortainmonts, as a
-    rule, on Monday, Wednesday, and Friday ovenings.      The intense heat
-    to-day soems to make   it inadvisabl e to schodule an  entertainment
-| this evening.   On Wednesday evening Mrs. Conkling has consonted                              to
-Ü read from hor poems.    On Friday evening Dr. Smart will give a
-  lecturo on "The  Lady".                           |
+It has been planned to arrange evening entertainments, as a rule, on Monday, Wednesday, and Friday evenings. The intense heat to-day seems to make it inadvisable to schedule an entertainment this evening. On Wednesday evening Mrs. Conkling has consented to read from her poems. On Friday evening Dr. Smart will give a lecture on "The Lady".
 
-d         The    seating    assignments      at table       will   be changed   weckly     on
-    Thursday    at noon.         The assignments      will    be determined     by lot,      one
-|   person drawing for all the members of the School.            Members of the
-    School will be advised   as   they  enter   hhe   dining   room  Thursday noon
-    of the disposition Fato   has   made  of  thom.     The  fortunes   of Chance will
-    seo to it that a  person   is  not  assigned    twice   to the  samo  table.
+The seating assignments at table will be changed weekly on Thursday at noon. The assignments will be determined by lot, one person drawing for all the members of the School. Members of the School will be advised as they enter the dining room Thursday noon of the disposition Fate has made of them. The fortunes of Chance will see to it that a person is not assigned twice to the same table.
 
-         The Library will be in charge of Miss West during the morming,
-|   of Hiss McCaskio and Mr. Fee in the afternoon, and of Mr. Mc¥oe in
-T   the evening.  Certain books havo been placed upon resorve at the
-T   request of the instructors.     These books should not be borrowed from
-    the library, but should   be returned    to the shelves as soon as
-    one is through with  them.   Other   books  may be taken from tho library
-    for a limited time  aftor  thoy  have  been  charged by the person in
-    charge of tho library.    Attention is caliod to fiction and other
-    interesting books  provided  for the convenionoe of members ef the
-    School, algo to the magazines and papors to be found in the library.
+The Library will be in charge of Miss West during the morning, of Miss McCaskie and Mr. Fee in the afternoon, and of Mr. McVoe in the evening. Certain books have been placed upon reserve at the request of the instructors. These books should not be borrowed from the library, but should be returned to the shelves as soon as one is through with them. Other books may be taken from the library for a limited time after they have been charged by the person in charge of the library. Attention is called to fiction and other interesting books provided for the convenience of members of the School, also to the magazines and papers to be found in the library.
 
-          Attontion    is called         to the    change    in the   hour   of the    Laboratory
-    in Play Production.            This will be held from 1:30 to 2:30,                inetead of
-    at 4:30     as previously       annouwnood.      Those    not enrolled      in the     course
-    in Play Production           whom are willing to help in acting,              making
-c
-Los
-RAE
-OIM
-ee  costumes, and gotting properties aro asked to give their names to
-T   Mise Spaulding or Hr. Wayne.   It is hoped that the members of the
-|   School will cBoperate so far as possible to present several short
-    plays during the session of the School.
+Attention is called to the change in the hour of the Laboratory in Play Production. This will be held from 1:30 to 2:30, instead of at 4:30 as previously announced. Those not enrolled in the course in Play Production whom are willing to help in acting, making costumes, and getting properties are asked to give their names to Miss Spaulding or Mr. Wayne. It is hoped that the members of the School will cooperate so far as possible to present several short plays during the session of the School.
 
-1         Attentionis again called to the necessity of procuring this
-| evening any further copiesof toxt-books needed.                            Surplus copies
-a" will   be returned       tomorrow      to the    publishers.
+Attention is again called to the necessity of procuring this evening any further copies of text-books needed. Surplus copies will be returned tomorrow to the publishers.
 
-         Until furthor notice the Dean will be in his office                          at   9:30,
-    and for a short time after dinner and after supper.
+Until further notice the Dean will be in his office at 9:30, and for a short time after dinner and after supper.
 
 <!-- page: 7 -->
 The Crumb.
-                                          Jury 44 I92lI.
+July 44 1921.
 
+This evening at eight o'clock in the Music Hall Professor Wright will speak on "The Schoolmeester in Life and Literature". He wishes it stated that the presentation will be brief and, as regards its content, mercifully tempered to the temperature.
 
-                                  at    eight     o'clock        in    the    Music    Hall        Profeseor
- 1          Thig       evening
-                                                 rature”.  He wishes
- Wiricht will speak on "he Schoolmeester in Lite and, as regards its
- fit stated that the prerentation will  be brief
- Pcontent,         mercifully      senperec        to    the     temperature.
-                                                                                                  this week-end
- 3           noso who are going to Emily Proctor Lodge for
-                                                          ;                                       those going to
- Wars     asked to give their names to Miss Mildred Davis
-                                  to give their ramos                   to Mrs. Harrington;                and those
-. W crar         Brook Lodge                         are asked to indicate
- ü vto are going to Clark's Glearing on Saturday
-                                          he may   know  for how many to
- W tnat fact to Mr. Fullington, so thet
-                               It will bo  appre ciate d  if this information
-   lnrevide the noonday meal.
-    ney be hed to-iay.
+Those who are going to Emily Proctor Lodge for this week-end are asked to give their names to Miss Mildred Davis; those going to Ward Brook Lodge are asked to give their names to Mrs. Harrington; and those who are going to Clark's Clearing on Saturday are asked to indicate that fact to Mr. Fullington, so that he may know for how many to provide the noonday meal. It will be appreciated if this information may be had to-day.
 
-                              who find     it necessary              to düop     out       of a course       in which
-             Students                                                                              Dean,     They
-                          should       first     secure        the    approval        bf    the
- I they     enrolled
- j should        then report      the matter            to the        instruotor.
+Students who find it necessary to drop out of a course in which they enrolled should first secure the approval of the Dean. They should then report the matter to the instructor.
 
-             All are      remirded        ofthe need for thoughtfulness                           in maintaining
- q                                                                              and    in    the    vicinity      of
- Ja     reasonable       degree        of quiet    on     the    piazzas
- Ü claasrooma          when    classes     aro    in session.                It will       be greatly
-      appreciated       if everyons        will    cBoperate            in this       matter.
+All are reminded of the need for thoughtfulness in maintaining a reasonable degree of quiet on the piazzas and in the vicinity of classrooms when classes are in session. It will be greatly appreciated if everyone will cooperate in this matter.
 
-                              (Friday)     evening        at7 sight i o'clock              Dr.    Smart    will
-             Tomorrow
- 7
-     | lecture    on   "The    Lady".      Everyone        is         d.
-                                                                     invite
+Tomorrow (Friday) evening at 7 eight o'clock Dr. Smart will lecture on "The Lady". Everyone is invited.
 
 <!-- page: 8 -->
 The Crumb
-                                          July to   O2
+July 10, '02
 
+The Vesper Service this week will be held at eight o'clock this evening in the Music Hall. Dr. George T. [illegible] will preach. Everyone at the Inn is cordially invited.
 
-               Tho    Vesper       Service        this     wook      will     be held
-                                                                                   gom        at    eight
+At eight o'clock Monday evening Mr. R. L. Wayne, Stage Manager of The 47 Workshop, will speak on "The Little Theater Movement". All are invited.
 
-       ofoloek       this     evening       in the Music             Hall.       Dr.        George    T.
-       ot.
-       cnart     will   preach.            Everyone        at    the    Inn    is     cordially         invited.
+The following daily papers are on file in the library:
 
+The New York Times, The Boston Transcript, The Rutland Herald, and The Burlington Free Press.
 
-               At    eight     o'clock       Honcay        evening       Mr.     R.     L. Wayne,          Stage
-       Manager       of The       47     Workshop,       will     speek        on      "The    Little        Theater
+Attention is called to the exhibit of text-books from various publishers. These books are in the library in a special section.
 
-       Movement".           All    are     invited.
-
-               The    following           caily    papers        are    on    file         in the    library:
-
-       The   New York         Times,       The    Boston        Transcript,           The     Rutland        Herald,
-
-       and   The     Burlington           Free    Press.
-
-               Attention          is     called    to    the     exhibit       of text-books               fron
-
-       various       publishers.            These       books     are    in    the      library       in     a
-
-       special       section.
-
-OT
-ML.
-A
-EE
- pau
- cx
-               The    Craib       will    gladly        receive        notices        of    general        interest.
-       Notices       should       bo handed       to Mr.        lore ® ab
-                                                                eS              breakias.            tino.
-
-
-
-
-I
-AG
-BEAK
-Fan
- tial
-
-1
+The Crumb will gladly receive notices of general interest. Notices should be handed to Mr. [illegible] at breakfast. [illegible].
 
 <!-- page: 9 -->
-rae     Crimb
-                                               Juiv     19,     £2)
+Bread Loaf
+July 19, 1920
 
-           This      (ednesday)              evening     at     3:00    Professor     UVright           will    give
-his    lecture         on   “A Manx          Poet".      <All    are    invited.
+This (Wednesday) evening at 3:00 Professor Wright will give his lecture on "A Manx Poet". All are invited.
 
-      A hike to Pulpit Rock will be conducted by lir., Fullington
-Wednesday afternoon,  starting from the Inn at 3:00.   The round trip
-is about three miles.   nose wishing to go should gather on the
- rons      perch       promptly         at    5:00.
+A hike to Pulpit Rock will be conducted by Mr. Fullington Wednesday afternoon, starting from the Inn at 3:00. The round trip is about three miles. Those wishing to go should gather on the front perch promptly at 5:00.
 
-       In ansver to inquiries, it is announced that fina! examinations
-will be conducted August 10.   Accordingly,  it will be possible for
-students to leave for their homes on tne noon trains Thursday,
-August 11.
+In answer to inquiries, it is announced that final examinations will be conducted August 10. Accordingly, it will be possible for students to leave for their homes on the noon trains Thursday, August 11.
 
-      All Breadlosfors are invited to a                                   Salmagundi Evening in the
-Music Hall Thursday evening at 8:00. If                                   you have tears, please
-ghed them before you Conc.
+All Breadloafers are invited to a Salmagundi Evening in the Music Hall Thursday evening at 8:00. If you have tears, please shed them before you come.
 
-            On Friday evening at                  8:00 in the itusic Hall, Urs. Conkling
-will       speak on she life and                  works of Robert Frost and will read
-from his poems.   The attention of members of the School is called
-to a short bibliography on lin. Frost ard his work, which will be
-found in the library,    His books are also to be found there.
-tir. Frost has indicated that he will   arrive at Bread Loaf on
-Tuesday, July 19.    It is expected that he will read from his poems
-ond lecture on his work that evening and that he wili lecture on
-"The Responsibilities of a Teacher of Composition" the following                                                           day.
-Arrangements wiil be made so that ail members of the School can
-hear both of Hr. Frosts lectures.
+On Friday evening at 8:00 in the Music Hall, Mrs. Conkling will speak on the life and works of Robert Frost and will read from his poems. The attention of members of the School is called to a short bibliography on Mr. Frost and his work, which will be found in the library. His books are also to be found there. Mr. Frost has indicated that he will arrive at Bread Loaf on Tuesday, July 19. It is expected that he will read from his poems and lecture on his work that evening and that he will lecture on "The Responsibilities of a Teacher of Composition" the following day. Arrangements will be made so that all members of the School can hear both of Mr. Frost's lectures.
 
-      The Dean regrets that it is necessary to make the request again
-that quiet be maintained in the vicinity of classrooms.    The weather
-makes it necessary to leave windows end doors open, and loud conver-
-sation and constant passing on the piazzas near the classrooms makes
-it very difficult for tne teachers and stuients.    It will be greatly
-appreciated if ail will cBoperate to                                   croato   conditions             under        which
-the best possible work can be done.
+The Dean regrets that it is necessary to make the request again that quiet be maintained in the vicinity of classrooms. The weather makes it necessary to leave windows and doors open, and loud conversation and constant passing on the piazzas near the classrooms makes it very difficult for the teachers and students. It will be greatly appreciated if all will cooperate to create conditions under which the best possible work can be done.
 
-        Attention of all members of the English School, both Students
- and Faculty,   is called to the remarkable opportunity afforded by the
- Bactell Forest.     We are right at the very entrance of this magnificent
- forest; one piece of it, twonty-seven thousand acres,    lies here at
-.the north, east, and south of us, -- its trails almost at the doors
- of the Inn.    Those who care at all for the woods or for out-of-door
- life will seldom have a chance to get into the woods as easily as here.
- Because we have come for study, we may take the presence of the woods
-as a matter of course and let it go at that.  Many men and women are
-on this very day travelling hundreds of miles by train for the sole
-purpose of walking in forest which is in no Way supsrior,  if it can
-at all eoual in variety and interest,     the forest which ties here st
-the Coors or Bread ro2sf inl    Itscortesuiv     wal         SMEDE Na CIE ENAS
-members of the Ensiteb Sshool     Al  to  aval 21 &uüomsolevs cf this very
-   Ana   opnoczbubit6s s Aaa Xu                      ae   bor      oly wey to make
- HERSKET   DEDENE SaDOHA    SINDEDN     PotLo     CoS    COUNT      S               Mhera          2     only       four
-woek-ends prema!                      "oheforge    the ven’        DE the Summer Ssh«                    here, and many
-of these may prove                     rainy   anc. uniit         Tor- exnedicion                         4 matter Likes
-Lois. woere the weather 1e 9u03 0                               jlOu*9ure. Do sours                            be    more
-appropria-e tien bnet otf selzinm                               Eis OROA    EEN Eales       (ice       ele   743a    menk,.
+Attention of all members of the English School, both Students and Faculty, is called to the remarkable opportunity afforded by the Battell Forest. We are right at the very entrance of this magnificent forest; one piece of it, twenty-seven thousand acres, lies here at the north, east, and south of us, -- its trails almost at the doors of the Inn. Those who care at all for the woods or for out-of-door life will seldom have a chance to get into the woods as easily as here. Because we have come for study, we may take the presence of the woods as a matter of course and let it go at that. Many men and women are on this very day travelling hundreds of miles by train for the sole purpose of walking in forest which is in no way superior, if it can at all equal in variety and interest, the forest which lies here at the doors of Bread Loaf Inn. [illegible section - approximately 4-5 lines of heavily corrupted text]
 
 <!-- page: 10 -->
-Å                                                  The    Crumb
-                                              July       14,    1921
+The Crumb
+July 14, 1921
 
-                                      Salmagundi!              Eight     o'clock    in the Music       Hall.
-           Don't       forget
-           You     won't       be     sorry    you       came     instead    of    studying.
+Don't forget
+Salmagundi! Eight o'clock in the Music Hall.
+You won't be sorry you came instead of studying.
 
-        It looks like the best week-cnd yet.    It is likely to be cooler
-j
-                                                  moon is due about
-Fana clear, after this week's rain, and a full                  ed: one
-ZSaturday night.    Two overnight hiking expeditions aro plann
-                                            , the other   to Worth   Mt. and
-Tto Bread Loaf Mts and Emily Proctor Lodge                trips  are   asked
-‘Sucker Brook Lodge.    All who are interested in these
-Tto meet       in the large parlor at                          seven o'clock this evening for a fow
-Yminutes       to hear about them and                          to indicate their wishes in the matter.
+It looks like the best week-end yet. It is likely to be cooler and clear, after this week's rain, and a full moon is due about Saturday night. Two overnight hiking expeditions are planned: one to Bread Loaf Mts and Emily Proctor Lodge, the other to Worth Mt. and Sucker Brook Lodge. All who are interested in these trips are asked to meet in the large parlor at seven o'clock this evening for a few minutes to hear about them and to indicate their wishes in the matter.
 
-                                                appreciated            if those     who want        lunches     put
-    f       It will          be greatly
-                                               about                                      their plans by
-Tup for Saturday wilt speak with Mrs. Mills
-                The  neces sity of the cooks knowi ng                                     in davance regarding
-‘Friday noon.
-special plans is    appar ent.
-                                                                      Hall
-a           Tomorrow evening(Friday) at eight o'clock in thet Music
-                                                               Frost ",
-                                                       Rober
-    JéMrs. Conkling will speak on "The Life and Art of
-    reading some of Mr. Frosts poems.
+It will be greatly appreciated if those who want lunches put up for Saturday will speak with Mrs. Mills about their plans by Friday noon. The necessity of the cooks knowing in advance regarding special plans is apparent.
 
-    1       Monday evening Dr. Smart will lecture                                  on "The Decoration of
-    JLife".   Tuesday evening it is expected that                                  Mr. Frost will read
-                       Wednesday evening the first play                                     of the season will
-    I from his poems.
-      be presented by the class in Play Production. The                                     play is mon ^0
-    TMo Thumb".                                     n
-                       has     been        regoived       from    Mrs.    Dorothy        Canfiedl    Fisher     that
-    3       Word
-                                                          24, or the
- i sne expects to reach Bread Loaf either Sunday, July
-                                                             until Wednesday
-following morning, and that she will be at Bread Loaf
- ‘noon, giving throe lectures while here.     Dates and subjects will be
-  | announc ed later.  On Friday, July 22, at eight P. M. Mrs. Jameg
-                                                                           n
-  Canfield,    sister-in-law of Mrs. Fisher, and Hrs. Ruth Murdock Lampso
-           speak on "The Lifo and Art of Dorothy Canfield".                                         Several      of
-  I will
-. Mrs.     Fisher's best known books aro in the library.
+Tomorrow evening (Friday) at eight o'clock in the Music Hall Mrs. Conkling will speak on "The Life and Art of Robert Frost", reading some of Mr. Frost's poems.
 
-                                      to    welcome       to     the   School     of English    Mr.     Frank     S.
-4            We    are       glad
- 7 MacGregor, special representative of Houghton Mifflin Company.
-                                                            of text—books
-m ur. MacGregor has in the library an intoresting display
-           English       classes           and. will      be glad        to meet    and talk with        any
-| for                                                                                                  Mifflin
-    “members      of   the     School        who    are        interested       in the    Houghton
-    i publications.
+Monday evening Dr. Smart will lecture on "The Decoration of Life". Tuesday evening it is expected that Mr. Frost will read from his poems. Wednesday evening the first play of the season will be presented by the class in Play Production. The play is "Tom Thumb".
+
+Word has been received from Mrs. Dorothy Canfield Fisher that she expects to reach Bread Loaf either Sunday, July 24, or the following morning, and that she will be at Bread Loaf until Wednesday noon, giving three lectures while here. Dates and subjects will be announced later. On Friday, July 22, at eight P. M. Mrs. James Canfield, sister-in-law of Mrs. Fisher, and Mrs. Ruth Murdock Lampson will speak on "The Life and Art of Dorothy Canfield". Several of Mrs. Fisher's best known books are in the library.
+
+We are glad to welcome to the School of English Mr. Frank S. MacGregor, special representative of Houghton Mifflin Company. Mr. MacGregor has in the library an interesting display of text-books for English classes and will be glad to meet and talk with any members of the School who are interested in the Houghton Mifflin publications.
 
 <!-- page: 11 -->
-zs" 0runb
-                         SÆR   Pra
-                                                      a             aoe            DT
-b.                                   Pow kel
+THE CRUMB
 
+This (Monday) evening at eight Dr. Smart will lecture on "The Decoration of Life". Everyone is invited.
 
+Mrs. Mills asks that all members of the School, both students and teachers, who have not done so sign the register at the Inn office. It will be appreciated if this is arranged soon.
 
+Mr. McFee is distributing to-day statements of accounts for text-books and supplies from the bookstore. There are some small charges for express, etc., which are not included on these statements; these he will present later. It will greatly facilitate the balancing of accounts if the bills are settled promptly. Mr. McFee will be at the library for an hour after dinner to-day, from 3:30 until 5:00 and for an hour after supper. These bills should be paid to Mr. McFee in person.
 
-                         This          (Hondgy)-evening                 at eight          Dr.     Smart    will     lecture         on
-               "The   Decoration                     ef Life",         Everyone         is invited.
+You will find with this issue of The Crumb a printed list of the students in attendance at the Summer Session of Middlebury College, of which the English School is one section. It will be appreciated if you will report to Mr. Davison any errors you discover in the list; he has already discovered some. Mr. McFee's name was omitted from the list of students; there are 83 students in the English School, with the following geographical distribution: Mass.—18; N. Y.—17; Vt.—8; Conn.—7; Iowa, Ohio, and Penn. 4 each; Minn.—3; Wis., R. I., N. H., and Japan, 2 each; Ill. and Md., one each.
 
-q                     Mrs. Mills asks that all members of the School, both students
-               and teachers, who have not done so sign the register at the Inn
-M              office.    It will be appreciated if this is arranged soon.
+Mr. MacGregor will continue his exhibit of English books published by Houghton Mifflin Company to-day and tomorrow morning. It is necessary for Mr. MacGregor to leave Bread Loaf tomorrow noon. Those interested to interview him and see the books he had brought will find him in the library this afternoon and evening and tomorrow morning. He has with him several copies of some books for which there has been considerable demand and will be glad to provide those interested with copies.
 
-      q              Mr. MeFee is distributing to-day statements of accounts                                                             for
-     E         text-books and supplies from the bookstore.    There are some
-               small charges fer express,     etc., which are not included on these
-               statements;  these  he will   present  later.     It will greatly facilitate
-               the balancing of   &ócounts   if  the bills   are   settled promptly.   Mr.
-               MeFee will  be at  the  library   for an  hour   after  dinner  to-day, from
-|              3330 until 5:00 and for an hour                                 after         supper.        These       bills     should
-    "E         ve paid to Mr. MoFee in person.
-                         YOu         wiil           find    with     this    issue      of      The   Crumb      a printed        list        of
-‘>              the   students                 in    atter     ance    at    the    Summer        Session        of Middlebury
-                College,             of which             the English School              is one       section.          ft will         be
-               appreciated                if        ycu    will     report    to   Mr.       Davison       any    errors      you      discover
-                in the list; he has already discovered some.   Mr. McFee's name was
-                omitted  from the list of students; there are 83  students in the
-     T          English Shool, with the following geographical distribution:
-     )          Wass.--18¢ N. Y. --17; Vt. --8; Cenn. --7; Iowa, Ohio, and Penn.
-     E          4 cach; Minn. +-3; Wis., R. I., N. Ha, and Japan, 2 each; Ill. and
-                Md.,-ene             each.
+Mrs. Conkling, Professor Lewis, and Professor Skillings have kindly consented to act as a committee of award in the "Crumb" contest, and their decision will be announced later. The prize will be a quit-claim deed to a corner lot on Parnassus. (N. B. While The Crumb did not originate this contest and is not managing it, the proposed motto will be heartily welcomed, if one may personify motto and crumb to that degree. Further, The Crumb welcomes contributions of all kinds, and will print them if possible!)
 
-     D                   Mr.          MacGregor              will     continue      his      exhibit       of English           books
-     4          published
-                        by Haughton                            Mifflin       Company         to-day       and    tomorrow        morning.
-     +          It is necegsary  for Mr. MacGregor to leave Bread Loaf tomorrow
-      T         noon, 8hos$ interested to interview him and see the books he had
-     T          brought will                   find him           in the library this afternoon and evening
-     T          and tomorrew                   morning.            He has with him several copies of some books
-      T         for   which           there has              been     considerable           demand       and    will    be     glad     to
-     T          provide        those            imterested            with   copies.
+Those in charge of the library request that all taking advantage of it observe carefully the following rules, in order that the library be of the greatest possible use to all concerned.
 
-                         Mrs. Gonkling, Professor Lewis, and Professor Skillings have
-                bindly     consented to act as a committee of award in the "Crumb"
-     HM          contest, and their decision will be announced iater.    The prize will
-                 be a quit-claim deed to a corner lot on Parnassus.    (N. B. While
-                 The Crumb did not originate this contest and is not managing it,
-               . the proposed motto will be heartily welcomed,  if one may personify
-                 motto and crumb to that degres.   Further, The Crumb welcomes
-                 contributions of all kinds, and will print them if possible!     )
+1. No book may be taken from the library without being properly checked by the person in charge. If no one is in attendance, the book may be taken if the card is left on the table.
 
-                       Those in charge of the library request that all taking advantage
-                of  it observe carefully the following rules, in order that the library
-                be  of the greatest possible use to all concerned.
-                    le No book may be taken from the library without being properly
-                checked by the person in charge.    If no one is in attendance,  the
-                book may be taken if the card is left on the table.
-                    2. Reserve books should not be taken from the library to the porches
-                for more than one hour at a time.
-                    3. Reserve bocks may be taken out at 9:50 P. if., but must be
-                returned by 8:50 the next morning.
-          |         4. Books not on the reserve shelves may be taken out for 4 Gays.
-           |        5. Leave books on library table when you return them.    Jo not
-                 return borrowed books to the shelves.    The librarian will do that.
+2. Reserve books should not be taken from the library to the porches for more than one hour at a time.
+
+3. Reserve books may be taken out at 9:50 P. M., but must be returned by 8:50 the next morning.
+
+4. Books not on the reserve shelves may be taken out for 4 days.
+
+5. Leave books on library table when you return them. Do not return borrowed books to the shelves. The librarian will do that.
 
 <!-- page: 12 -->
-The        Crumb
-                                                     July     20,        1921
+The Crumb
+July 20, 1921
 
+Mr. Revert Frost will address The English School this morning at 9:28 in the Music Hall. Everyone is cordially invited to be present. Classes scheduled for 9:50 and 10:30 will not meet today.
 
-                                                                                   English           School        this    morning
-                                       Frost    will     address           The
-              Mr.    Revert
-                                                                                is cordially              invited     to be
-                    in the Music              Hall.      Evoryene
-  at 9:28
-                                                                                         10:30       will     not    meet       te-day.
-                                         scheduled           for 9:50            and
-| present.             Glasses
-                                                                          always         fof    evening        entertainments,
-                                 Inn    are     included,           as
-  Gueste        of    the
+Guests of the Inn are included, as always for evening entertainments, in the invitation for this morning's lecture and reading.
 
-                  for this morning's                                            lecture and reading.
-  in the invitation
-                                                                                         Lewis       on     “Oral     English"
-                      i      dat ul arranged                 by prefesser
-               The
-                                                                                       until     next       week.         Further
-                             evening           has    been        postponed
-   fer       Thursday
-                                  given        those    whe        are     to participate.
-   notice       will        be
-                                                                                               the    date     of the       first
-                             been        found       necessary            te change
-               It has
-                                                                                       evening.            On Thursday
-                       to-morrow              evening        te Thursday
-      play    frem
-                                                                  te Me Thumb"             will       be     presented by the
-                     at eight           e'clock        "top
-      evening
-                                                                                                is    scheduled           for    this
-                                  Preduction.                Ne     entertainment
-      class     in Play
+The evening has been postponed until next week. Further notice will be given those who are to participate. A lecture arranged by Professor Lewis on "Oral English" [illegible] date[d].
 
-      eboning-
-                                                              James Canfield                   and Mrs.        Ruth M. Lampson
-                On Friday              evening        Mrs.
-                                              ethy Canfield".                                                         Mre. Fisher
-      will speak on "The Life ana Work of Der
-                                                                           arrive        at Bread           Loaf     Sunday.
-                                  that        she    expects        to
-      has     sent    word
+It has been found necessary to change the date of the first play from tomorrow evening to Thursday evening. On Thursday evening at eight o'clock "Top Me Thumb" will be presented by the class in Play Production. No entertainment is scheduled for this evening.
 
-
-
-
-a
-lap
-gh
-sp
-Lee
-
-
-
-
-aco
- Sulton
+On Friday evening Mrs. James Canfield and Mrs. Ruth M. Lampson will speak on "The Life and Work of Dorothy Canfield". Mrs. Fisher has sent word that she expects to arrive at Bread Loaf Sunday.
 
 <!-- page: 13 -->
-^ AYhe- Crumb.
-                                              July 22, 1991
-                                                                   Jomes   Canfield         and     Mrs.       Ruth        M.
-||
- |
-               This     even &t
-                            in   gt
-                                eigh                       Mrs.
- |l
-                                              "The     Life       and   Work    of   Dorothy        cantio laue
-l|
-      Lampson        will     spear     on
-                                                                    will speak Monday evening.
-|
+The Crumb.
+July 22, 1991
 
-Meeveryone is invited,   Mrs. Fisher
-                       leot ures will                               be announced  iater.
-  Datos for the other
-                                                                                     eight will be             conducted
-               The Vesper             Service Sunday evening at
-                                                                                     of Middlebury             College.
-Sy          Dr. Toward D.             Collina, Acting President
-                                                 ne in the English School
-            The Dean has been asked whether anyo
-                                          hing position where the main
-      ig interested to knowa about & seac
-                                              with some teaching of English
-      work is Public Speaking and Dramatics,                         schools
-      to fill out the tine.   The position is in one of the best
-                                                         part icul ars  is
-      in New York.   Anyone interested to learn further
-      asked     te     see     the    Dean    at     once.
+James Canfield and Mrs. Ruth M. Lampson will speak on "The Life and Work of Dorothy [illegible]" This evening in the eight. Mrs. [illegible] will speak Monday evening. Everyone is invited. Mrs. Fisher's lectures will be announced later. Dates for the other eight will be conducted.
 
-                                                exchange be established
-        It has been suggested that a picture                    of interest
-lat the library.   T5089 who have prints which would bé
-                                             be  much    appr ecia ted if
-  to others wou.d do a courtesy that would             .    Those    who.
-                                         their   films
-  they would join the exchange and lend                              pictures  of
-      are     interested to             work out some such plan for exchange
-                                                                  y at one thirt y.
-       re     asked to meet             in the large parlor to-da
-                                                       the School should
-            The Crumb has been asked to suggest that
-                                         The  Crumb is  gåad to second the
-      have an official Breed Loaf song.             &  song will be produced.
-                                         that  such
-      cuggestion most heartily and hopes                              and.
-                                     has a    better suggestion,   why not write a song
-       inless someone
-                                     Dean?     He will appoi nt  a committee of award to
-      hund it to the                                                                                 be welcomed.
-                             best     song    contributed.              Suggestions         will
-       seioct    the
+The Vesper Service Sunday evening at [illegible] will be conducted by Dr. Howard D. Collins, Acting President of Middlebury College.
 
-                                              at    2:30     Professor         Wright      will     lecture           in
-                This         afternocn
-                              "The     Work    of Richard           Burton".         It has       been     suggested
-       course        2 on
-                                                                      d                                        this
-       that some        not members of the class might like to atten
-                        Anyone interested is invit ed to be prese nt.
-       lecture.
-                                                         g books                                       are      past            due:
-                 The Librarian reports that the followin
-                 Canfield-- Hillsbore People.
-                 Masefield-- Reynard the Fox
-                 Dryden--— Modern English Drama
-                 Lewis-- Main Street                                                                                  books
-                                                           having                                        these
-                 It will be greatly appreciated if those
-       will     return them at once to the libra ry.
+The Dean has been asked whether anyone is interested to know about a search position where the main work is Public Speaking and Dramatics, with some teaching of English to fill out the line. The position is in one of the best schools in New York. Anyone interested to learn further particulars is asked to see the Dean at once.
 
-                                                                               with Mr. HoFee              for the
-             Will            these who have not arranged
-                             and supplies furnished, for                       which bill has              been
-       text-books                                                                                                EcFee
-                            please      see   him     right       after    dinner         to-day?        Mr.
-       rendered,
-       wizhas to balance his                       books     in order to submit statements for
-                                                   since     the firat order was delivered.   Those
-       books which have come
-                                yet    received         statements         will      he    remembered           presently.
-       who    have      not
+It has been suggested that a picture exchange be established at the library. Those who have prints which would be of interest to others would do a courtesy that would be much appreciated if they would join the exchange and lend their films. Those who are interested to work out some such plan for exchange pictures of [illegible] are asked to meet in the large parlor to-day at one thirty.
+
+The Crumb has been asked to suggest that the School should have an official Bread Loaf song. The Crumb is glad to second the suggestion most heartily and hopes that such a song will be produced. Unless someone has a better suggestion, why not write a song and hand it to the Dean? He will appoint a committee of award to select the best song contributed. Suggestions will be welcomed.
+
+This afternoon at 2:30 Professor Wright will lecture in course 2 on "The Work of Richard Burton". It has been suggested that some not members of the class might like to attend this lecture. Anyone interested is invited to be present.
+
+The Librarian reports that the following books are past due:
+Canfield-- Hillsboro People.
+Masefield-- Reynard the Fox
+Dryden-- Modern English Drama
+Lewis-- Main Street
+
+It will be greatly appreciated if those having these books will return them at once to the library.
+
+Will those who have not arranged with Mr. McFee for the text-books and supplies furnished, for which bill has been rendered, please see him right after dinner to-day? Mr. McFee wishes to balance his books in order to submit statements for books which have come since the first order was delivered. Those who have not yet received statements will be remembered presently.
 
 <!-- page: 14 -->
 The Crumb
-                                             July 27, 1921
+July 27, 1921
 
+Mrs. Fisher has kindly consented to read to us again this morning at 11:30 in the Music Hall. Arrangements have been made so that the classes regularly scheduled for that hour will be adjourned to-day. Everyone is invited to hear Mrs. Fisher.
 
-                                                    to us again this
-3       Mrs. Fisher has kindly consented to read
-Ünorning at 11:30 in the Music Hall.    Arrangements have been made
-                                                that hour will be
-Mso that the classes regularly scheduledffor                                                                 Fisher.
-                 to-day.              Everyone        is       invited          to hear           Mrs,
-“adjourned
-                                      at    eight     the       Dramatic          Laboratory                 will     present
-          This     evening
-Treats!     "The    Hour        Glass".            All        are   invited.
-                                                  ngton will deliver
-E      Tomorrow evening Professor Vernon C. Harri
-fa lecture on "The King anc. the Book®. On Friday evening Dr.
-                                            monologue.
-Harrington will give in costume a Browning
-                                              in    his       office       this        afternoon             at     3:30     to
-i         The      Dean      will      be
-                                 details           with       those       who    wish        to        see   hin.
-arrange      business
+This evening at eight the Dramatic Laboratory will present "The Hour Glass". All are invited.
 
-                       who      are        willing       to    enter       photographs                  im the       Exchange
-          Those
-                                                prints they wish to
-gare asked to hand to Mr. McFee to-day the                          until
- have posted.     It is suggested that the owners keep the filis
-                                     ther details of proce dure will  be
-  Mine orders have been given.
- “Jannounced later.
+Tomorrow evening Professor Vernon C. Harrington will deliver a lecture on "The King and the Book". On Friday evening Dr. Harrington will give in costume a Browning monologue.
 
-                                wishes        to     announce          with       as    much           Addisonian          suavity
-a         The      Crumb
-                                                     cal notice posted
-  Mas it can muster that the urappreciatively criti
-                                                   Had the quatrain in
-    on the front porcen is not one of its orimes..
-                                                    have been guitably
-Hi question been presented to Tne Orumb, it would                                                                 “Crumb
-Ü received!         The      Crumb          insists        again       thas       the    so-called
-                 was      not    4natigated               by The       Crumb,          and        it     gently      but     firmly
-Mmcontest"                                                                                                             thefreof.
-Ü refuses       to bo implicated                   in the rogrettable                    consequences
-                                      be    acschoried          the    attention             it        deserves        and    the
-M The   notice      should
-    perpetrator        should          be discavered                and     suitably              rewarded.
-           Mr.     reauests that those who have not arranged about
-                   MoPFee
-                                                           le,  to-day.
-   the statements for boots and express see him, if possib
-   Ee will be et the library for an  hour after dinner and  an hour
-Hd after supper.
+The Dean will be in his office this afternoon at 3:30 to arrange business details with those who wish to see him.
+
+Those who are willing to enter photographs in the Exchange are asked to hand to Mr. McFee to-day the prints they wish to have posted. It is suggested that the owners keep the films until further details of procedure will be announced later. Mine orders have been given.
+
+The Crumb wishes to announce with as much Addisonian suavity as it can muster that the unappreciatively critical notice posted on the front porch is not one of its crimes. Had the quatrain in question been presented to The Crumb, it would have been suitably received! The Crumb insists again that the so-called "Crumb contest" was not instigated by The Crumb, and it gently but firmly refuses to be implicated in the regrettable consequences thereof.
+
+The notice should be accorded the attention it deserves and the perpetrator should be discovered and suitably rewarded.
+
+Mr. McFee requests that those who have not arranged about the statements for books and express see him, if possible, to-day. He will be at the library for an hour after dinner and an hour after supper.
 
 <!-- page: 15 -->
 The Crumb.
-                                           July 28, 1921.
-            į
+July 28, 1921.
 
+Last trip to Sucker Brook Lodge. Trail runs along the whole length of Worth Mt. (elevation 3300 feet). Three lookouts—two of the White River Valley and the third a great panorama of mountains to the south. New lodge at the source of Sucker Brook, now in process of building; roof was put on last week. Will be the finest lodge on the whole Long Trail except Tart Lodge on Mt. Mansfield. Good opportunity to see a lodge in process of being built. Return Sunday by going down the brook to Sucker Brook Meadow, and so to Bread Loaf Inn. Easy trip. All who want to go should give their names to-day to Prof. Skillings or to Miss Mildred Davis.
 
+The Crumb is relieved to announce that through the assistance of our local Sherlock Holmes the identity of the mysterious person who conducted the so-called "Crumb contest" has been discovered. He has confessed that not only was he the originator of the contest, but also the unknown author of the quatrain which was awarded the prize. Moreover, it was he who wrote the scathing criticism which is posted beside the front door of the Inn. He had begged so earnestly that his identity be not revealed that The Crumb hesitates to throw the kerosene light of publicity upon his poor, shrinking form. The Crumb feels, however, that something should be done by way of punishment for his having discouraged so many budding poets by the Poe-like criticism to which he confesses; not a lyric warble has been heard since his Edinburgh Review was posted. And The Crumb does most earnestly want a Bread Loaf song. Accordingly, if the budding poets will please go on budding, the Crumb will refrain from further comment on the contest. It is glad to forgive and be forgiven, especially since it knew the identity of the culprit from the beginning and the notices were typed by the little Crumb Devil, whose name does not begin with Mc. The best part of the joke, however, we may not publish: the oral comment of the committee of choice when they made known to the originator, engineer, and prize-winner of the contest their opinion of his "poetry, verse, or worse."
 
+Orders are being taken at the library for copies of the pictures taken of "top o' the Thumb"—price 30¢. It has been suggested that it would be appreciated if members of the School purchase, so far as they feel they can, at least one copy of the picture of each performance. The expense incurred in bringing a photographer from Middlebury to take the pictures is considerable, and the interest manifested by students in the pictures already available will determine somewhat the future policy. The pictures of "The Hour Glass" will be placed on exhibition as soon as received, and notice will be given.
 
-         Last trip to Sucker Brook Lodge.     Trail runs along the whole
- | length of Worth Mt. (elevation  3300  feet).    Three lookouts-- two
-| of the White River Valley  and  the  third  a  great  panorama of moun-
- tains    to     the     south.           New    lodge         at       the     source         of    Sucker     Brook, now
- in process of building; roof was put on last week.           Will be the
- finest lodge on the whole Long    Trail   except  Tart   Lodge   on Mt. Mans»
- fiold.   Good opportunity to  see  &  lodge   in process    of  being   built.
- Return Sunday by going down   the  brook   to  Sucker   Brook   Meadow,    and |
- so to Bread Loaf  Inn.   Easy trip.   All  who   want  to go   should   give.
-| their names           to-day       to Prof. Skillings                         or to Miss Mildred                  Davis,
+A section of the Picture Exchange is on exhibition at the library. To order a particular picture, write your name on the sheet to which the picture is attached. You will be notified when the prints come and may pay for them at that time. Further sections will be exhibited from day to day. Over a hundred pictures have been submitted, so only a part can be exhibited at a time.
 
-          The Crumb               is relieved           to announce                that        through        the   assistance
- of our     local           Sherlock        Holmes       the        identity           of      the     mysterious          person
- vho conducted               the    so-called           "Crumb                   has boen discovered.
-                                                                          contest"
- Le has     confessed              that    not        only        was     he    the    originator             of the       contest,
- but also the unknown author of the quatrain which was awarded the
- prize.  Moreover, it was he who wrote the scathing criticism which
- is posted        besice           the     front       door        of     the     Inn.         He    had     begged     so
- earnestly        that        his    identity           be not            revealed            that     The    Crumb    hesitates
- to throw the kerosene light of publicity upon his poor, shrinking
- form.   The Crumb feels, however, that something should be done by
- way of puaishnent for his having discouraged so many budding poets
-.by the Pce-like criticism to which he confesses; not a lyric warble
- has been heard since his Edinburgh Review was posted.   And The Crumb
- does    most     earnestly              want     a Bread            Loaf        song.         Accordingly,            if the
- budding poets will please go on budding, the Crumb vill refrain
- from further comment on the contest.    It is glad to forgive and be
- forgiven,  especially since it knew the identity of the culprit from
- the beginning and the notices were typed by the little Crumb Devil,
- whose name does not begin with Mc.   The best part of the joke, however,
- we may not            publish:           the    oral        comment            of the        committeeof ohoice
- when     they    made        known        to    the    originator,                   engineer,         and    prize-winner
- of the        contest        their        opinion           of his"poetry,                   verse,       or worse."
-
-           Orders           are    being        taken        at     the        library        for    copies.of         the     pictures.
- taken of "top               'o Me Thumb"--                  price        30¢.         It has been            suggested
- that it would-be appreciated if members of the School purchase,  so
- far as they feel they can, at least one copy of the picture of each
- performance.   The expense incurredin bringing a photographer from
- Middlebury            to    take the           pictures is considerable, and tho                                     interest
- manifested            by    students           in the pictures already available                                     will determine
- somdwhat        the        future        policy.            The        pictures         of     "The    Hour, Glass"           will
- be Placed         on       exhibition           as     soon        as    received,            and     notice       will      be
- given.
-
-        A sectionof the Picture Exchange is on exhibition at the
- library,   To order a particular picture, write your name on the
- sheet to which the picture is attached.   You will benotified when
- the prints come and may pay for them at that time.   Further                                                                sections
- Will’be exhibited from day today.   Over a hundred pictures                                                                 have. bee
- submitted, so only a part can be exhibited at a time.    '
-
-        The       following books                     are overdue at                   the Library            and should           be
- returned:        Moderh American                     Drama, History                   of Vermont,            Longfellow            ^oemas:
+The following books are overdue at the Library and should be returned: Modern American Drama, History of Vermont, Longfellow [illegible]
 
 <!-- page: 16 -->
-7Thoe—Crums                AE
-                                E          _Augast            £,    1921EN
+# Thursday—Friday, August 4 and 5, 1921
 
+This evening at 7:30 Dr. Vernon C. Harrington will give his Aeneas-chi meneloguo in costumes. The impersonation will take about one and one half hours, and it is requested that those who attend make their plans for a program of that length.
 
-      This evening at 7:30 Dr. Verncn C. Harrington will give his
-apensacchi meneloguo in costumes.   The impersonation will take arsut
-ne and one half hours, and it is requeted that these who attend
-lake their plans for a program ef that length.
+This afternoon at 2:50 Mr. W. Palmer Smith, Head of the Department of Speech, Boys' High School, Brooklyn, N. Y., will lecture on "Oral English as a Means to Americanization". To this lecture all who are interested, whether members of the School or not, are invited. The lecture will be held in the Music Hall.
 
-         This        afterneon      at    2:50     Mr.        W.    Plamer        Smith,       Head       ef    the
-lepartment of Speech, Beys’ High Sehe^l, Brooklyn, N. Y., will
- ecture en “Oral English as a Means to Americanization".   Te this
- ecture all why are interested, whether members ef the Scheel er not,
-re invited.    The lecture will be hled in the Musie Hali.
+The third picture exhibit is now posted in the library. The fourth exhibit will be displayed tomorrow morning. Those who want copies of the pictures of "Up to Me Thumb" are asked to place their orders to-day. To order a print, write your name on the sheet to which the print is attached.
 
-         The     third    picture         axhibit         is new          pested        in the       library.           The
-ourth     exhibit        will     3e     displayed            tomorrow        merning.              These       who
-fant cepies           ef the pictures             of "'Op           to Me     Thumb"       are       asked        te
-piace    their        orders     to-day.          Te     erder          a print,        write       yeur       name    on   the
-heat     te    which     the    print      is     attached.
+Wednesday evening there will be a vocal recital by members of the School of Music which is conducted at Middlebury by Miss Minnie Hayden. Miss Hayden is a well known vocal teacher in Boston, and for some years has conducted a Summer School of Music in connection with the Middlebury College Summer Session. It is expected that Mr. Hollis R. Cooley will be among the soloists.
 
-      Wednesday evening there will hte a vacal recital by members ef
-  > Scheel of Music which is conducted at iiddliabury hy Miss
-iinnie Hayfen.  Miss Hayden is a well knew vecal toaoher in Boston,
-nå for some years has conducted a Summer School st Husie in eonnec-
-[ion with        the Middlebury            College            Summer       Session.            It    is    expected
-hat     Mr.    Hollis     R.    Cooley      wiil         bo    ameng       the     soloists.
+On Thursday evening Mrs. Grace Hazard Conkling will give a reading and lecture on "Modern Poetry".
 
-      On Thursday evening Mrs. Graco Hazard                                        Cenkling          will       give
-  reading and lscture on “Modern Poetry".
+It is expected that Dr. John H. Finley will visit the School on Friday and will lecture that evening.
 
-         It     is    expected      that    Lr.        John H.           Finley     will       visit       ths     Schoel
-n Friday         and    will     lecture         that     evening.
+It is requested that people visiting on the piazzas be as thoughtful as possible of those who may be wishing to study in adjoining rooms. This applies to the cottages as well as to the Inn.
 
-     It is requested that peeple visiting on the piazzas be as
-houghtful as possible cf these who may be wishing te study in
-djoining rooms.   This applies to the cottages as well as te the
-nn.
+Mr. McFee is prepared to be of assistance to members of the School in making their plans for the trip home. It is requested that members of the School advise Mr. McFee as soon as possible on what train they expect to leave Middlebury. If possible, fill in and hand to Mr. McFee at once the sheet furnished herewith. It is necessary to know some days in advance when members of the School are planning to leave, in order to make arrangements about transportation to Middlebury.
 
-      Mr. ieFee is prepared te be of assistance to members of the
-chcol in making their plans fer the trip home.    It is requested
-hat members of the School advise lir. NeFee as soon as pessible
-n what train they expect te leave Middlebury.   If possible, fill
-n and hand to Hr. MeFeo at once the sheet furnished herewith.
-t is necessary to know same days in advance when members of the
-chool are planning to leave,  in order to make arrangements about
-ransportatien to Middlebury.
+During the period of preparation for the concerts which are to be given it will be appreciated if the grand piano in the Music Hall may be as much as possible at the disposal of those who are to make use of it in the public performances.
 
-      Puring the period of preparatien for the concerts which are
- © ho given it will be appreciated if the grand piaxo in the Music
- ell may be as much as possible at the disposal of these whe are to
-          of it in the public performances.
+It has been suggested that an informal "Stunt Night" be arranged for Saturday of this week, with nothing serious allowed. The idea of the evening is to furnish jolly relaxation. Will those who are interested and have suggestions as to arrangements please report to the Dean. What will you do to make a good evening?
 
-         It has        been suggested that an informal "Stunt Night" be
-            for        Saturday of this week, with nothing serious allowed,
- ne idea of the evening is to furnish jolly relaxation.   Will these
- Do are interested and have suggestions as to arrangements please
-mort      to     the    Dean.       What    will         you       de    to make        a good       evening?
-  e librarian           asks     that     thos?        who borrow            backs       frem       the     library
- enember       to     return    them      prombtly.                Several        are    now    past       dus.
+The librarian asks that those who borrow books from the library remember to return them promptly. Several are now past due.
 
 <!-- page: 17 -->
-THE    CRUMB
+THE CRUMB
 
-                            AUG.    071621
+AUG. 071621
 
-
-                                                                             and
-                               ph ot eg ra ph s   wa s   posted yesterday
-      Tho last exhibit
-                          of                                           send the
-                    nd ay   ev en in g.     It ig Beeonnary te . Sen»
-will be up till  Mo                               re by Nadnas    da y
-                    rinta ara te ye ho exhibit since it was first
-cedere then ifthe
-                      poon adiad s tho                        The "Heur Glass"
-more ploturcs have      that cy ou    ha ve   sc an    alk.
-                                                                            not
-posted, -~ make sure ba here by Wadnesuay.                 These wLa have
-wlotures WLLL alse                                               ld do 59 today.
-                  their               unb t Pietuces shou
-                            ' 9p C Me Th
-called     fer
-                                                               roturno& the blanks
-                     o   ha ve  ne t filled sut ani                        so at ono?
-       Stud en ts wh
-                                      t    th ei r    jeperturs must 8o
-                        tion    ab ou                                        y pe wads,
- giving ie infoma               ra ng  em en ts     fo r   transportation ma
- acn that the corr
-                       ect ar                                           ning the .
-                                        th re ug h    the Grumh osneer
-                               ma de                                          ains.
- Arnounemments Wi
-                     ll ne
-                                ud  en ts   ad     th ek r  baggage tb the tr
-                        the st
- plans ior taking                                                            kills
-                                   te d   1f th es e  wh eaüsBilllowso small
-                      be apprec ia                                         gt day
-        it will
-                                   .   wi li se tt le  them befcro tha la
- for   axpress,       brooks, oto                           offies.
-                                   matters     in    the
- ag as     ts    facilitate
-                                                                      today   to   attend    t> aetaüuls
-                                             4 trip    to    town
-                 Me   Fee   will    make                                       tickets,      roserva-
-          Mr.
-                                     the     scouring       of railroads                         yet
- far   students,        sugh as                       the    cashing     ef   cheoks.       IP
-                            and    berths,     and                               Breakfast
-  taons    of    ohairs                              Xo Fo o direstly attor
-                                     on e,     899
-  desire any such or
-                             rand                                  for suoi purposes.
-                 wi ll    pr ob ab ly   bo the last trip
-  ginoe this
-                                                                     ary, c amcag ther
-                                     mi ss ing from the Libr
-         Severa l    be ck a   ars                                    Mrs. Lanpsor.'s
-                                he rs !   Exkibits tyo from                               e
-  feur from    the    Pu  bl is
-                                               ld in gs    she lf.    Flease return thes
-                                 Mise    Sp au                                            e
-   shelf, sad two from                                               off bofore the clos
-              pt  ly     89   tha t   the y may be checked
-  bcoks prom
-   o? tho Soncsl.
+The last exhibit of photographs was posted yesterday and will be up till Monday evening. It is necessary to send the pictures here by Wednesday. Since it was first posted, make sure that you have scanned all. The "Hour Glass" not these will have pictures WILL also be here by Wednesday. Students who have not filled out and given the information about their departure must do so at once? that the correct arrangements for transportation may be made through the Crumb office concerning the plans for taking the students and their baggage to the trains. Announcements will be appreciated if these wholesome small kills for express, books, etc., will settle them before that last day so at one? matters in the offices. Mr. Fee will make a trip to town today to attend to details for students, such as the securing of railroads tickets, reservations of chairs and berths, and the cashing of cheeks. If one, 899 desire any such order will probably be the last trip since this Breakfast for such purposes. Several books are missing from the Library, [illegible] from the Publishers Exhibits two from Mrs. Lampson's shelf, and two from Miss Spauld buildings shelf. Please return these books promptly so that they may be checked off before the closing of the School.
 
 <!-- page: 18 -->
-The          Crumb.
-                                                       August           8, 1921
-                                                       Evening            Edition.
+The Crumb.
+August 8, 1921
+Evening Edition.
 
-                 This        evening           at     8:00     we        shall       have         the        privilege          of hearing
-                                        tho direction of Mrs. Edward A. Grossmann,   of New
-a concert undor
-            The                         program will consist  of viclin soles by Miss  Elsa
-Myerk City.
-MEL. Paner, of Washington, with Hrs. Grossmann at                                                              the piano, and a
-Migroup of songs composed by Mrs. Grossmann which                                                              will be sung by
-Wiiies         Alice    J.     Macomber,               of Attleboro,                      Mass.         At     9:00       P.    M.    there
-    will be presented                     the original                   play,        The Dawn,               by Mr. R. L. Wayne,
-    Special          scenery            and    costumes            have        been        cesigned            by Mr.          Wayne,        and
-Ma     brilliant             performance               may        be     expected.                Everyone           is     invited.
+This evening at 8:00 we shall have the privilege of hearing a concert under the direction of Mrs. Edward A. Grossmann, of New York City. The program will consist of violin solos by Miss Elsa M. Paner, of Washington, with Mrs. Grossmann at the piano, and a group of songs composed by Mrs. Grossmann which will be sung by Miss Alice J. Macomber, of Attleboro, Mass. At 9:00 P. M. there will be presented the original play, The Dawn, by Mr. R. L. Wayne. Special scenery and costumes have been designed by Mr. Wayne, and a brilliant performance may be expected. Everyone is invited.
 
-i                A recent               number        of the            journal           called         American           Ferestry          which
-                                                                     an
-"Has been lyong on one of the reading &ablos of the Inn contains
- fs ortisement  of the Harvard School  of Forestry , which lays special
-   siresg on its magnificent  forest, boasting that Harvard has a forest
-     or two      thousand               actes,        which         is       situated         in hagsachusetts.                         This
-     suggests          a thing           worth        thinking               about,        viz.         the fact           that      Middlebury
-     College has, in the estate bequathed by                                                 the late Mr. Joseph Battell,
-     a forest of twenty-seven thousand acres                                                 in one piece, besides
-     smaller         detached            pieces,         and        that       this         lies        at    the     doors          of the
-     Inn   where        we    are        new        living.             V.    C.     H.
+A recent number of the journal called American Forestry which has been lying on one of the reading tables of the Inn contains an advertisement of the Harvard School of Forestry, which lays special stress on its magnificent forest, boasting that Harvard has a forest of two thousand acres, which is situated in Massachusetts. This suggests a thing worth thinking about, viz. the fact that Middlebury College has, in the estate bequeathed by the late Mr. Joseph Battell, a forest of twenty-seven thousand acres in one piece, besides smaller detached pieces, and that this lies at the doors of the Inn where we are now living. V. C. H.
 
-               The     librarian               reports        that           the     following               books     are      due     at     the
-      library,          and        it     is    requested               that       they      be       returned         at      once.
+The librarian reports that the following books are due at the library, and it is requested that they be returned at once.
 
-               Publishers! sample.
-               Melville-- Moby-Dick                          er        the    Whale.
+Publishers' sample.
+Melville-- Moby-Dick or the Whale.
 
-               Mrs.     Lampson's               own     book.
-               Hamilton--               Art     of    Fiction.
+Mrs. Lampson's own book.
+Hamilton-- Art of Fiction.
 
-               From     Miss        Spauidingrs                shelf.
-               Medern        English Drama                   (Kelleg-Hubbard                          Library)
-                Goldsmith-- Gord natured man.
-                Goldsmith-- Comedies.
-               .Mayera-- Representative One Act                                           Plays.
+From Miss Spaulding's shelf.
+Modern English Drama (Kellogg-Hubbard Library)
+Goldsmith-- Good natured man.
+Goldsmith-- Comedies.
+Mayer-- Representative One Act Plays.
 
-               From other shelves.
-               Browning-- Blot cA the Soutoheen
-               Browning--— Guide Book
-               Harrisen-- Choice of Beoks
-               Jerrold-- Oliver W. Holmes
-               Hudson         --    Green           Mansions
-               Hudson--            Far        Away     and        Long        Ago.                ;
-               licknight--              Middle         English               Humorous        Tales            in Verse
-               Harrington--                   Browning            Studies.
+From other shelves.
+Browning-- Blot on the Scutcheon
+Browning-- Guide Book
+Harrison-- Choice of Books
+Jerrold-- Oliver W. Holmes
+Hudson -- Green Mansions
+Hudson-- Far Away and Long Ago.
+Ticknought-- Middle English Humorous Tales in Verse
+Harrington-- Browning Studies.
 
-                 Please        look over your books at once, and if you Pind                                                           these
-                 copies        by mistake put away &mong them, please return                                                           thom
-                 to the        library immediately.
+Please look over your books at once, and if you find these copies by mistake put away among them, please return them to the library immediately.
 
-           -     Mrs.        Derothy           Canfiedl            Fisher          has      asked            the    Dean       to    call     to the
-     attention ef the members of the English School the fellowships
-     available in French Universities.    These fellowships are provided
-      y the American Field  Service.   A book  describing the fellowships may
-        be found on the reserve shelf at the library.                   LEA
+Mrs. Dorothy Canfield Fisher has asked the Dean to call to the attention of the members of the English School the fellowships available in French Universities. These fellowships are provided by the American Field Service. A book describing the fellowships may be found on the reserve shelf at the library. LEA
 
 <!-- page: 19 -->
-The        Crumb
-                                                      August        10,     1921
+The Crumb
+August 10, 1921
 
+Please read this sheet before leaving the dining room.
 
-                 Please           read        thie     sheet        before        leaving           the    dining    room.
+Rates on transportation for those leaving Bread Loaf.
 
-‘Hates on transportation                              for thase            leaving Bread              Loaf.
+1. A truck will leave the Inn this afternoon at 4:50. Trunks to go on this truck should be ready for the porter by 5:50. All who are leaving this evening or tomorrow on the 8:15 A.M. should send their trunks on this truck. It will be appreciated if any other who can arrange to do so will send their trunks today. Please inform Mr. McFee if you can have the trunks ready to-day.
 
-l4       l.    A truck        will        leave        the     Ian        this    &ftérnosn           at    4:50.     -Trunks
-“Be go en this truck should be ready fer thé porter y 5:50.    A11
-"Mho are leaving this evening cr temorrew en the  8:15 A. M. should
-“Send         their        trunks        on    this     truck.             It will        be    appreciated          if any
-Giher          who     can    arrange            to    dd     so    will     send       their        trunks      today.
-‘Please inform Mr.MMcFee if you can have the trunks ready to-day.
-     A car will leave the Inn at 9:30 this evening to take to the
-   tatisn Misses H. Brown, Dawes, and Kenney.  There are three
-‘mire: places available.             j
+A car will leave the Inn at 9:30 this evening to take to the station Misses H. Brown, Dawes, and Kenney. There are three more places available.
 
- 1       ©,     It     is    understoed               that     the        fallowing           are    planning       to     leave
-Middlebury on the 8:15 Thursday.   A farswill leave the Inn at 6:529
- tomorrow morning te take them to the station.    Misses Frenysar,
-|@ennings, Kumaszki, Milroy, Miner,  Neptune,  Peters,  Pféiffer,
-Pest,          Pray,        Scheaffer,               Hrs.     Shirley,           Mrs.     Skinner.                       ET.
+2. It is understood that the following are planning to leave Middlebury on the 8:15 Thursday. A car will leave the Inn at 6:52 tomorrow morning to take them to the station. Misses Frenysar, Jennings, Kumaszki, Milroy, Miner, Neptune, Peters, Pfeiffer, Pest, Pray, Schaeffer, Mrs. Shirley, Mrs. Skinner.
 
+Prints from the fourth photograph exhibit have come, and those who ordered them should call for them at the library this morning. Orders from the fifth exhibit will be mailed. Please pay Mr. McFee the amount of the bill and leave with him a stamped and addressed envelope. These who have not called for their "O! O! Me" and "The Her[o]" and "[illegible] Crumb" pictures are asked to do so as soon as possible. Class pictures are now here. The proofs of the "Dawn" pictures are on exhibit at the library. Orders for these may be left at the library, and the pictures will be mailed.
 
-Prints from the fourth phetegraph exhibit have come, and those who
-BRiered them shoudd call fer them at the library this morning.
- Whe          orders from the fifth exhibit will be mailed.  Please pay
- Münr.        MeFee the amount of the bill and leave with him a stamped                                                          and
-      diressed envelepe.                        These who have net called for their                                   "'Op 'o Me™
-      humb" pictures are                       asked te do sq as sann as possible.                                    "The Her
- MClass fpiotures are now here.                                      The proofs of the                     "Dawn"   pictures
-  Bre en exhibit at the library.                                      Orders for these                     may be   left at-the
-   ibrary, and the pictures will                                     bé mailed.
+At your place this morning is a slip on which you are asked to write your name and your forwarding address. Please fill out these slips and leave them in the box on the side-board at the left of the door, as you leave the room.
 
-      t your place this marning is a slip.on which                                                  you are      asked ta
-      riter your name and your farwarding address.                                                   Please      fill eut
-(hese slips and                     leave them in the box                             on the        side-boardat the               left
- "ef the door, as                   you leave the racm.
+Mr. S. Spencer Scott, of Harcourt, Brace and Company, will be at Bread Loaf through the day to-day. He has in the library an exhibit of text-books of interest to teachers of English, and will be glad to talk with any teachers interested. Those interested in examining books with a view to classroom use will be sent sample copies if they will give their names to Mr. Scott.
 
-       Mr. S. Speneer Scott, cf Harcourt , Braco and Company, will be
-      t Bread Leaf through the day to-day.  He has in the library an exhibit
-      f text-books of interest to teachers of English, and will be glad
-      o talk with any teachers interested.  Those interested in examining
-      ooks      with       & view        to     classeronm            use        will    be    sent        sample    copies        if
-      hey wtll         give       their         names        to Mr.         Scott.
+Those who wish to make reservation of room for next summer will [illegible] slips which should be filled out and left [illegible]. It is necessary to fill in only the first [illegible]. It will be appreciated if any who are planning to return [illegible] year will fill out these slips sometime to-day.
 
-      Thsse      who       wish     to        make    reservation                of    rom     far        next   summer        will
-                                                slips which should be filled out and left
-                                                 It is nocessary to fill in only the first
-                       It will be               appreciated if any whe are planning ts return
-                year    will fill               out these slips sometime to-day.
-
-     í Attention is called te the performance of "Six Little                                                        Feet       en the
-       fender", by Mr. R^lla L., Wayne, which will take place                                                       this
-      evening         at     eight       o'clock.
+Attention is called to the performance of "Six Little Feet on the Fender", by Mr. R[.]lla L. Wayne, which will take place this evening at eight o'clock.
 
 <!-- page: 20 -->
-The. Crumb
-                                         August 10, 1921.
-                                         Evening Edition.
+The Crumb
+August 10, 1921.
+Evening Edition.
 
-  "  Certificates of credit attained and statmannts of attendance
-an courses in the School of English are sent only ON REQUEST.
-Those who wish such certificates or statoments arc asked to
-write their names on the slips to be found beside their plates,
-                                                                T -.
-indicating the address to which the report should be sent.
+Certificates of credit attained and statements of attendance on courses in the School of English are sent only ON REQUEST. Those who wish such certificates or statements are asked to write their names on the slips to be found beside their plates, indicating the address to which the report should be sent.
 
-     Those desiring to                        make reservations of rooms for next year are
-asked to fill out the                         blanks provided in the library, if they have
-not     already       done        so.
+Those desiring to make reservations of rooms for next year are asked to fill out the blanks provided in the library, if they have not already done so.
 
-    Those who have ordered pictures which cannot be delivered before
-they leave Bread Loaf are asked to leave With Mr. MoFee stamped and
-cddressed envelopes and to adjust with him the payment for the
-prints        desired.
+Those who have ordered pictures which cannot be delivered before they leave Bread Loaf are asked to leave with Mr. McFee stamped and addressed envelopes and to adjust with him the payment for the prints desired.
 
-            Breakfast        will        be    served     &t    6:15     tomorrow        morning      for    those
-leaving        on    the     8:15        train.         Breakfast        for     others    wi         e served           at
-the     usual       time.                                                                                           i
+Breakfast will be served at 6:15 tomorrow morning for those leaving on the 8:15 train. Breakfast for others will be served at the usual time.
 
-     Those leaving on the noon train may have æ lunch furnished                                                          if
-they wish.  Those who wish lunches are asked to report to Mrs,
-Mills before 7:30 this evening, providing Mrs. Mills with boxes
-for the lunches,  so far as possible.
+Those leaving on the noon train may have a lunch furnished if they wish. Those who wish lunches are asked to report to Mrs. Mills before 7:30 this evening, providing Mrs. Mills with boxes for the lunches, so far as possible.
 
-        Please look once more in your roem and in your various other
-haunts to make sure that all books borrowed from the library have
-been returned.   There are still some books and magazinos reported
-missing, and the careful eBoperation of all in adjusting this will
-be greatly appreciated.
+Please look once more in your room and in your various other haunts to make sure that all books borrowed from the library have been returned. There are still some books and magazines reported missing, and the careful cooperation of all in adjusting this will be greatly appreciated.
 
-      The           following should                 have their trunks ready for the truck
- tomorrow           morning promptly                 at 8:00 : Misses Becker, Boyack, Brander,
- G. Davis,           Hutchison,               Ingraham,        Landes,    M.     Lewis,     Love,     Macomber,
- McDonald, Mathews, Matsumoto, Beck, Phemister, Quigley, Rafter,
- Richardson, Roe, Swift, Thomas, Thompson, Vaughan, Prof. Skillings,
- Miss West, Mrs. Lampson, Langley, Simpson, Deans, Schaefer, Bardwell,
- If there are other trunks which should go at this time, please
- report        at    once     to Mr.           McFee.
+The following should have their trunks ready for the truck tomorrow morning promptly at 8:00: Misses Becker, Boyack, Brander, G. Davis, Hutchison, Ingraham, Landes, M. Lewis, Love, Macomber, McDonald, Mathews, Matsumoto, Beck, Phemister, Quigley, Rafter, Richardson, Roe, Swift, Thomas, Thompson, Vaughan, Prof. Skillings, Miss West, Mrs. Lampson, Langley, Simpson, Deans, Schaefer, Bardwell. If there are other trunks which should go at this time, please report at once to Mr. McFee.
 
-   Cars will leave tomorrow morning at the following times for the
-personsons indicated.
-    6:30  Misses Frenyear, Jennings, Kumusaki, Milroy, Minor, Mrs.
-                    Petera,        Miss        Pfeiffer,        Miss     Post,    Miss     Pray,     Miss         Scheaffer,
-                    Mrs.     Shirley,           Mrs.     Skinner.
+Cars will leave tomorrow morning at the following times for the persons indicated.
+6:30 Misses Frenyear, Jennings, Kumusaki, Milroy, Minor, Mrs. Petera, Miss Pfeiffer, Miss Post, Miss Pray, Miss Scheaffer, Mrs. Shirley, Mrs. Skinner.
 
-        Cars Will leave at 8:00, 9:30, and 11:00
-        It is understood that the following will                                    leave       on   the    noon        train:
-Misses        Becker,        Boyack,           Prander,        Craig,     M. Davis,        G. Davis,         Harlow,
-Hutchison, Ingraham, Landes, M. Lewis, Macomber, McDonald, Mathews,
-Peck, Phemister, Quigley, Rafter, Richardson, Roe, Swift, Thomas,
-Thompson, Vaughan, Wallace, West,    Please indicate at once to Mr.
- McFoe        whether        you        wish    to     go at    8:00,     9:30,     or    11:00,      and    the
-      arrangements will be made to suit your convenience,   so                                             far .as       possible.
-      Announcements tomorrow morning regarding the  remaining                                              plans.
-      The    car    for     the    sleeper           to-night      will    leave     at     9:30,     for Misses
-      J. H. Brown,           Dawes,           Kenney,     Goding,        and Mr.     Scott.                  g^
+Cars will leave at 8:00, 9:30, and 11:00
+
+It is understood that the following will leave on the noon train: Misses Becker, Boyack, Brander, Craig, M. Davis, G. Davis, Harlow, Hutchison, Ingraham, Landes, M. Lewis, Macomber, McDonald, Mathews, Peck, Phemister, Quigley, Rafter, Richardson, Roe, Swift, Thomas, Thompson, Vaughan, Wallace, West. Please indicate at once to Mr. McFee whether you wish to go at 8:00, 9:30, or 11:00, and the arrangements will be made to suit your convenience, so far as possible.
+
+Announcements tomorrow morning regarding the remaining plans.
+
+The car for the sleeper to-night will leave at 9:30, for Misses J. H. Brown, Dawes, Kenney, Goding, and Mr. Scott.
 
 <!-- page: 21 -->
-August               1,     1921.
+August 1, 1921.
 
-He the           Faculty               of    the     English               School:
+To the Faculty of the English School:
 
-               Mr.     HePee           is handing               you    herewith                  a        list        of        the        members            in
+Mr. [illegible] is handing you herewith a list of the members in your classes according to the revised records at the office.
 
-“your classes                     according           to the revised                        records                   at the               office.
+It is possible there have been changes not recorded at the office. Will you kindly check up these lists and report to the office to-day whether they are correct? It is important also to determine what students will take the final examination and receive credit for the work of the course. Please indicate that fact on the sheet.
 
-It        is    possible               there        have        been        changes              not        recorded                   at    the     office.
-                                                                                                                                                    tomorrow
-i
-Will           you        kindly        check        up        these        lists          and            report            to     the       office            te-day-
+It is not possible to require every student to take the final examination; it is my judgment that, on the whole, the members of your classes have taken the right attitude toward their work, and I feel that we should not apply undue pressure at the end. Those students who are working for credit should be held to strict account for their work, however.
 
-“Whether              they        are       correct?             it        is        impertant              also            to determine                      what
+The examination should be given Wednesday, August 10, and should be one hour in length. I shall be glad to prepare personally the examination copies on the mimeograph, if you will see that the copy reaches me in time for me to do it. Students should be advised to provide their own paper and bring books on which to write.
 
-  tudents                 will       take      the    finel            examination                        and     receive                  crodit            for
+The following regulations hold as to ranks. (Middlebury Catalogue)
+"A student whose term mark falls below 50 per cent is excluded from examination".
+"A student will be conditioned whose combined recitation and examination mark at the close is below 60 per cent. No student will be allowed to pass whose examination mark is below 50 per cent."
+"A minimum grade of 80 per cent shall be maintained in all of the courses counting toward a Master's degree".
+"It is the Middlebury custom to combine the term and examination mark in the ratio of three to one; multiply term mark by three, add examination mark, and divide by four."
 
-Ge         work           of the           course.             Please            indicate                 that        fact            on    the     sheet.
+Ranks should be handed to the Dean not later than the afternoon of August 11. Ranks should be reported on the scale of 1000.
 
-  t is          not        possible            to    require               every           student               to    take            the       final
+Instructors should report the names of students who did the work but did not work for credit.
 
-Bxamination;                      it        is my     judgment                  that,       on        the        whole,               the    members               of
-
-Tine       classes              have         taken     the       right               attitude              toward               their        work,            and
-
-      feel           that       we      should       not        apply            undue       pressure                      at     the       end.             Those
-
-Biwients                  who     are        working           fer     credit              should            be       held            to     strict
-
-“account              fer        their work,               however.
-
-                 The       examination                should           be        given       Wednesday,                         August            10,        and
-
-noula                be    one       hour      in     length.                   I shall              be     glad           to     prepare               personally
-
-     he        examination                  copies        on    tho        mimeograph,                      if       you         will        see        that       the
-
-     cpy        reaches           me        in time        for        me        to    do    it.             Students                  should            be    advised
-
-     o provide               their           own     paper        and           bring       books               on    which                te write.
-
-                 The        following              regulations                   hold       as        to        ranks. (Middlebury                            Catalogue)
-  A student whose term mark falls below                          from                                50     per       cent            is     excluded
-  bxamination".
-  A student will be conditioned whose combined recitation and exam-
-  nation mark at the close is below 60 per cent.  No student will be
-   llowed to pass whose examination mark is below SO per cent."
-  A minimum grade of 80 per cent shail be maintained in all of the
-  jourses counting toward a Master's degree".
-   t is the Middlebury custom to combine the term and examination mark
-  n the ratio ef three                                to one; multiply                               term        mark            by        three,        add
-  )aminetion mark, and                                divide by four.                                                                               3
-
-                 Ranks           should        be     handed               to    the       Dean            not        later           than         the        afternoon
-
-     |f? August             11.         Ranks        should           be        reported              on        the        sclae            of     1006.
-
-                 Instructors                  should           repert            the       names            ef        students               who        did        the
-
-     ork        byt did              not     work     for        credit.                              W.        E.     Davison,                  Dean.
+W. E. Davison, Dean.
 
 <!-- page: 22 -->
-To   the Members   of   the   Teaching   Force:
-     The Dean will appreciate it if you will              kindly      take    up   the
-following matters with your classes Monday.
+To the Members of the Teaching Force:
 
-      i. Please check up the registrations, returning
-                                                        to the office
-one of the appended sheets, and keeping the
-                                              other for your own
-convenience.   After this tine any further registrations should
-reported individually to the Dean.                                be
-                                      It has boen necessary to give
-permission to a few students to enrollmlate,
-                                               but we should discour-
-age changes in registrations after this time.
+The Dean will appreciate it if you will kindly take up the following matters with your classes Monday.
 
-       Ze Please   call   to the attention     of students
-wanted should be purchased Monday, even if
-                                                               that
-                                                           texi-books
-                                               the book in question is
-not being used just at present.    It is necessary to determine at
-onbe just how many books are needed, as the
-returned immediately to the publishers.         unsold copies mist be
-                                            Please emphasize that stus
-dents must get their books Monday.    As not all tho invoices are
-here, all books aro being charged;    Mr. HoFee will prepare and pre-
-sent statements as soon as possible.
+1. Please check up the registrations, returning one of the appended sheets to the office, and keeping the other for your own convenience. After this time any further registrations should be reported individually to the Dean. It has been necessary to give permission to a few students to enroll late, but we should discourage changes in registrations after this time.
 
-      3. Please inspect your       reserve in the Library to determine
-whether the necessary books        aro there.  It is my thought that the
-books on reserve should not be taken fron
-                                            the library. What is
-your idea?   You will note $hat there are books whic
-reserve;                                              h are on no D6-
-           you are at liberty to add to your rese
-you wish.                                         rve  from these, if
-             I shall be glad to hase your           suggestions
-of making                                                          as    to   the wayso
-            the library more helpful.
-     Please note that there are Underwood and
-in tho Dean¥s office whieh are at your          Oliver typewriters
-                                        disposal.    Pleage feel free
-to give Mr. MoFee matoráal you wish mimeogra
-                                             phed.
+2. Please call to the attention of students that text-books wanted should be purchased Monday, even if the book in question is not being used just at present. It is necessary to determine at once just how many books are needed, as the unsold copies must be returned immediately to the publishers. Please emphasize that students must get their books Monday. As not all the invoices are here, all books are being charged; Mr. McFee will prepare and present statements as soon as possible.
 
-                                                Wilfred   E.   Davison.
+3. Please inspect your reserve in the Library to determine whether the necessary books are there. It is my thought that the books on reserve should not be taken from the library. What is your idea? You will note that there are books which are on no reserve; you are at liberty to add to your reserve from these, if you wish. I shall be glad to have your suggestions as to the ways of making the library more helpful.
+
+Please note that there are Underwood and Oliver typewriters in the Dean's office which are at your disposal. Please feel free to give Mr. McFee material you wish mimeographed.
+
+Wilfred E. Davison.
 
 <!-- page: 23 -->
-Ibope     wil        be    three    biking,       espeetitionrn         this
+There will be three biking expeditions this week-end:
 
- week-end:
+(1) one to Bread Loaf Mountain and Emily Doctor Lodge, leaving the Inn at 8:30 Saturday morning and returning Sunday afternoon.
 
-       (1) one        to Bread          Loaf    Mountain        ard Emily
+(2) One to the headwaters of Sucker Brook, leaving the Inn and returning at the same time as the above.
 
-     2octor     Lodge,       leaving        the   Iun      at   8:30        Saturday
+(3) one third trip goes to Clarkes Clearing, leaving the Inn at 10:00 A.M. Saturday, carrying food for lunch, and returning in time for supper, Saturday evening.
 
- morning        end    retrrnirg           Sunday     afternoon.
-
-       (2) Ove to the headwaters                      of Sucker Brook,
-leavirg        the    Im.    and    returning         at    the      same     time
-
-as    the anova,
-
-       (5) whe        third       trip     zoeg    to Clarkes              Clearing,
-
-leaving        tie    Ini    at    10:00       A.P.   Saturday,             carrying
-
-food    for     iunch.       and    returning         in time          for
-
-suDper,        3eturdey          evening.                              i
-       All     who    are     interested          in any        of    these    tridc
-
-are    asked     to meet          for     a few   minutes            inthe    large
-
-paricr,        right     cfter      supper        this     evening,          to hear
-
-further        about     them.
+All who are interested in any of these trips are asked to meet for a few minutes in the large parlor, right after supper this evening, to hear further about them.
 
 <!-- page: 24 -->
-Professor                  Lewis        wiil    lead   the   following.
+Professor Lewis will lead the following.
 
-
-Here's             to Dr.            Smart,        drink       it Gown!
-Here's             to Dr.            Smart,        drink       it down!
-Here's             to Dr.            Smart,
-He's          a man        of head               and    heart,
-And we're                 sorry           we must        part.
+Here's to Dr. Smart, drink it down!
+Here's to Dr. Smart, drink it down!
+Here's to Dr. Smart,
+He's a man of head and heart,
+And we're sorry we must part.
 Drink it down, down, down!
-For he's a jolly good feilowi
-For he's & jolly good fellow?
-Which          nobody        can            deny.
+For he's a jolly good fellow!
+For he's a jolly good fellow!
+Which nobody can deny.
 
- Good          bye,        Doctor!
-        ft         "         ft
-        "          "         £
+Good bye, Doctor!
+"     "      "
+"     "      "
 
- We're             sorry     to haveyou                  go}
+We're sorry to have you go!
 
- Good          luck,        Doctor:
-        it         "n            ft
+Good luck, Doctor!
+"    "       "
+"    "       "
 
-        ft         "n            "
+Wherever you may be!
 
- Wherever                 you may            bel
+Come back, Doctor!
+"    "       "
+"    "       "
 
- Come back,                 Doctor!
-   "t              ff                 "
+Back to Bread Loaf Inn!
 
-  ft               fr                 "
+Rah! Rah! Rah!
+Bread Loaf Inn!
+Rah! Rah! Rah!
+Bread Loaf Inn!
+Rah! Rah! Rah!
+Bread Loaf Inn!
 
- Back          to Bread                   Loaf    Inn!
-
-
-Rah!   Rah! Rahí
-Bread:   Loaf!  fmni
-Rah?   RahiRahi
-Bread?    Loaf!    Inn!
-RAM    Rah!)   Ran}
-Bread     Loaf! Inn!
-             Dr.        Smart?            1 j
+Dr. Smart!
 
 <!-- page: 25 -->
-this       song        let     every     one
-(When     Table     4 starts
+(When Table 4 starts this song let every one
 
+1. Should auld acquaintance be forgot
+   And never brot to mind;
+   Should auld acquaintance be forgot
+   And days of muld lang syne rà
 
+Chorus.
+Then here's tu you, dear Dr. Smart!
+We're yours thru thick and thin;
+And here's to you, dear Dr. Smart,
+Beloved of Bread Loaf Inn.
 
+2. We thank you now for what you've done
+   To make us critics true,
+   For Arnold, Perry, Huneker,
+   And Santayona too.
 
-1. Should auld acquaintance                              be forgot
+(Chorus, Then here's te yeu, etc.)
 
-    And    never         brot        to mind;
+2. You've taught us all the art of life,
+   To know the lady trus;
+   And when wa decorate our homes
+   We'll always think of you.
 
-    Should        auld     acquaintance                  be forgot
-
-            days     of muld           lang        syne        rà
-    And
-
-
-                 Then     here's         tu       you,        dear     Dr.Smart!
- Chorus.
-
-    We're        yours      thru        thick           and    thin;
-
-                           to you,           dear        Dr.        Smart,
-    And here's
-                    of     Bread        Loaf           Inn.
-    Beloved
-
-
-                    you now            for       what         you've     done
-2. We     thank
-                                            true,                            |
-    To make        us     critics
-
-    For    Arnold,         Perry,           Huneker,
-
-    And     Santayona            too.
-
-(Ohsrus,     Then here's                te yeu,           etc.)
-
-                 taught         us    all        the     art    of life,
-2. You've
-
-   To     know     the     lady       trus;
-
-   And when         wa     decorate              our homes
-
-   We!ll     always         think           of you.
-
-                 Then here's                to    you,         oto.)
-( Oherus,
+(Chorus, Then here's to you, oto.)
 
 <!-- page: 26 -->
-mS
-            —         XS
-               Min. cie cue
-                TAE     NET
-                         X
-                       -
+Table 1—starts this song; let all join in singing.
 
-                       “= a    i                                                     :
+Tune: Maryland, My Maryland.
 
+'O friend of ours from old Vermont,
+We sing to you, we sing to you.
+Ye'ty journeyed to your 'stories bright
+With pleasure true, with pleasure true;
+Of Uncle Giles and Elle fair,
+Who shielded were from every care;
+And Henrietta's evening prayer,
+Wrought her rue, which brought her rue;
+Which false—
 
+And Captain Shays, the hermit brown,
+Who hid away, who hid away;
+One man of words with learning deep,
+Who lost his way, who lost his way.
+We journeyed with you far to France,
+And left, with longing backward glance,
+The garden fair where moonbeams dance
+On flowers gay, on flowers gay.
 
-               Tablo          Z^starts-this-pong,               lot-all   join       in      singing
-' ( Whwn
-
-       Tune:               Maryland,       My Maryland.
-
-
- 'O friend             of     ours   from     old    Vermont,
-  Wo    sing           te     vwu,   we     sing    te   you.
-  Yety9               Listened       te your ‘sterier bright
- With                 pleasure       true, with pleasure truoj                  ==
-  Of Unelo Giles ani                      Elle     fair,
-   Who shieldoà were                      from     vory    care;
-    And Henriotta's                       evrveming rere,                                |
-                       wroug    ht   her     ruo,    which      brought   her    rue;
-       Which               false
-
-
-
-  Anà Captain Shays, the hermit brown,
-   Whe hid. aways who hid away;
-     Ene man uf words with loarning deop,
-      the Jost his way, whe lost his way.
-  We journcyea with you far tc France,
-    And ieft,vi^h longing baskwerd glance,
-     The gerdon fair Whore mocubeam3 gango
-       én flowore gay, ou flewers gay.
-
-  New, friend of curs from eld Vermont,
-   Wo sing te you, we sing te you;
-             the people of your rea,
-              iendship true, with freindship                                true;
-  But better giil1l, = your ready smile
-    We'll carry in our aearta the while
-     We are surmounting earnings pile:
-      New here's to yeu, now bore ste you!
+Now, friend of ours from old Vermont,
+We sing to you, we sing to you;
+The people of your state,
+Friendship true, with friendship true;
+But better still, your ready smile
+We'll carry in our hearts the while
+We are surmounting earning's pile:
+Now here's to you, now here's to you!
 
 <!-- page: 27 -->
-» Salma condi
+School of English
+Bread Loaf
+Vermont
 
-                School of English
-                   Bread Loaf
-                     Vermont
+July 14, 1921
 
-                     July      14,     1221
+Under the direction of Miss Edith O. Wallace.
 
+Program.
 
-Under     the &irootion           of Miss         Edith 0, Wallace.
+I. Piano Solo -- Miss Carrie Ingraham
 
-                             Program.
+II. Group of Songs -- Miss Alice J. Macomber
 
+III. Readings -- Miss Kathryn E. Richardson
+     Scum of the Earth
+     The Lie
 
-        Piano   Solo    --      Miss         Carrie    Ingraham
-I.
+IV. Group of Songs -- Miss Macomber
 
-        Group   of   Songs       --        Hiss   Alice    J.   Macomber
-II.
-
-ITI.Readings --   Miss Kathryn                        E.   Richardson
-        Scum of the Earth
-        The Lie     ;
-
-IV.     Group   of     Songs     --        Miss   Macomber
-
-                        Songs         --    Middlebury      College       Girls.
-Y.    Middlebury
-
-
-
-
-                             ——                   SS       T MM M   TEE      SEE
+V. Middlebury Songs -- Middlebury College Girls.
 
 <!-- page: 28 -->
-DRAMATIC       LABORATORY
+DRAMATIC LABORATORY
 
-                                   Sf
+Middlebury College School of English,
+Bread Loaf, Vt.,
 
-         Middlebury        College         Schucl    ef Eng.ish,
+presents
 
-                         Bread     Loaf,     Vt.,
-                                                                     i
-                            presents
+"Tom Thumb"
+July 21, 8 P.M.
 
-                    "p     o! Me Thumb           "
-                     July 21,           8 P.M.
+Cast
 
+Amanda Afflick                                Miss Campbell
 
-                                 Cast
+Celeste                                       Miss McDonald
 
-Amanda    Affiick                                        Miss Campbell
+[illegible]                                   Miss Landes
 
-JeLeste                                                  Miss    McDenald            |
+Mrs. Galloway                                 Miss Goding
 
-                                                         Miss    Landes              |
-RISO
+Madame Didier                                 Mrs. Browne
 
-        Galloway             i                           Miss    Goding              |
-Mrs.
+Mr. Greensmith                                Mr. Wayne
 
-Madame     Didier                                        Mrs.    Browne              |
+Staff
 
-Mo. Greensmith                                           ir. Wayne                   |
-                             Staff                                               :   E
+Director                                      Miss Thompson
 
-Director        |                                         Miss    Thompsen           |
+Stage Manager                                 Mr. Williams
 
-Stage     kanager                                         Kr.    Williams    |       |
+[illegible]                                   Miss Macomber
 
-oS        ons                                             Miss    Macomber
+                                              Miss Schilling
 
-                                                          Miss     Schilling         |
+                                              Mr. Wayne
 
-                                                          Mr.    Wayne               |
-Soenery
+Scenery
 
 <!-- page: 29 -->
-To   Guosts   of    Breed    Loaf     Inn      not    embers     of
-                                               Tho    English     Scheel:
+To Guests of Breed Loaf Inn not members of
+The English School:
 
-          Tho      members    of    the     Fnglish      “chool       will   be
+The members of the English School will be
+interested in the evening entertainments, which
+will be announced from time to time.
+The first number of the series is a lecture
+by Professor Charles E. Wright on "The Present
+Worth of Poetry". This lecture will be given this
+evening at eight o'clock in Sneihuisec Hall.
 
-in stor: in tho evoning entcrtainmants,   vhion
-wili bo announced from time to timo.
-    Tho first number of th- series is a locturc
-by Professor Charles E. ‘right on:B Tho Present
-Vorth of Poetry”.    Ths lecture will be given this
-evening At Sight..o'e oen ini $neihusiec Hall.
-
-                            Wiifrod       E;    Davison,
-
-                               Dean       of    tho    English     School.
-
-
-
-
-                                                                                  EL
-                                                                                  zai
+Wilfred E. Davison,
+Dean of the English School.
 
 <!-- page: 30 -->
-t
+TOPICS FOR THEMES: ORAL AND WRITTEN
 
+The following topics have been suggested in Courses 4 and 5 as suitable for development in oral and written composition work in the high school. It is by no means supposed that the respective fields have been exhausted; the topics are merely suggestive of various types of work that can be done. The understanding is that they are best first developed by oral work and next by the written themes.
 
+I. Topics suggested by work in literature:
+   A. Ivanhoe:
+      1. Present Day Chivalry.
+      2. Serfdom Compared with the Life of a Modern Farmer.
+      3. A Cowboy's Encounter with the Four Knights' Challenges.
+      4. The Tournament Vs a Football Game.
+      5. The Better King: Prince John or Richard?
+      6. My Reasons for Liking Rebecca Better Than Rowena.
+      7. Gurth (description).
+      8. Wamba (description).
+      9. The Plan and Furnishings of Rotherwood (& certain room).
+      10. Supper at Cedric's Home (including direct and indirect discourse).
+      11. My Reasons for Questioning the Identity of the Palmer.
+      12. The Palmer's Rescue of Isaac, and His Reward.
+      13. The Tournament Field (explanation and description accompanied by diagram).
+      14. Distinguished Spectators at the Tournament.
+      15. Tournament Rules.
+      16. Tournament Customs.
+      17. Amusements of the Nobility Vs. Those of the Commons.
+      18. The Purpose of the Crusades.
+      19. The Children Crusaders and Their Hymn.
+      20. A Modern Crusade.
 
+   B. The Skeleton in Armour:
+      1. Vikings.
+      2. The Old Mill at Newport.
+      3. A Corsair.
+      4. The Vikings' Life and the Sailors.
 
-                                             »
-
-
-
-
-                 TOPICS      FOR    TREHES       ORAL    AND WRITTEN
-
-
-           The follewing topics have been suggested in Ceurses 4 and 5
-        as suitable fer develspment in oral and written cempesition work
-        in the high s¢heol.   It is by no means suppesed that the respective
-        fields have been exhausted;    the topics are nerely suggestive ef
-        varioue types ef work that can be done.      The understanding is that
-        they  are best first develeped  by eral  werk   and next by the written
-        thems.
-
-           I.   Tapics suggested by werk in literature:
-                A. Ivanhee:
-                    1. Present Day Shivalry.
-                    2. Serfdom Cempared with the Life of a Medern                                        Farmer.
-                     3, A Cowbey's           Enoeunter          with     the Feur Knights!                Thallenges.
-                     4. The Teurnament Vs a Foetball Game.
-                     5. The Better King Prince Jehn er Richard ?
-                     6. My Reasens for Liking Rebecca Better Than                                    Rowena.
-                     7, Gurth ( dascriptien).
-                     8. Wamba ( descriptien ).                                                  room).
-                     9. The Pla n and Furnishings                        ef Retherwood (& certain
-                     10. Supper        at Cedric's             Home     ( including direct and in-
-                        :                                                            direct     discourse).
-                      11.   My Reasens           for    Questioning          the   Identity         of    the   Palmer.
-                      12.   The    Palmer'tsRescuef Isaac, and His Reward.
-                      13,   The    Tournament Field ( explanatien and description
-                                                                        accempanied          by diagram         ).
-                      14.   Distinguished Spectators at the Teurnament.
-                      15.   Teurnament Rules.
-                      16.   Teurnament Customs.
-                      17.   Amusements of the Nobility Vs. Those ef the                                    Commons.
-                      18.   The Purpose ef the Crusades.
-                      19.    The Children Crusaders                    and   Their    Hymn.
-                      20.    A Medern “rusade,
-
-                B.   The    Skelsten    in Armeur:
-                      l. Vikings.
-                      2.    The Old Mill          at    Newpert.
-                      3,    A Cersair.
-                      4.    The    Vikings       Life    and    the     Sailers.
-
-                C.   The Odyssey:
-                      1. A Greek Home (desoriptien with aid ef diagram ).
-                      2. A Day ef a Greek Girl's life ( or Boy's life ) Cem-
-                                  pared with a Day in My Own Life,
-                      3, Games Greek Boys and Gitlis Played.
-                      4, Ulysses and Lincoln.
-                      5. Ulysses in the Cave ef tho Cycleps.
-    :                 6, Qustoms in a Greek Home.
-    I                 7. Religious Beliefs or Ceremenies in Greece.
-                      8. Seme Strihing Figures ef Speech in tho Odyssey.
-                      9. Ganditiens          in the Life              ef the Greeks          Like        ( or Unlike)
-                                                           These        in Our       Life,
+   C. The Odyssey:
+      1. A Greek Home (description with aid of diagram).
+      2. A Day of a Greek Girl's life (or Boy's life) Compared with a Day in My Own Life.
+      3. Games Greek Boys and Girls Played.
+      4. Ulysses and Lincoln.
+      5. Ulysses in the Cave of the Cyclops.
+      6. Customs in a Greek Home.
+      7. Religious Beliefs or Ceremonies in Greece.
+      8. Some Striking Figures of Speech in the Odyssey.
+      9. Conditions in the Life of the Greeks Like (or Unlike) Those in Our Life.
 
 <!-- page: 31 -->
-|                              xnied ) :
-     1. 00:495 9aysaey -(Oertáthe
-              The Cause
-              19.        of        Trejan W
-                                            o ) in the br                                                 War.
-              33. The Fart ef ^-^ ( any her
-                                            y lillustreted
-              12. Some Zxeavathons Near Tro
-                                            elope:
-              iZ. Qualities I Admire in Peh
-                                         ( with piotures js
-              14. Lends Ulysses Visited
-              15.        Greek Levo           of Country.
-                                              Wo. Have from              the    Greeks.
-              16.        Some Gifts
-                                                                      Daye
-         D.    The Sketch Beck.                               in Irv ing 's
-                                         ay Compared with One
-              1. An Ocean Voyage of Tod
-i
-Lj            2. An English Christmas
-              %. Some Cnristmas Custcn
-                                        in Irving's Time.
-                                       s We Have That Came fro
-                                                      ey.
-                                                               m England.
-                                                                                    Abb
-                                                nster
-|              4,
-               5.
-                     The Architecture of Westmi
-                     Americans Holding a Pla ce  Among                              These Honerod in West-
-                                                                                            minster Abbey:
-f                                                              Creat           Found in Wes tmi nster Abbey:
-                      Tombs       Great        and    Less
-               6.
-                                                                               with a Compar   is onof Their
-                          Tomks     of Kings          and     Queens
-               Tho                                                        States     in Life           and Death.
-     |         8.        What    a Visit        te    the     Abbey        offers        Today
-                                                                               Gculd Not Have
-                                                                                                   That        Erving
-                                                                                                         Included.
-                                           ng!s                                  Time     and My Own.
-               9, The School Master of Ivi
-|              10. Shakespeare at Heme.
-               11.        Traces        We    Could    Find         of    the     Peet    in     Stratferd-on-Aven.
+# Restored OCR Text
 
-|        EB. nort               Stories:                                                                a Nevel,            ý% or
-                                                     Between            A Short     Stery        and
-                l.e The          Difference                                                               t5        one   ef   each
-                                               Drama,  with specific rererence
-                                               olass)                                                          Chief
-                                                                           of Red
-                2.        The    Most        Interesting Thing in Ransom                                     ( adventure).
-                                                                Part           ef Ehe    First         Chr ist mas "s
-                2.        The Mcst           Interesting                                                             plet      j.
-                                                                            Qual-
-                                            ts Us to Remember Most in ).
-                4. The Thing Galsworthy Ven               ity  ( cha rac ter
-                                           She rt Sto ry ( Sonny's Christmas,
-                5. How Dialect Helps in a                     Fronch Tar Baby).
-                                              ef Any        Short        Story.
-                    6, Retelling
-                                                                                                                :
-          P.        David       Copperfield:                                                     a Photegraph               er 4
-                    1. Dickans'              Picture(ef        Any Character),
-                                                                                                  Cartoon).
-                    2.    A Mecern Micawber.                                             and     Steerforth.
-                                                                    -    Traddles
-                    z,    Bwa Kinds ef Friends
+**A. The Trojan War:**
 
-          G.        Julius        Caesar:                                                      the     Peried         ef ----
-                                  Course of Caesar's                     Life     During
-                       The                                                               ( Civil        War,        Conquest,
-                                                                                                                            ete
-                                                              Oracles.  Consulting
-                           A Roman's Reasena for
-                           The Tribune's Werk.
-                                                     kespeare's.
-                           Plutarch's Caesar and Sha                                                                      Caesar.
-                                                   t in the Plot ef Julius
-                           The Supernatural Elemen             in the Play.               )
-                           The Place           of Portia        ( or Lucius
-                    7 Anthony            and    Brutus.
-                     8.    Cassius and Brutus.                                                    of the Title.
-                                                       s                            Choice
-                     ©.    Tho Reason fer Shakespoare'
+1. 00.495 Odyssey (Certain)
+   The Cause of Trojan War.
+
+19. The Part of [illegible] (any her y illustrated)
+
+12. Some Excavations Near Troy
+
+12. Qualities I Admire in Pehlo(pe): (with pictures)
+
+14. Lands Ulysses Visited
+
+15. Greek Love of Country.
+
+16. Some Gifts We Have from the Greeks.
+
+**D. The Sketch Book:**
+
+in Irving's Days
+
+1. An Ocean Voyage of Tod(ay) Compared with One
+
+2. An English Christmas
+
+3. Some Christmas Customs in Irving's Time.
+   Things We Have That Came from England.
+
+4. The Architecture of Westminster Abbey.
+
+5. Americans Holding a Place Among These Honored in Westminster Abbey:
+
+6. Tombs Great and Less Great Found in Westminster Abbey:
+   Tombs of Kings and Queens with a Comparison of Their States in Life and Death.
+
+8. What a Visit to the Abbey offers Today
+   That Irving Could Not Have Included.
+   Comparing Irving's Time and My Own.
+
+9. The School Master of Irving's
+
+10. Shakespeare at Home.
+
+11. Traces We Could Find of the Poet in Stratford-on-Avon.
+
+**EB. Short Stories:**
+
+The Difference Between A Short Story and a Novel, (% or Drama, with specific reference to one of each Class) Chief of Red [illegible]
+
+2. The Most Interesting Thing in Ransom of Ehe First Christmas's (adventure).
+   The Most Interesting Part Plet (j).
+   The Thing Galsworthy Wants Us to Remember Most in (Quali-ty (character).
+
+4. How Dialect Helps in a Short Story (Sonny's Christmas, Froueh Tar Baby).
+
+6. Retelling of Any Short Story.
+
+**P. David Copperfield:**
+
+1. Dickens' Picture (of Any Character), a Photograph er (Cartoon).
+
+2. A Modern Micawber.
+   [illegible] Traddles and Steerforth.
+
+3. Two Kinds of Friends.
+
+**G. Julius Caesar:**
+
+The Course of Caesar's Life During the Period of [illegible] (Civil War, Conquest, etc).
+
+A Roman's Reason for Consulting Oracles.
+The Tribune's Work.
+Plutarch's Caesar and Shakespeare's.
+The Supernatural Element in the Plot of Julius Caesar.
+The Place of Portia (or Lucius) Anthony and Brutus.
+
+7. [illegible]
+
+8. Cassius and Brutus.
+   The Reason for Shakespeare's Choice of the Title.
+
+9. [illegible]
 
 <!-- page: 32 -->
-pet bas
+III. B. Nature:
+1. The West and Song of the Peabody Bird, (White Throated Sparrow)
+2. The Habits and Haunts of a Nuthatch.
+3. The Songs of the Olive Backed Thrush and the Wood Thrush.
 
-
-
-
-III.      B.    Nature:
-               1. Tho West      and     Seng    of the   Peabedy   Bird,    ( White
-                                                               Throated      Sparrow)
-            2. Tho Habits andHatnts of a Nuthatch.
-            3, She Songs of the Olive Backed Thrush andthe Wood
-                                      i                  Thrush.
-          C, Industry:
-            1. The Cvon Pit Iron Mine andthe DIES         Iron
-                                                                           ine.
-
-               2. The Homes of A Steel             Plants   Empleyoes.
-               3. Tho  Forge by Oarmón.
-               4. Tho Coffee Industry in Brazil,-
-                  &.   Plantation.
-                  b.   Drying    Floor.
-                  c. Hauling          Bags    of Fresh   Coffee.
-                  d.   The   Steamer         Loaded.
+C. Industry:
+1. The Cyon Pit Iron Mine and the [illegible] Iron [illegible].
+2. The Homes of A Steel Plants Employees.
+3. The Forge by Carmon.
+4. The Coffee Industry in Brazil.—
+   a. Plantation.
+   b. Drying Floor.
+   c. Hauling Bags of Fresh Coffee.
+   d. The Steamer Loaded.
 
 <!-- page: 33 -->
-The      Cram         -
+The Cram —
 
+In the space below, write your name— last name only, with Mr., Miss or Mrs., as the case may be.
 
+I expect to leave Middlebury on:
+Indicate opposite this the day:
+Indicate opposite this the hour:
 
-| In the       space        below,       write        your        name-—       last        name.    only,     "ith       Hr.,
- Miss     or   lirs.,        as    the       case     may        be.
+I expect to remain at Bread Loaf after the close of the English School. If this explains your plans, please indicate by a check.
 
+I have (Indicate number and size) _________________ trunks and _________________ cases. Indicate other baggage for which provision should be made.
 
+If you expect to make arrangements about leaving Bread Loaf by automobile or any other way so that it will not be necessary for the School to arrange for your trip to Middlebury, please indicate that here.
 
-
-£ expect         te     leave        Middlebury             en:
-
-| Indicate opposite this the day:
-| Indieate       epposite            this      the hour:
-
-
-
-
-p expect         to     remain          &t    Bread        Loaf        after     the       close     of     the    English
-| School.        If     this       explains           your        plans,        please        indicate        by a       check.
-
-
-
-
-| I have       (Indicate           number           and     size)                                                         trunks
-
-    and                                         Cases.                 Indicate       other        te ggage       for    whieh
-
-| provision        should          be    made.
-
-
-
-
-pif you        expect        to    make       arrangements                about        leaving       Bread        Loaf     by
-
-T automobile           or    any     other          way     so     that    it       will     net    be    necessary         fer `
-
-| the     School       to    arrange           fer    your         trip    to       Middlebury,           please        indicate
-
-T that     Faste
-j
-|
-í
-
-
-
-
-    Further      information:
+Further information:
 
 <!-- page: 34 -->
-Reading          List
-                                                  Course        2
+Reading List
+Course 2
 
+Matthew Arnold: Introduction to Ward's Poets.
+On the Study of Literature. (Studies in Literature).
 
-Matthem     Annold:            Introdustion              to Ward's       Poets.
+John Morley: Interpretation of Literature (Transcripts and Studies).
 
-                         On    the    Study       of Literature.               (Studies        in Literature).
-Sohn Morley:
-                                                         of    Liter&ture(Transeripts               &nd     Studies).
-Edward     Dewden:        Interpretation
+J. R. Lowell: Our Literature.
 
-jJ. Re    Lowell:        Our    Literature.
+Frederic Harrison: The Choice of Books.
 
-froderic     Harrison:            The      Choice        of Books.
+Francis Bacon: Essay "On Studies".
 
-francis     Bacon:        Essay       "On       Studies".
+E. A. Poe: The Poetic Principle.
 
-E. A.     Poe:     The    Poetic        Principle.
+Bliss Perry: A Study of Poetry, Chaps. VII and VIII (Types of the Lyric).
 
-                                            Poetry,            Chaps.    VII     and   VIII     (Types     of   the    Lyric).
-Bliss     Perry:     A Study          of
+Shelley: Defense of Poetry.
 
-Shelley:          Defense        of Poetry.
+George Herbert Palmer: The Ideal Teacher (The Teacher).
 
+Percival Chubb: The Teaching of English (Literature in the High School, Chaps. 15, 16, 17).
 
+Arlo Bates: Talks on the Study of Literature; Chap. 6 (Methods of Study); Chap. 9 (The Classics).
 
+William Lyon Phelps: Teaching in School and College, Chap. 9 (Teaching English Literature).
 
-           Herbert            Palmer:      The     Ideal        Teacher        (The    Teacher).
-Goorge
+Barrett Wendell: Stollegen (Mr. Lowell as a Teacher).
 
-                                The     Teaching          of English           ( Literature        in the       High
- Percival        Chubb:
-                                                                                 School,       Chaps.     15,    16,   17).
+Betts: The Recitation, Chap. 3 (The Art of Questioning) Riverside Ed. Monographs.
 
-                     Talks on the Study of Literature;                                 Chap.    6 (Methods        of
-Arlo      Batos:
-                     Study); Chap. 9 (The Classics).
-                         Phelps:        Teaching          in School        and     College,      Chap.     9 (Teaching
- William     Lyon
-                                        English         Literature).
+Quiller-Couch: The Art of Reading (Last two chapters).
 
- Barrett     Wendell:           Stolligeri              (Hr.    Lowell     as a Teacher).
+For Reference:
 
- Betts:      The Recitation,                    Chap.     3 (The Art           of Questioning)            Riverside
-                                                               Ed.    Monographs.
+Clarence E. Andrews: The Writing and Reading of Verse.
 
- Quiller-        Couch:         The     Art      of Reading             (Last     two chapters).
+Alden: Introduction to poetry.
 
-
-
- For Reference:
-
-                         E.    Andrews:           The     Writing        and    Reading        of Verse.
-         Clarence
-
-         Alden:     Introduction                to poetry.
-
-         Gummere:        Handbook          of    Poetics.
+Gummere: Handbook of Poetics.
 
 <!-- page: 35 -->
-$e “The    Crear         pices
+"The Great [illegible]
 
+In the space below, write your name— last name only, with Mr., Miss or Mrs., as the case may be.
 
+I expect to leave Middlebury on:
+Indicate opposite this the day:
 
+Indicate opposite this the hour:
 
-In the space below, write                       your name-—               last     namng    only,     "ith      Mr.,
-Miss or rs.,  as the case                       may be.
+I expect to remain at Bread Loaf after the close of the English School. If this explains your plans, please indicate by a check.
 
+I have (Indicate number and size) trunks and cases. Indicate other baggage for which provision should be made.
 
+If you expect to make arrangements about leaving Bread Loaf by automobile or any other way so that it will not be necessary for the School to arrange for your trip to Middlebury, please indicate that fact.
 
-
-I expect       te    leave      Middlebury           en:
-
-indicate       opposite         this      the      day:
-
-Indicate       epposite         this      the      hour:
-
-
-
-
-I expect       to    remain         at   Bread      Loaf     after           the   close     of    the    English
-School.        If    this      explains         your       plans,         please     indicate         by a      check.
-
-
-
-
-I have     (Indicate           number        and    size)                                                        trunks
- and                                      cases.            Indicate             other     ta ggage      for    whieh
-
-provision       should         be    made.
-
-
-
-
-If you expect            to make         arrangements             about          leaving     Bread       Loaf    by
-automobile          or   any    other        way    so     that     it will         net     be    necessary       fer
-
-the    School       to   arrange         fer    your       trip     to       Middlebury,          please       indicate
-
-that   fact.
-
-
-
-
-Further    information:
+Further information:
 
 <!-- page: 36 -->
-“
+Lord's Prayer.
 
-                                   Lord's           Prayer.
+i. The Lord's Prayer = A.D. 890.
 
-i.    The    Lerd's       Prayer     = A.D.             890.
-
-Faeder ure, thu tho sart                       on heefenum,
+Faeder ure, thu tho sart on heefenum,
 Si thin nama ge-halged;
 TO-becume thia rico:
-Go-weerbio       thin willa           en       ovrthan,           ewa-sws-en        heofenum;
+Go-weerbio thin willa en ovrthan, ewa-sws-en heofenum;
 Urns caszghwamlican hilaf syle us to iaoeog;
 And forgy? us ure gyltasm swa-swa wo forgifath urum gyltendum;
 And no gelaedde thu us ^on costnunge, ac alys us ef yile:
-Ssthlice.
+Ssthilice.
 
-ii.    The Lerd's          Prayer     =- 1130.
+ii. The Lord's Prayer = 1130.
 
-Fader ure, the art en hoofene.    Sy geblested name thin, Cume
-thin rike.  Si loin wil sva swa ea Loc?onune and en aarthan.
-Brood ure degwamlich goof us te daog.    And f»rgeef us ageltes
-ura swa swa wo forge¢efen agiltendum urum.    And ne lod us on
-costuago.  AS alrs us fram yfolo.    va boo hit.
+Fader ure, the art en hoofene. Sy geblested name thin, Cume
+thin rike. Si loin wil sva swa ea Loc?onune and en aarthan.
+Brood ure degwamlich goof us te daog. And f»rgeef us ageltes
+ura swa swa wo forge¢efen agiltendum urum. And ne lod us on
+costuago. AS alrs us fram yfolo. va boo hit.
 
-iii.    Tho    Lord's       Prayer        =    1250.
+iii. The Lord's Prayer = 1250.
 
 Fadir ur, that caxin hevene, Halud thi nam te novono; Thou do
 as thi rich rike; Shi will on era bo wrought, ook as it is
 woeeugnt in bomen ay. Ur- iik day brede give us ieday. Forgive
 tasu ail es dettes ure, als we fergive tiil ur detturs. And
-lecde us in na fandung. But sould tsa fre ivel thing.  Amen.
+lecde us in na fandung. But sould tsa fre ivel thing. Amen.
 
-iv.    The    Lord's       Prayer     = 1380,              ( Wyoliffe's           versien       ).
-gar    Padir, that          art     in heuenys. Halevid be thi name;                                 Thi king-
-dom    come te; Nb          tai     wil dene in erihe, $3 in hevene.                                 Give to us
-this day eure             breed evir etnir                     substance,       And ferzive to us eur
-Zottis, as we             forgiven 5e oure                     dettcuris.        And lede us not into
-tenptaoicun;          But       delyvere           us    from     yvol.      Aman.
+iv. The Lord's Prayer = 1380. (Wycliffe's version).
 
-v.    The Lord's          Prayer,     ( Tyndalo’s                 version),
+gar Padir, that art in heuenys. Halevid be thi name; Thi king-
+dom come te; Nb tai wil dene in erihe, $3 in hevene. Give to us
+this day eure breed evir etnir substance, And ferzive to us eur
+Zottis, as we forgiven 5e oure dettcuris. And lede us not into
+tenptaoicun; But delyvere us from yvol. Aman.
+
+v. The Lord's Prayer. (Tyndale's version).
+
 ur Father, which art in heaven; Halowec be thy name; Let thy
-xingdom come;  Say will be done fulfilled as well in earth as it
-ic 1n heveny  Geve us this day ur d&yly bred.  And forgevo us
-eure    dettes       as    wo    ferseve           ur    cetters.         And     leade    us     pet      irto
-tomptasien,
-          But               deliver           us    frem        ovylil.     Her    Lhyne     2s      the    kyng-
-dom,    and    the    pewor,        and       toe       slerve,       forever.       Aman.
+xingdom come; Say will be done fulfilled as well in earth as it
+ic 1n heveny. Geve us this day ur d&yly bred. And forgevo us
+eure dettes as wo ferseve ur cetters. And leade us pet irto
+tomptasien, But deliver us frem ovylil. Her Lhyne 2s the kyng-
+dom, and the pewor, and toe slerve, forever. Aman.
 
 <!-- page: 37 -->
-ERAMATIO         LABORATORY
-             En                           of                     |
-             Middlebury       Collego          School        ef English,
+DRAMATIO LABORATORY
+of
+Middlebury College School of English,
+Bread Loaf, Vt.
 
-                           Broad      Loaf,        Vt.       3
+presents
 
+"THE HOUR GLASS"
 
-                                    presents       |
+by
+W. B. Yeats,
 
-                         "THM HeuR GLASS                 "
+July 27, 1921 at 8:30 P. M.
 
-                                          by
-                               Wa    Ba    Yeats,
+Cast.
 
+The Wise Man                                                               Br. Wright
 
-                  "Juiy.£7,    1921 at 8:30 P, M.
-                                      es tici
+The Fool                                                                   Mr. Waters
 
+Bridget                                                                    Miss Macomber
 
-                                     Cast.
+Two Children                                                               Elsa Conkling
+                                                                           Hilde Conkling
 
+Angel                                                                      Miss Ree
 
-The Wise Man                                                               Br.    Wright
+King's Son                                                                 Miss Ingraham
 
-The   Feel                                                                 Mr,    Wa ea
+First Student                                                              Mr. Fullington
 
-Bridgot                                                                    Miss    Macomber
+Second Student                                                             Mr. Wilson
 
-Two   Obilirem                                                             Elsa Conkling
-                                                                           Hilde Cankiing
-Angel                                                                      Mise Ree.
+Third Student                                                              Mr. Halmstram
 
-King's Son                                                                 Mies    Ingraham
+Staff
 
-Firet        Student"                                                      ir, Fullingten
+Director                                                                   Miss Phemister
 
-Seocud        Student                                                      Mr.    Wilson
+Stage Manager                                                              Mr. Williams
 
-Third Student                                                              Mr. HALmstram
+Producers                                                                  Miss McCaskio
+                                                                           Miss Ingraham
 
-                                          Starr
-Direetor                                                                   Kiss Phemister
+Scenery and Costumes designed by Mr. Wayne
+and executed by members of the class.
 
-Stage        Manager                                                   Mr, Williams
-Producers |                                                                Miss Mo Caskio
-                                                                           Miss    Ingraham
-
-
-             .Soemery and Costumes designed by Mr. Wayne
-         j       and executed by mombors of the elass.
-
-                        ( All preduetions               are under     the direotiow
-      off -Miss Spaulding asd Mr. Wayne.)
+(All productions are under the direction
+of Miss Spaulding and Mr. Wayne.)
 
 <!-- page: 38 -->
 CONCERT
 
-                       Under        the   direction             of
+Under the direction of
 
-                      Ers.       Edward     A,    Grossmann
+Mrs. Edward A. Grossmann
 
-                                 August    B, 1921
+August 8, 1921
 
-                             School       of English
+School of English
 
-                                 Bread     Loaf,     Vt.
-
-
-
-                                      PROGRAI
+Bread Loaf, Vt.
 
 
+PROGRAM
 
 
-Part    rEY
+Part I
 
-       Senata    in G Minor           (First       Movement)               -   -   Tartini
-       Meditation - - — - =- =- = =o = = =e = =                                    Cottenet
-       The Bee ----—------------                                                   Schubert   f
-       The    Prize   Song       mu        e                    ~     --       —   Wagnor-Vilhelmj
+Sonata in G Minor (First Movement) - - Tartini
+Meditation - - - - - - - - - - - - Cotonét
+The Bee - - - - - - - - - - - - - - Schubert
+The Prize Song - - - - - - - - - - Wagner-Wilhelmj
 
-                      Vielin -- Miss               Else L. Raner
-                      lrs. Grossmann               at tho piane
-
-
-                             Five     minutos       intermission.
+Violin -- Miss Else L. Raner
+Mrs. Grossmann at the piano
 
 
-Part    VÆR
-
-        Songs     by Gertrude E. Grossmann
-                a. Song te Pan
-                b. Die Stille Wasserrass
-                c. Lisbe
-                d. Herz, mein Herz
-
-                      Sung       by Miss         Alice     J.        Macember
+Five minutes intermission.
 
 
+Part II
 
-        Kid     TOTEN e    eis      serm erii ee om (tm eet ee Ine Riss
-        Por Nussbaum --—-—-—---------                                              Schumann
-        Liebesfreud = =» = = =- =- = =- ~= = = ~=                                  Kre&sler
+Songs by Gertrude E. Grossmann
+    a. Song to Pan
+    b. Die Stille Wasserrose
+    c. Liebe
+    d. Herz, mein Herz
 
-                      Miss       Raner     and     Mrs.     Grossmann
+Sung by Miss Alice J. Macember
 
 
+Der Nussbaum - - - - - - - - - - - - Schumann
+Liebesfreud - - - - - - - - - - - - Kreisler
+
+Miss Raner and Mrs. Grossmann
 
 
-                          Five    minute         intermission.
+Five minutes intermission.
 
 <!-- page: 39 -->
-Bramatic                     Laboratory
+Dramatic Laboratory
 
-                                                                    of                        |
+of
 
-              Middlebury                         Tcllege                      Schoel                   of    English
+Middlebury College School of English
 
-                                         Bread                 Loaf,                Vt.
+Bread Loaf, Vt.
 
-                                                      presents
+presents
 
+THE PAWN
 
-                                                      THE           PAWN
+by
 
+Rev. L. Wayne
 
-                                                                by
-                                                     Re        L.        Wayne
+August 8, 1921
+at
+9:00 P.M.
 
-                                             August                 8,         1921
-                                                                at
-                                                     9:00           P,         H.
+Cast.
 
-                                    %         Sear        Ue        $5
-                                                                    MS
-                                                                               +        kM        it32,
+King Arnox                                                                Mr. Heimstrem
+          who holds as captive
+Carjyna                                                                   Miss Lewis
+          a maiden from the jungle city of Nez
+                    beloved by
+Tharsain                                                                  Mr. Wayne
 
+          Prince of Nez, who, disguised as a herder
+          of goats, wanders from place to place in
+          search of her.
 
-                                                               Cast.
+Larne                                                                     Alice Stowe
+                    Slave boy to Carjyna
 
-King Arnox                                                                                                      Mr.       Heimstrem
-          j                         who              holds               as        captive                                        :
-Carjyna                                                                                                         Miss Lewis
-              a maiden                       from the jungle                                       city         of Nez
-                                               poleved by
-Tharsain        `                                                                                               Mr.       Wayne
+Tarnes                                                                    Mr. Williams
+                    Sentry at the gate.
 
-              Prince ef Nez, whe, disguised as a herder
-              of geats, wanders from place to place in
-              search                    cf    her,
-Larne                                                                                                           Albee       Stowe
-                                        Slave             boy            to         Carjyna
-Tarnes                                                                                                          Mr.       Williams
-                                        Sentry                 at        the           gato.
+[illegible]
 
-                    ‘pan: (mes   geet    i      ge) "cm | wm        Wen      (dme. .aue, | dni |)em;      REE     ER aa
+Act I
 
+A gate to the Palace of Arnox.
+          Twilight.
 
+Act II
 
+In the Palace of Arnox.
+          A short time earlier.
 
-                                                          Act            I
+Act III
 
-              A gate                    te      the Palace                             ef         Arnex.
-                                                 Twilight.
+The Chamber of Carjyna
+          Later.
 
-                                 AGG                                     IE
-               In      the Palace of                                     Arnox.
-                        A short time                                     earlier.
+Act IV
 
-                                               Ant III
-                           The           Chamber af Carjyna
-                                               Later      ie
-
-                                                    Act IV
-                    Balcony                      of the Palace                                    of        Arnox
-                                                  Near Dawn
+Balcony of the Palace of Arnox
+          Near Dawn
 
 <!-- page: 40 -->
-Act     V.
+Act V.
 
-                 cverlooking           the   Desert.
-                                Dawn.
-                            ee           9
+Overlooking the Desert.
+Dawn.
 
+Scene: — A far country at the desert's edge.
+Time: — When the world was younger.
+Action of play: — Between twilight and dawn.
 
+Owing to the fact that the acts are joined together with incidental music, there will be no curtains until after Act V.
 
+Incidental Music by Mrs. Gressmann, piano, and Miss Elsa L. Raner, violin.
 
-       Scene:     --    A far     country       at    the    desort's      edge.
-       Time:     ---    When     the    world    was       younger.
-       Action     of phay:        --Betwoen          twilight      and    dawn.
+Scenery designed by R. L. Wayne and built and executed by him assisted by Miss Schilling and Mr. Williams.
 
-€ving to the fact               that the acts          are joined together         with
-incidental music,               there will be          no curtains until
-after    Act     V.
+Costumes made by Mrs. Skinner and Miss Rickert.
 
-Incidental        Music      by Mrs.         Gressmann,       piane,      and
-Miss    Elsa     L.    Raner,     violin.
+Paper fruit and flowers by Miss Kenney.
 
-Seenery designed by R. L. Wayne and built                                and executed
-by him assisted by Miss Sehilling and Mr.                                Williams.
+Oriental lanterns and art dyeing by Miss Ingraham.
 
-Costumes        made    by Mrs.        Skinner       and    Miss   Rickert.
-
-Paper    fruit        and   flowers      by Miss       Kenney.
-
-Oriental        lanterns        and    art    dy&hng       by Miss     Ingraham.
-
-
-
-(All productions             under      the directicn           of Miss     Spaulding
- and Mr. Wayne.)
+(All productions under the direction of Miss Spaulding and Mr. Wayne.)
 
 <!-- page: 41 -->
 [illegible]
 
 <!-- page: 42 -->
 p
+
+## List of Illustrations
+
+* Bread Loaf School of English
+The Crumb - 1921 (p. 1) — ![Bread Loaf School of English
+The Crumb - 1921](images/blse_f7_1921_crumb_p1_2.png)
+* Pencil sketch of a tower or cupola structure with domed top and windows (p. 2) — ![Pencil sketch of a tower or cupola structure with domed top and windows](images/blse_f7_1921_crumb_p2_3.png)
+* The Gremlin
+July 5, 1921
+
+The Dean will be in his office Monday from 8:00 to 8:30, from 9:30 to 10:30 and from 1:30 to 2:30 to confer with any student who have not yet registered. It is requested that all who have not yet registered report at one of the hours indicated.
+
+Students wishing to make changes in their registrations should consult the Dean on Monday at one of the office hours indicated.
+
+The text-books are to be had at the library, except Ward's "What is English", Lewis's "American Speech", and "Browning". As soon as the remaining books come, notice will be given. Students should get their books from the library Monday, without fail, as it is necessary to return at once to the publishers all unsold copies. As the invoices have not all been received, all books are being charged. Mr. McFee will present statements as soon as they are ready.
+
+Mr. Fullington will conduct a short walk Monday afternoon at 3:30. Those desiring to take the walk should report on the front porch promptly at 3:30.
+
+Announcement will be made shortly regarding the arrangements for the use of the library. Meanwhile students are requested not to take out books without the proper record being made by the person in charge of the library. (p. 5) — ![The Gremlin
+July 5, 1921
+
+The Dean will be in his office Monday from 8:00 to 8:30, from 9:30 to 10:30 and from 1:30 to 2:30 to confer with any student who have not yet registered. It is requested that all who have not yet registered report at one of the hours indicated.
+
+Students wishing to make changes in their registrations should consult the Dean on Monday at one of the office hours indicated.
+
+The text-books are to be had at the library, except Ward's "What is English", Lewis's "American Speech", and "Browning". As soon as the remaining books come, notice will be given. Students should get their books from the library Monday, without fail, as it is necessary to return at once to the publishers all unsold copies. As the invoices have not all been received, all books are being charged. Mr. McFee will present statements as soon as they are ready.
+
+Mr. Fullington will conduct a short walk Monday afternoon at 3:30. Those desiring to take the walk should report on the front porch promptly at 3:30.
+
+Announcement will be made shortly regarding the arrangements for the use of the library. Meanwhile students are requested not to take out books without the proper record being made by the person in charge of the library.](images/blse_f7_1921_crumb_p5_14.png)
+* This image appears to be a typed page of text from a historical document dated July 18, 1961. It contains no photograph, illustration, or caption.
+
+SKIP (p. 9) — ![This image appears to be a typed page of text from a historical document dated July 18, 1961. It contains no photograph, illustration, or caption.
+
+SKIP](images/blse_f7_1921_crumb_p9_24.png)
+* SKIP
+
+This appears to be a typed text page from a historical publication with no visible photograph, illustration, or caption. It is body text content only. (p. 10) — ![SKIP
+
+This appears to be a typed text page from a historical publication with no visible photograph, illustration, or caption. It is body text content only.](images/blse_f7_1921_crumb_p10_28.png)
+* This is a typed document page from "The Crumb" dated August 10, 1921, containing administrative announcements and instructions for hikers. (p. 20) — ![This is a typed document page from "The Crumb" dated August 10, 1921, containing administrative announcements and instructions for hikers.](images/blse_f7_1921_crumb_p20_59.png)
+* SKIP
+
+This appears to be a blank or nearly blank page from a scanned document, showing primarily texture and shadows from the scanning process rather than actual photographic or illustrative content. (p. 21) — ![SKIP
+
+This appears to be a blank or nearly blank page from a scanned document, showing primarily texture and shadows from the scanning process rather than actual photographic or illustrative content.](images/blse_f7_1921_crumb_p21_61.png)
+* This is a typewritten memorandum dated August 1, 1921, from Dean W. E. Davison to the Faculty of the English School regarding class records, examinations, and academic regulations. (p. 21) — ![This is a typewritten memorandum dated August 1, 1921, from Dean W. E. Davison to the Faculty of the English School regarding class records, examinations, and academic regulations.](images/blse_f7_1921_crumb_p21_62.png)
+* SKIP
+
+This appears to be a scanned page of text from a historical publication, not a photograph, illustration, or captioned image. (p. 22) — ![SKIP
+
+This appears to be a scanned page of text from a historical publication, not a photograph, illustration, or captioned image.](images/blse_f7_1921_crumb_p22_64.png)
+* This is a typed letter from Wilfred E. Davison to members of the teaching force, containing three administrative matters regarding registrations, textbook purchases, and library reserves. (p. 22) — ![This is a typed letter from Wilfred E. Davison to members of the teaching force, containing three administrative matters regarding registrations, textbook purchases, and library reserves.](images/blse_f7_1921_crumb_p22_65.png)
+* There will be three lifting operations this week-end:
+(1) one to Bread Loaf Mountain and Emily Proctor Lodge, leaving the Inn at 8:30 Saturday morning and returning Sunday afternoon.
+(2) one to the headwaters of Sucker Brook, leaving the Inn and returning at the same time as the above.
+(3) The third trip goes to Clarkes Clearing, leaving the Inn at 10:00 A.M. Saturday, carrying food for lunch, and returning in time for supper, Saturday evening.
+
+All who are interested in any of these trips are asked to meet for a few minutes in the large parlor, right after supper this evening, to hear further about them. (p. 23) — ![There will be three lifting operations this week-end:
+(1) one to Bread Loaf Mountain and Emily Proctor Lodge, leaving the Inn at 8:30 Saturday morning and returning Sunday afternoon.
+(2) one to the headwaters of Sucker Brook, leaving the Inn and returning at the same time as the above.
+(3) The third trip goes to Clarkes Clearing, leaving the Inn at 10:00 A.M. Saturday, carrying food for lunch, and returning in time for supper, Saturday evening.
+
+All who are interested in any of these trips are asked to meet for a few minutes in the large parlor, right after supper this evening, to hear further about them.](images/blse_f7_1921_crumb_p23_68.png)
+* SKIP
+
+This appears to be a scan artifact or heavily degraded page with no discernible content, caption, or meaningful illustration visible. (p. 24) — ![SKIP
+
+This appears to be a scan artifact or heavily degraded page with no discernible content, caption, or meaningful illustration visible.](images/blse_f7_1921_crumb_p24_70.png)
+* This is a page of song lyrics with three numbered verses and a chorus, typed on what appears to be a historical document. (p. 25) — ![This is a page of song lyrics with three numbered verses and a chorus, typed on what appears to be a historical document.](images/blse_f7_1921_crumb_p25_74.png)
+* This is a typed song lyrics page with the tune "Maryland, My Maryland" and lyrics beginning "O friend of ours from old Vermont." (p. 26) — ![This is a typed song lyrics page with the tune "Maryland, My Maryland" and lyrics beginning "O friend of ours from old Vermont."](images/blse_f7_1921_crumb_p26_77.png)
+* To Guests of Bread Loaf Inn not members of The English School:
+
+The members of the English School will be happy to have you share with them the good things in store in the evening entertainments, which will be announced from time to time.
+
+The first number of the series is a lecture by Professor Charles E. Wright on "B The Present Worth of Poetry". The lecture will be given this evening at eight o'clock in the Music Hall.
+
+Wilfred E. Davison,
+
+Dean of the English School. (p. 29) — ![To Guests of Bread Loaf Inn not members of The English School:
+
+The members of the English School will be happy to have you share with them the good things in store in the evening entertainments, which will be announced from time to time.
+
+The first number of the series is a lecture by Professor Charles E. Wright on "B The Present Worth of Poetry". The lecture will be given this evening at eight o'clock in the Music Hall.
+
+Wilfred E. Davison,
+
+Dean of the English School.](images/blse_f7_1921_crumb_p29_86.png)
+* This is a text document listing nature topics and industry subjects, not a photograph or illustration.
+
+SKIP (p. 32) — ![This is a text document listing nature topics and industry subjects, not a photograph or illustration.
+
+SKIP](images/blse_f7_1921_crumb_p32_95.png)
+* This is a typewritten form titled "The Truth" containing instructions for a hiking trip to Middlebury, with fields for personal information, departure details, luggage, and arrangements. (p. 33) — ![This is a typewritten form titled "The Truth" containing instructions for a hiking trip to Middlebury, with fields for personal information, departure details, luggage, and arrangements.](images/blse_f7_1921_crumb_p33_98.png)
+* Reading List
+Course 2 (p. 34) — ![Reading List
+Course 2](images/blse_f7_1921_crumb_p34_101.png)
+* SKIP
+
+This appears to be a scanning artifact or damage to the original document rather than a photograph or illustration with discernible content. (p. 35) — ![SKIP
+
+This appears to be a scanning artifact or damage to the original document rather than a photograph or illustration with discernible content.](images/blse_f7_1921_crumb_p35_103.png)
+* This is a form or document page titled "The Outing" with various fill-in fields for trip planning details. (p. 35) — ![This is a form or document page titled "The Outing" with various fill-in fields for trip planning details.](images/blse_f7_1921_crumb_p35_104.png)
+* This is a text document showing five different historical versions of the Lord's Prayer, dated from A.D. 690 to Tyndale's version, with Old English and Middle English translations. (p. 36) — ![This is a text document showing five different historical versions of the Lord's Prayer, dated from A.D. 690 to Tyndale's version, with Old English and Middle English translations.](images/blse_f7_1921_crumb_p36_107.png)
+* This is a theatrical playbill for "The Dawn" by R.L. Wayne, presented by Middlebury College School of English Dramatic Laboratory on August 8, 1921, listing the cast and acts. (p. 39) — ![This is a theatrical playbill for "The Dawn" by R.L. Wayne, presented by Middlebury College School of English Dramatic Laboratory on August 8, 1921, listing the cast and acts.](images/blse_f7_1921_crumb_p39_116.png)
+* SKIP
+
+This appears to be a blank or nearly blank page from a scanned historical document, with only a border visible and no discernible photograph, illustration, or caption content. (p. 42) — ![SKIP
+
+This appears to be a blank or nearly blank page from a scanned historical document, with only a border visible and no discernible photograph, illustration, or caption content.](images/blse_f7_1921_crumb_p42_125.png)

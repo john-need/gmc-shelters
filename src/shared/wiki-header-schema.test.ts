@@ -1,4 +1,4 @@
-import { HEADER_PROPERTIES, HEADER_SCHEMA, SOURCE_TYPES, validateHeader } from './wiki-header-schema';
+import { HEADER_PROPERTIES, HEADER_SCHEMA, LANGUAGE_OPTIONS, SOURCE_TYPES, validateHeader } from './wiki-header-schema';
 
 describe('wiki-header-schema', () => {
   it('defines an entry for every SourceType, covering every header property', () => {
@@ -52,5 +52,41 @@ describe('wiki-header-schema', () => {
       title: 'x', description: 'x', language: 'en', publisher: 'GMC', printed_volume: '',
     });
     expect(result.ok).toBe(true);
+  });
+
+  it('marks publication_date optional for every citation type', () => {
+    for (const type of SOURCE_TYPES) {
+      expect(HEADER_SCHEMA[type].publication_date).toBe('optional');
+    }
+  });
+
+  it('lists English first among the closed language options', () => {
+    expect(LANGUAGE_OPTIONS[0]).toEqual({ value: 'en', label: 'English' });
+    expect(LANGUAGE_OPTIONS.map((o) => o.value)).toContain('fr');
+  });
+
+  it.each([
+    ['1996-04-12', true],
+    ['1996-04', true],
+    ['1996', true],
+    ['Spring 1996', true],
+    ['Fall 1996', true],
+    ['not a date', false],
+    ['96', false],
+    ['Autumn 1996', false],
+  ])('validates publication_date format %s -> %s', (value, valid) => {
+    const result = validateHeader('book', {
+      title: 'x', description: 'x', language: 'en', author: 'x', publication_date: value,
+    });
+    expect(result.ok).toBe(valid);
+    if (!valid && !result.ok) expect(result.errors.some((e) => /publication_date/i.test(e))).toBe(true);
+  });
+
+  it('rejects a language value outside the closed option list', () => {
+    const result = validateHeader('book', {
+      title: 'x', description: 'x', language: 'de', author: 'x',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.some((e) => /language/i.test(e))).toBe(true);
   });
 });

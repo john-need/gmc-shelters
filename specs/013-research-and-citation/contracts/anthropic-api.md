@@ -1,7 +1,7 @@
 # Contract: Anthropic Messages API (OCR cleanup + illustration captions)
 
 External integration used only by the conversion pipeline
-(`collections/ocr_to_markdown.py` via `scripts/lib/llm_client.py`).
+(`scripts/ocr_to_markdown.py` via `scripts/lib/llm_client.py`).
 The Electron app never calls the API.
 
 ## Endpoint & auth

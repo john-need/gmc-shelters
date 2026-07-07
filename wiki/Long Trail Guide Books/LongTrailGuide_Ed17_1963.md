@@ -1,15 +1,16 @@
 ---
 type: "Guidebook"
 citation_type: "book"
-title: "Long Trail Guide Books"
+title: "Long Trail Guide Book"
 description: "Long Trail Guide Books, 1963."
 resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed17_1963.pdf"
 timestamp: "2026-07-02T18:59:16Z"
 publisher: "Green Mountain Club"
-volume: "1963"
+edition: "17"
 author: "Green Mountain Club"
 pages: "74"
 language: "en"
+publication_date: "1963"
 ---
 
 <!-- page: 1 -->

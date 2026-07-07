@@ -24,8 +24,10 @@ volume: "1922"
 edition: "December"
 printed_volume: "5"
 printed_issue: "2"
+author: "Green Mountain Club"
 pages: "3"
 language: "en"
+publication_date: "1922-12"
 ---
 
 <!-- page: 1 -->
@@ -58,8 +60,8 @@ def build_db(tmp_path: Path) -> sqlite3.Connection:
 def query(con: sqlite3.Connection, match: str) -> list[dict]:
     cur = con.execute(
         'SELECT path, kind, title, publisher, volume, edition, printed_volume,'
-        ' printed_issue, resource, citation_type, page, image, body FROM wiki_fts'
-        ' WHERE wiki_fts MATCH ? ORDER BY rank', (match,))
+        ' printed_issue, author, publication_date, resource, citation_type, page, image, body'
+        ' FROM wiki_fts WHERE wiki_fts MATCH ? ORDER BY rank', (match,))
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, row)) for row in cur.fetchall()]
 
@@ -76,6 +78,8 @@ def test_search_hit_carries_its_page_number(tmp_path: Path):
     assert r['printed_volume'] == '5'
     assert r['citation_type'] == 'magazine'
     assert r['printed_issue'] == '2'
+    assert r['author'] == 'Green Mountain Club'
+    assert r['publication_date'] == '1922-12'
     assert r['resource'] == 'collections/long-trail-news/1922_12_Dec.pdf'
 
 

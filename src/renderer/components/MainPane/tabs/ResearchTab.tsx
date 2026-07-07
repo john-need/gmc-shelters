@@ -1,45 +1,52 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Source, SourceInput, WikiSearchResult } from '@shared/ipc-types';
 import { wikiResultToSource } from '@shared/wiki-cite';
 import { createSource } from '../../../store/sourcesSlice';
 import { showToast } from '../../../store/uiSlice';
-import { BLANK_SOURCE } from './sourceTypes';
+import { setQuery, setResults } from '../../../store/researchSlice';
+import { BLANK_SOURCE, SOURCE_TYPES, SOURCE_GLYPH } from './sourceTypes';
 import SourceModal from './SourceModal';
+import QuoteBlock from './QuoteBlock';
 
 export default function ResearchTab() {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.shelters.editBuffer);
+  const query = useSelector((state: RootState) => state.research.query);
+  const results = useSelector((state: RootState) => state.research.results);
 
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<WikiSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [noIndex, setNoIndex] = useState(false);
   const [editing, setEditing] = useState<(Partial<Source> & { shelter_id: number }) | null>(null);
   const [creating, setCreating] = useState(false);
 
   const search = useCallback(async (q: string) => {
-    if (!q.trim()) { setResults([]); return; }
+    if (!q.trim()) { dispatch(setResults([])); return; }
     setLoading(true);
     try {
       const res = await window.api.wiki.search(q.trim());
-      setResults(res);
+      dispatch(setResults(res));
       setNoIndex(false);
     } catch {
       setNoIndex(true);
-      setResults([]);
+      dispatch(setResults([]));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
+  // Skip the very first run: `query` may already be populated from a persisted
+  // search (tab switch or shelter change), whose matching `results` are already
+  // in the store — re-searching on mount would refetch what's already shown.
+  const mounted = useRef(false);
   useEffect(() => {
-    if (!query.trim()) { setResults([]); setLoading(false); return; }
+    if (!mounted.current) { mounted.current = true; return; }
+    if (!query.trim()) { dispatch(setResults([])); setLoading(false); return; }
     setLoading(true);
     const t = setTimeout(() => search(query), 300);
     return () => clearTimeout(t);
-  }, [query, search]);
+  }, [query, search, dispatch]);
 
   function openCitation(result: WikiSearchResult) {
     if (!s) return;
@@ -62,9 +69,9 @@ export default function ResearchTab() {
             className="input"
             style={{ flex: 1 }}
             type="search"
-            placeholder="Search newsletter archives…"
+            placeholder='Search newsletter archives… ("exact phrase" for an exact match)'
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => dispatch(setQuery(e.target.value))}
             autoFocus
           />
         </div>
@@ -111,58 +118,59 @@ export default function ResearchTab() {
 function ResultCard({ result, onAdd }: { result: WikiSearchResult; onAdd: () => void }) {
   const [pdfMissing, setPdfMissing] = useState(false);
 
-  const meta = [
-    result.publisher,
-    result.printed_volume && `Vol. ${result.printed_volume}`,
-    result.printed_issue && `No. ${result.printed_issue}`,
-    [result.edition, result.volume].filter(Boolean).join(' '),
-    result.page ? `p. ${result.page}` : '',
-    result.kind === 'illustration' ? 'Illustration' : '',
-  ].filter(Boolean).join(' · ');
+  const source = { ...BLANK_SOURCE, ...wikiResultToSource(result) } as Source;
+  const typeLabel = SOURCE_TYPES.find((t) => t.v === source.type)?.label ?? source.type;
+  const title = source.title || source.container_title;
+  const titleMeta = [source.edition && `ed. ${source.edition}`, source.date && `(${source.date})`].filter(Boolean).join(' ');
+  const line2 = [source.author, source.publisher, source.pages && `Pp. ${source.pages}`]
+    .filter(Boolean).join(', ');
 
   return (
-    <div style={{
-      borderBottom: '1px solid var(--border)',
-      padding: '10px 0',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{result.title}</div>
-          {meta && (
-            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 6 }}>{meta}</div>
-          )}
-          {result.snippet && (
-            <div
-              className="research-snippet"
-              style={{ fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.5 }}
-              // Safe: snippet comes from our own FTS5 DB, not user input
-              dangerouslySetInnerHTML={{ __html: result.snippet }}
-            />
-          )}
+    <div className="research-result">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div className={`source-type-badge ${source.type}`}>
+          <span className="glyph">{SOURCE_GLYPH[source.type] ?? '?'}</span>
+          <span className="label">{typeLabel}</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {result.kind === 'illustration' && (
+            <span className="chip" style={{ display: 'inline-block', marginBottom: 4 }}>Illustration</span>
+          )}
+          {(title || titleMeta) && (
+            <div className="source-header" style={{ marginBottom: 2 }}>
+              {title && <span className="source-title">{title}</span>}
+              {titleMeta && <span className="source-pubdate">{titleMeta}</span>}
+            </div>
+          )}
+          {line2 && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 6 }}>{line2}</div>}
+          {result.snippet && <QuoteBlock html={result.snippet} />}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
           <button
             type="button"
-            className="btn"
-            style={{ fontSize: 12 }}
+            className="btn icon sm"
+            title="Add citation"
             onClick={onAdd}
           >
-            + Citation
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
           </button>
           <button
             type="button"
-            className="btn"
-            style={{ fontSize: 12 }}
-            title="Open the source PDF at this page"
+            className="btn icon sm"
+            title={`Open PDF at page ${result.page || 1}`}
             onClick={async () => {
               const { ok } = await window.api.wiki.openPdf(result.resource, result.page || 1);
               setPdfMissing(!ok);
             }}
           >
-            PDF p. {result.page || 1}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+            </svg>
           </button>
           {pdfMissing && (
-            <div style={{ fontSize: 11, color: 'var(--danger, #c0392b)', maxWidth: 140 }}>
+            <div style={{ fontSize: 11, color: 'var(--danger, #c0392b)', maxWidth: 140, textAlign: 'right' }}>
               PDF not found — this collection may need to be re-added.
             </div>
           )}

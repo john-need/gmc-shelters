@@ -14,7 +14,7 @@ const source = (overrides: Partial<Source> = {}): Source => ({
   type: 'book',
   author: 'Doe',
   title: 'Test Book',
-  container_title: '',
+  container_title: '', container_author: '',
   editor: '',
   edition: '',
   volume: '',
@@ -73,7 +73,7 @@ describe('sourcesSlice', () => {
       const existing = source({ id: 1, title: 'First' });
       const state: SourcesState = { byShelter: { 10: [existing] }, loading: false };
       const newSource = source({ id: 2, title: 'Second' });
-      const input = { shelter_id: 10, include_in_history: false, type: 'book' as const, author: '', title: 'Second', container_title: '', editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '', year: null, date: '', url: '', access_date: '', archive: '', archive_location: '', annotation: '', notes: '', quote: '' };
+      const input = { shelter_id: 10, include_in_history: false, type: 'book' as const, author: '', title: 'Second', container_title: '', container_author: '', editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '', year: null, date: '', url: '', access_date: '', archive: '', archive_location: '', annotation: '', notes: '', quote: '' };
       const next = sourcesReducer(
         state,
         createSource.fulfilled({ shelterId: 10, source: newSource }, '', input),
@@ -84,7 +84,7 @@ describe('sourcesSlice', () => {
 
     it('creates list if none exists yet', () => {
       const newSource = source({ id: 1 });
-      const input = { shelter_id: 10, include_in_history: false, type: 'book' as const, author: '', title: '', container_title: '', editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '', year: null, date: '', url: '', access_date: '', archive: '', archive_location: '', annotation: '', notes: '', quote: '' };
+      const input = { shelter_id: 10, include_in_history: false, type: 'book' as const, author: '', title: '', container_title: '', container_author: '', editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '', year: null, date: '', url: '', access_date: '', archive: '', archive_location: '', annotation: '', notes: '', quote: '' };
       const next = sourcesReducer(
         initialState,
         createSource.fulfilled({ shelterId: 10, source: newSource }, '', input),

@@ -6,7 +6,7 @@ import path from 'path';
 import Database from 'better-sqlite3';
 import { CHANNELS } from '@shared/ipc-types';
 import type { WikiSearchResult, WikiHeaderPayload } from '@shared/ipc-types';
-import { parseFrontmatter, serializeFrontmatter } from './wiki-search';
+import { parseFrontmatter, serializeFrontmatter, paragraphSnippet } from './wiki-search';
 
 type ElectronMock = {
   ipcMain: { handle: jest.Mock };
@@ -21,24 +21,38 @@ function buildFixtureDb(dir: string) {
     CREATE VIRTUAL TABLE wiki_fts USING fts5(
       path UNINDEXED, okf_type UNINDEXED, title, publisher UNINDEXED,
       volume UNINDEXED, edition UNINDEXED, printed_volume UNINDEXED,
-      printed_issue UNINDEXED, resource UNINDEXED, citation_type UNINDEXED,
+      printed_issue UNINDEXED, author UNINDEXED, publication_date UNINDEXED,
+      resource UNINDEXED, citation_type UNINDEXED,
       kind UNINDEXED, page UNINDEXED, image UNINDEXED, body,
       tokenize = "porter unicode61"
     )
   `);
-  const insert = db.prepare('INSERT INTO wiki_fts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+  const insert = db.prepare('INSERT INTO wiki_fts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
   insert.run(
     'long-trail-news/1922_12_Dec.md', 'Newsletter', 'Long Trail News',
     'Green Mountain Club', '1922', 'December', '5', '2',
+    'Green Mountain Club', '1922-12',
     'collections/long-trail-news/1922_12_Dec.pdf', 'magazine', 'page', '2', '',
     'Monroe Lodge will be built on Camels Hump next year.',
   );
   insert.run(
     'long-trail-news/1922_12_Dec.md', 'Newsletter', 'Long Trail News',
     'Green Mountain Club', '1922', 'December', '5', '2',
+    'Green Mountain Club', '1922-12',
     'collections/long-trail-news/1922_12_Dec.pdf', 'magazine', 'illustration', '2',
     'long-trail-news/images/1922_12_Dec_p2_0.png',
     'Monroe Lodge under construction',
+  );
+  insert.run(
+    'long-trail-news/1923_04_Apr.md', 'Newsletter', 'Long Trail News',
+    'Green Mountain Club', '1923', 'April', '6', '1',
+    'Green Mountain Club', '1923-04',
+    'collections/long-trail-news/1923_04_Apr.pdf', 'magazine', 'page', '3', '',
+    [
+      'The annual meeting was held on a fine autumn day.',
+      'Killington Peak drew a record crowd of hikers this season.',
+      'Refreshments were served afterward on the porch.',
+    ].join('\n\n'),
   );
   db.close();
 }
@@ -86,6 +100,8 @@ describe('ipc/wiki-search', () => {
     expect(pageHit!.edition).toBe('December');
     expect(pageHit!.printed_volume).toBe('5');
     expect(pageHit!.printed_issue).toBe('2');
+    expect(pageHit!.author).toBe('Green Mountain Club');
+    expect(pageHit!.publication_date).toBe('1922-12');
     expect(pageHit!.resource).toBe('collections/long-trail-news/1922_12_Dec.pdf');
     expect(pageHit!.citation_type).toBe('magazine');
     expect(pageHit!.snippet).toContain('<mark>');
@@ -107,6 +123,63 @@ describe('ipc/wiki-search', () => {
     const handler = getHandler(CHANNELS.WIKI_SEARCH);
     expect(await handler(null, '')).toEqual([]);
     expect(await handler(null, 'anything')).toEqual([]);
+  });
+
+  it('requires all bare terms to match (AND), not just any of them (OR)', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    // Only the page row has both "Monroe" and "Hump" ("...Camels Hump next year");
+    // the illustration row has "Monroe" but not "Hump".
+    const results = (await handler(null, 'Monroe Hump')) as WikiSearchResult[];
+    expect(results).toHaveLength(1);
+    expect(results[0].kind).toBe('page');
+  });
+
+  it('treats a double-quoted span as an exact phrase, requiring that word order', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    // Both rows contain "Monroe Lodge" in that order.
+    const inOrder = (await handler(null, '"Monroe Lodge"')) as WikiSearchResult[];
+    expect(inOrder).toHaveLength(2);
+    // Neither row contains the words in reverse order, so the phrase shouldn't match,
+    // even though the same two bare words (unquoted) match both rows via AND.
+    const reversed = (await handler(null, '"Lodge Monroe"')) as WikiSearchResult[];
+    expect(reversed).toHaveLength(0);
+    const bareReversed = (await handler(null, 'Lodge Monroe')) as WikiSearchResult[];
+    expect(bareReversed).toHaveLength(2);
+  });
+
+  it('ANDs a bare term with a quoted exact phrase', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    // Only the illustration row has "construction"; both have the "Monroe Lodge" phrase.
+    const results = (await handler(null, 'construction "Monroe Lodge"')) as WikiSearchResult[];
+    expect(results).toHaveLength(1);
+    expect(results[0].kind).toBe('illustration');
+  });
+
+  it('returns no results (not an error) for an unterminated quote', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    expect(await handler(null, 'Monroe "Lodge')).toEqual([]);
+  });
+
+  it('returns the whole matching paragraph as the quote, not a short fragment', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    const results = (await handler(null, 'Killington')) as WikiSearchResult[];
+    expect(results).toHaveLength(1);
+    expect(results[0].snippet).toBe(
+      '<mark>Killington</mark> Peak drew a record crowd of hikers this season.',
+    );
+    // the other two paragraphs in the same page don't mention Killington, so they're excluded
+    expect(results[0].snippet).not.toContain('annual meeting');
+    expect(results[0].snippet).not.toContain('Refreshments');
   });
 
   it('WIKI_OPEN_PDF opens a window at the requested page', async () => {
@@ -183,6 +256,35 @@ describe('ipc/wiki-search', () => {
     '---',
     '',
   ].join('\n');
+
+  describe('paragraphSnippet', () => {
+    it('keeps only the paragraph(s) containing a highlighted match', () => {
+      const body = [
+        'First paragraph, no match here.',
+        'Second paragraph has the <mark>match</mark> in it.',
+        'Third paragraph, also no match.',
+      ].join('\n\n');
+      expect(paragraphSnippet(body)).toBe('Second paragraph has the <mark>match</mark> in it.');
+    });
+
+    it('returns the whole body unchanged when it is a single paragraph', () => {
+      const body = 'One <mark>match</mark> in an otherwise unbroken block of OCR text.';
+      expect(paragraphSnippet(body)).toBe(body);
+    });
+
+    it('joins multiple matching paragraphs when the match spans more than one', () => {
+      const body = [
+        'No match.',
+        'Has a <mark>match</mark>.',
+        'Also has a <mark>match</mark>.',
+      ].join('\n\n');
+      expect(paragraphSnippet(body)).toBe('Has a <mark>match</mark>.\n\nAlso has a <mark>match</mark>.');
+    });
+
+    it('returns an empty string when nothing is highlighted', () => {
+      expect(paragraphSnippet('No matches anywhere in this text.')).toBe('');
+    });
+  });
 
   describe('parseFrontmatter / serializeFrontmatter', () => {
     it('parses a fenced frontmatter block into fields, stripping quotes', () => {
@@ -278,6 +380,33 @@ describe('ipc/wiki-search', () => {
     expect(saved).toContain('timestamp: "2026-07-02T00:00:00Z"');
     expect(saved).toContain('pages: "8"');
     expect(saved).toContain('Body.');
+  });
+
+  it('WIKI_SAVE_HEADER persists publication_date', async () => {
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
+    const result = await handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+      citationType: 'magazine',
+      fields: {
+        title: 'Long Trail News',
+        description: 'Long Trail News, April 1923.',
+        language: 'en',
+        publisher: 'Green Mountain Club',
+        publication_date: '1923-04',
+      },
+    });
+    expect(result).toEqual({ ok: true });
+    const saved = fs.readFileSync(
+      path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
+    );
+    expect(saved).toContain('publication_date: "1923-04"');
+    const handlerGet = getHandler(CHANNELS.WIKI_GET_HEADER);
+    const payload = (await handlerGet(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+    })) as WikiHeaderPayload;
+    expect(payload.fields.publication_date).toBe('1923-04');
   });
 
   it('WIKI_SAVE_HEADER rejects a payload missing a required property and does not modify the file', async () => {

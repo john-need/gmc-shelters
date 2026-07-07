@@ -39,7 +39,7 @@ function makeSource(overrides: Partial<Source> = {}): Source {
     type: 'book',
     author: '',
     title: '',
-    container_title: '',
+    container_title: '', container_author: '',
     editor: '',
     edition: '',
     volume: '',
@@ -183,7 +183,7 @@ describe('SourcesTab', () => {
 describe('SourceModal — browse existing sources picker (integration)', () => {
   type Ref = Awaited<ReturnType<typeof window.api.sources.getAll>>[number];
   const ref = (o: Partial<Ref>): Ref => ({
-    id: 0, type: 'book', author: '', title: '', container_title: '', editor: '',
+    id: 0, type: 'book', author: '', title: '', container_title: '', container_author: '', editor: '',
     edition: '', volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '', archive_location: '',
     ...o,

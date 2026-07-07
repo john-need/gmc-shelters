@@ -2,13 +2,20 @@
 type: "Book"
 citation_type: "book"
 title: "Trails and Summits of the Green Mountains"
-description: "Trails and Summits of the Green Mountains."
+description: "Che Riverside Outdoor handbooks
+TRAILS AND SUMMITS
+OF THE
+GREEN MOUNTAINS
+BY
+WALTER COLLINS O’KANE
+WITH MAPS AND ILLUSTRATIONS "
 resource: "collections/Books/Trails and Summits of the Green Mountains.pdf"
 timestamp: "2026-07-02T18:58:54Z"
-publisher: "Green Mountain Club"
+publisher: "The Riverside Press "
 author: "Walter Collins O'Kane"
 pages: "440"
 language: "en"
+publication_date: "1926"
 ---
 
 <!-- page: 1 -->

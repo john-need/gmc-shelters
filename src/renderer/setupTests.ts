@@ -115,3 +115,10 @@ Object.defineProperty(window, 'api', { value: mockApi, writable: true });
 
 // Mock scrollTo for JSDOM
 HTMLDivElement.prototype.scrollTo = jest.fn();
+
+// JSDOM has no layout engine, so ResizeObserver doesn't exist.
+global.ResizeObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

@@ -12,6 +12,12 @@ describe('showSourceField', () => {
     expect(showSourceField('container_title', 'book', false)).toBe(false);
   });
 
+  it('container_author shown only for chapter (book author distinct from chapter author/editor)', () => {
+    expect(showSourceField('container_author', 'chapter', false)).toBe(true);
+    expect(showSourceField('container_author', 'book', false)).toBe(false);
+    expect(showSourceField('container_author', 'journal', false)).toBe(false);
+  });
+
   it('archive_location shown only for archive/manuscript/interview', () => {
     expect(showSourceField('archive_location', 'archive', false)).toBe(true);
     expect(showSourceField('archive_location', 'manuscript', false)).toBe(true);

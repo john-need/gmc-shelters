@@ -1,6 +1,7 @@
 """Unit tests for scripts/lib/wiki_convert.py — OKF profile conversion logic."""
 from __future__ import annotations
 
+import base64
 from pathlib import Path
 
 from scripts.lib import wiki_convert as wc
@@ -445,3 +446,21 @@ class TestQualityHeuristic:
         garbled = 'Th~ Gr##n M0unt@1n C1vb h3ld 1ts @nnu@l m##t1ng 1n Rvtl@nd zxq wqx.'
         assert wc.garbled_ratio(clean) < 0.1
         assert wc.garbled_ratio(garbled) > 0.3
+
+
+class TestEncodeImageB64:
+    def test_small_image_passes_through_unshrunk(self, tmp_path: Path):
+        from PIL import Image
+
+        png = tmp_path / 'small.png'
+        Image.new('RGB', (50, 50), 'white').save(png)
+        raw_b64_len = len(base64.standard_b64encode(png.read_bytes()))
+        assert len(wc.encode_image_b64(png)) == raw_b64_len
+
+    def test_oversized_image_is_shrunk_under_the_api_cap(self, tmp_path: Path, monkeypatch):
+        from PIL import Image
+
+        monkeypatch.setattr(wc, 'MAX_IMAGE_B64_BYTES', 1000)
+        png = tmp_path / 'big.png'
+        Image.new('RGB', (400, 400), 'white').save(png)
+        assert len(wc.encode_image_b64(png)) <= 1000

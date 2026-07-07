@@ -25,7 +25,7 @@ export const SOURCE_GLYPH: Record<string, string> = {
 export type PickerField = { key: keyof SourceRef; label: string };
 export const PICKER_FIELDS: Record<SourceType, PickerField[]> = {
   book:       [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'edition', label: 'Edition' }, { key: 'year', label: 'Year' }],
-  chapter:    [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'edition', label: 'Edition' }, { key: 'year', label: 'Year' }],
+  chapter:    [{ key: 'title', label: 'Title' }, { key: 'author', label: 'Author' }, { key: 'container_author', label: 'Book author' }, { key: 'edition', label: 'Edition' }, { key: 'year', label: 'Year' }],
   journal:    [{ key: 'container_title', label: 'Journal / Magazine' }, { key: 'volume', label: 'Volume' }, { key: 'issue', label: 'Issue' }, { key: 'year', label: 'Year' }],
   newspaper:  [{ key: 'container_title', label: 'Newspaper' }],
   magazine:   [{ key: 'container_title', label: 'Journal / Magazine' }, { key: 'volume', label: 'Volume' }, { key: 'issue', label: 'Issue' }, { key: 'year', label: 'Year' }],
@@ -40,7 +40,7 @@ export const PICKER_FIELDS: Record<SourceType, PickerField[]> = {
 
 // Bibliographic keys copied into the form when a picker row is selected.
 export const BIB_KEYS: (keyof SourceRef)[] = [
-  'type', 'author', 'title', 'container_title', 'editor', 'edition', 'volume',
+  'type', 'author', 'title', 'container_title', 'container_author', 'editor', 'edition', 'volume',
   'issue', 'pages', 'publisher', 'place', 'year', 'date', 'url', 'access_date',
   'archive', 'archive_location',
 ];
@@ -48,7 +48,7 @@ export const BIB_KEYS: (keyof SourceRef)[] = [
 export const BLANK_SOURCE: Omit<Source, 'id' | 'shelter_id' | 'created' | 'updated'> = {
   include_in_history: false,
   type: 'book',
-  author: '', title: '', container_title: '', editor: '',
+  author: '', title: '', container_title: '', container_author: '', editor: '',
   edition: '', volume: '', issue: '', pages: '',
   publisher: '', place: '', year: null, date: '',
   url: '', access_date: '', archive: '', archive_location: '',
@@ -62,11 +62,20 @@ export function prettyUrl(u: string): string {
   catch { return u; }
 }
 
+// wikiResultToSource stashes the wiki result's repo-relative PDF path in
+// archive_location; for archive/manuscript/interview types that field is
+// free-text (box/folder number) instead, so only the collections/ prefix
+// tells the two apart.
+export function collectionResource(s: Pick<Source, 'archive_location'>): string | null {
+  return s.archive_location?.startsWith('collections/') ? s.archive_location : null;
+}
+
 export function showSourceField(key: string, type: SourceType, hasUrl: boolean): boolean {
   const map: Record<string, boolean | SourceType[]> = {
     author: true,
     title: true,
     container_title: (['chapter', 'journal', 'newspaper', 'magazine', 'website', 'archive'] as SourceType[]).includes(type),
+    container_author: type === 'chapter',
     editor: (['book', 'chapter', 'report'] as SourceType[]).includes(type),
     edition: (['book', 'chapter', 'report'] as SourceType[]).includes(type),
     volume: (['journal', 'magazine', 'report'] as SourceType[]).includes(type),

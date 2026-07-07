@@ -5,6 +5,7 @@ import { loadHistory } from '../../store/sheltersSlice';
 import { loadPhotos } from '../../store/photosSlice';
 import { loadSources } from '../../store/sourcesSlice';
 import { loadMapMarkers } from '../../store/mapMarkersSlice';
+import { resetResearch } from '../../store/researchSlice';
 import { setActiveTab } from '../../store/uiSlice';
 import ShelterTab from './tabs/ShelterTab';
 import HistoryTab from './tabs/HistoryTab';
@@ -37,6 +38,7 @@ export default function MainPane() {
     dispatch(loadPhotos(s.id));
     dispatch(loadSources(s.id));
     dispatch(loadMapMarkers(s.id));
+    dispatch(resetResearch());
     // Reload associated data only when the selected record changes — not on every
     // edit to the shelter object (which would re-fire on each keystroke). dispatch is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps

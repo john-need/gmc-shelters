@@ -5,18 +5,26 @@ export const SOURCE_TYPES: SourceType[] = [
   'archive', 'manuscript', 'interview', 'map', 'report', 'other',
 ];
 
-export type HeaderControl = 'text' | 'multiline' | 'number' | 'select';
+export type HeaderControl = 'text' | 'multiline' | 'number' | 'select' | 'flexible-date';
 export type FieldApplicability = 'required' | 'optional' | 'n/a';
 
 export const HEADER_PROPERTIES = [
-  'title', 'description', 'language', 'author', 'publisher', 'edition',
+  'title', 'description', 'language', 'publication_date', 'author', 'publisher', 'edition',
   'volume', 'printed_volume', 'printed_issue',
 ] as const;
 export type HeaderProperty = (typeof HEADER_PROPERTIES)[number];
 
+export const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'fr', label: 'French' },
+];
+
+// Accepts a full date, a month-year, a bare year, or a season tied to a year.
+const PUBLICATION_DATE_PATTERN = /^(\d{4}(-\d{2}(-\d{2})?)?|(Spring|Summer|Fall|Winter) \d{4})$/;
+
 // Properties a collection can set a shared default for. Excludes edition/volume/
-// printed_volume/printed_issue — those are unique per document (e.g. each issue
-// of a newsletter has its own volume/issue number), never collection-wide.
+// printed_volume/printed_issue/publication_date — those are unique per document
+// (e.g. each issue of a newsletter has its own volume/issue/date), never collection-wide.
 export const COLLECTION_DEFAULT_PROPERTIES = [
   'title', 'description', 'language', 'author', 'publisher',
 ] as const;
@@ -25,7 +33,8 @@ export type CollectionDefaultProperty = (typeof COLLECTION_DEFAULT_PROPERTIES)[n
 export const HEADER_PROPERTY_CONTROL: Record<HeaderProperty, HeaderControl> = {
   title: 'text',
   description: 'multiline',
-  language: 'text',
+  language: 'select',
+  publication_date: 'flexible-date',
   author: 'text',
   publisher: 'text',
   edition: 'text',
@@ -37,51 +46,51 @@ export const HEADER_PROPERTY_CONTROL: Record<HeaderProperty, HeaderControl> = {
 // Per data-model.md's Header Schema Table.
 export const HEADER_SCHEMA: Record<SourceType, Record<HeaderProperty, FieldApplicability>> = {
   book: {
-    title: 'required', description: 'required', language: 'required', author: 'required',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'required',
     publisher: 'optional', edition: 'optional', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   chapter: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'optional', edition: 'optional', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   journal: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'required', edition: 'optional', volume: 'optional', printed_volume: 'optional', printed_issue: 'optional',
   },
   newspaper: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'required', edition: 'optional', volume: 'optional', printed_volume: 'optional', printed_issue: 'optional',
   },
   magazine: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'required', edition: 'optional', volume: 'optional', printed_volume: 'optional', printed_issue: 'optional',
   },
   website: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'optional', edition: 'n/a', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   archive: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'optional', edition: 'n/a', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   manuscript: {
-    title: 'required', description: 'required', language: 'required', author: 'required',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'required',
     publisher: 'n/a', edition: 'n/a', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   interview: {
-    title: 'required', description: 'required', language: 'required', author: 'required',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'required',
     publisher: 'n/a', edition: 'n/a', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   map: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'optional', edition: 'n/a', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
   report: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'required', edition: 'optional', volume: 'optional', printed_volume: 'optional', printed_issue: 'optional',
   },
   other: {
-    title: 'required', description: 'required', language: 'required', author: 'optional',
+    title: 'required', description: 'required', language: 'required', publication_date: 'optional', author: 'optional',
     publisher: 'optional', edition: 'optional', volume: 'n/a', printed_volume: 'n/a', printed_issue: 'n/a',
   },
 };
@@ -119,6 +128,15 @@ export function validateHeader(citationType: string, fields: Record<string, stri
     }
     if (value && HEADER_PROPERTY_CONTROL[prop] === 'number' && !/^\d+$/.test(value)) {
       errors.push(`"${prop}" must be a number.`);
+      continue;
+    }
+    if (value && HEADER_PROPERTY_CONTROL[prop] === 'flexible-date' && !PUBLICATION_DATE_PATTERN.test(value)) {
+      errors.push(`"${prop}" must be a date (YYYY-MM-DD), a month (YYYY-MM), a year (YYYY), or a season (e.g. "Spring 1996").`);
+      continue;
+    }
+    if (value && HEADER_PROPERTY_CONTROL[prop] === 'select' && prop === 'language'
+      && !LANGUAGE_OPTIONS.some((o) => o.value === value)) {
+      errors.push(`"${prop}" must be one of the supported languages.`);
       continue;
     }
     result[prop] = fields[prop] ?? '';

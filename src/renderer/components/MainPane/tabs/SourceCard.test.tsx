@@ -7,7 +7,7 @@ function makeSource(overrides: Partial<Source> = {}): Source {
   return {
     id: 1, shelter_id: 7, include_in_history: false,
     type: 'book', author: 'Doe, Jane', title: 'The Green Mountain Trail',
-    container_title: '', editor: '', edition: '', volume: '', issue: '', pages: '',
+    container_title: '', container_author: '', editor: '', edition: '', volume: '', issue: '', pages: '',
     publisher: 'GMC Press', place: 'Waterbury', year: 1972, date: '',
     url: '', access_date: '', archive: '', archive_location: '',
     annotation: '', notes: '', quote: '',
@@ -17,8 +17,6 @@ function makeSource(overrides: Partial<Source> = {}): Source {
 }
 
 const baseProps = {
-  selected: false,
-  onClick: jest.fn(),
   onToggleInclude: jest.fn(),
   onEdit: jest.fn(),
   onDelete: jest.fn(),
@@ -32,19 +30,66 @@ describe('SourceCard', () => {
     expect(screen.getByText('Book')).toBeInTheDocument();
   });
 
+  it('renders a prominent title', () => {
+    render(<SourceCard s={makeSource({ title: 'The Green Mountain Trail' })} {...baseProps} />);
+    expect(document.querySelector('.source-title')).toHaveTextContent('The Green Mountain Trail');
+  });
+
+  it('renders the year as the prominent publication date when set', () => {
+    render(<SourceCard s={makeSource({ type: 'website', year: 1972, date: '' })} {...baseProps} />);
+    expect(document.querySelector('.source-pubdate')).toHaveTextContent('1972');
+  });
+
+  it('falls back to the full date as the prominent publication date when year is not set', () => {
+    render(<SourceCard s={makeSource({ type: 'website', year: null, date: '1998-05-02' })} {...baseProps} />);
+    expect(document.querySelector('.source-pubdate')).toHaveTextContent('1998-05-02');
+  });
+
+  it('omits the prominent publication date when neither year nor date is set', () => {
+    render(<SourceCard s={makeSource({ type: 'website', year: null, date: '' })} {...baseProps} />);
+    expect(document.querySelector('.source-pubdate')).not.toBeInTheDocument();
+  });
+
+  it('shows the publication year in the heading for books, magazine-style', () => {
+    render(<SourceCard s={makeSource({ type: 'book', year: 1972 })} {...baseProps} />);
+    expect(document.querySelector('.source-pubdate')).toHaveTextContent('1972');
+  });
+
   it('renders the formatted citation', () => {
     render(<SourceCard s={makeSource()} {...baseProps} />);
     expect(document.querySelector('.source-citation')).toBeInTheDocument();
   });
 
-  it('shows the year chip when year is set', () => {
-    render(<SourceCard s={makeSource({ year: 1972 })} {...baseProps} />);
-    expect(screen.getByText('1972')).toBeInTheDocument();
+  it('does not render a page-number chip', () => {
+    render(<SourceCard s={makeSource({ pages: '19' })} {...baseProps} />);
+    expect(document.querySelector('.chip')).not.toBeInTheDocument();
   });
 
-  it('omits the year chip when year is null', () => {
-    render(<SourceCard s={makeSource({ year: null })} {...baseProps} />);
-    expect(screen.queryByText('1972')).not.toBeInTheDocument();
+  it('shows the updated date in the heading, not the meta row', () => {
+    render(<SourceCard s={makeSource({ updated: '2026-07-07' })} {...baseProps} />);
+    expect(document.querySelector('.source-header')).toHaveTextContent('updated 2026-07-07');
+    expect(document.querySelector('.source-meta-row')).not.toBeInTheDocument();
+  });
+
+  it('does not repeat the book title in the citation, since it is already the heading', () => {
+    render(<SourceCard s={makeSource({ type: 'book', title: 'The Green Mountain Trail' })} {...baseProps} />);
+    expect(document.querySelector('.source-citation')).not.toHaveTextContent('The Green Mountain Trail');
+  });
+
+  it('does not repeat the publication year in the book citation, since it is already the heading', () => {
+    render(<SourceCard s={makeSource({ type: 'book', year: 1972, publisher: 'GMC Press' })} {...baseProps} />);
+    expect(document.querySelector('.source-citation')).not.toHaveTextContent('1972');
+  });
+
+  it('does not repeat the magazine title in the citation', () => {
+    render(<SourceCard s={makeSource({ type: 'magazine', title: 'Shelter Life', container_title: 'Trail Weekly' })} {...baseProps} />);
+    expect(document.querySelector('.source-citation')).not.toHaveTextContent('Shelter Life');
+    expect(document.querySelector('.source-citation')).toHaveTextContent('Trail Weekly');
+  });
+
+  it('labels the include-in-history toggle "Cite This"', () => {
+    render(<SourceCard s={makeSource()} {...baseProps} />);
+    expect(screen.getByText('Cite This')).toBeInTheDocument();
   });
 
   it('renders include_in_history checkbox unchecked when false', () => {
@@ -78,19 +123,15 @@ describe('SourceCard', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onClick when the card is clicked', () => {
-    const onClick = jest.fn();
-    render(<SourceCard s={makeSource()} {...baseProps} onClick={onClick} />);
-    fireEvent.click(document.querySelector('.source-card') as Element);
-    expect(onClick).toHaveBeenCalledTimes(1);
+  it('shows the annotation when present', () => {
+    const s = makeSource({ annotation: 'Key reference for timber framing.' });
+    render(<SourceCard s={s} {...baseProps} />);
+    expect(screen.getByText('Key reference for timber framing.')).toBeInTheDocument();
   });
 
-  it('shows annotation only when selected', () => {
-    const s = makeSource({ annotation: 'Key reference for timber framing.' });
-    const { rerender } = render(<SourceCard s={s} {...baseProps} selected={false} />);
-    expect(screen.queryByText('Key reference for timber framing.')).not.toBeInTheDocument();
-    rerender(<SourceCard s={s} {...baseProps} selected />);
-    expect(screen.getByText('Key reference for timber framing.')).toBeInTheDocument();
+  it('omits the annotation block when there is no annotation', () => {
+    render(<SourceCard s={makeSource({ annotation: '' })} {...baseProps} />);
+    expect(document.querySelector('.source-annotation')).not.toBeInTheDocument();
   });
 
   it('shows a URL link when url is set', () => {
@@ -107,8 +148,27 @@ describe('SourceCard', () => {
     expect(openExternal).toHaveBeenCalledWith(expect.stringContaining('example.com'));
   });
 
-  it('applies "selected" class when selected is true', () => {
-    render(<SourceCard s={makeSource()} {...baseProps} selected />);
-    expect(document.querySelector('.source-card')).toHaveClass('selected');
+  it('disables the view button when there is no URL or collection document', () => {
+    render(<SourceCard s={makeSource()} {...baseProps} />);
+    expect(screen.getByTitle('No document or URL')).toBeDisabled();
   });
+
+  it('opens the browser for a plain URL', () => {
+    const openExternal = jest.spyOn(window.api.shell, 'openExternal');
+    render(<SourceCard s={makeSource({ url: 'https://example.com' })} {...baseProps} />);
+    fireEvent.click(screen.getByTitle('Open in browser'));
+    expect(openExternal).toHaveBeenCalledWith('https://example.com');
+  });
+
+  it('opens the PDF viewer for a collection document, even when a URL is also set', () => {
+    const openPdf = jest.spyOn(window.api.wiki, 'openPdf');
+    render(<SourceCard s={makeSource({
+      url: 'https://example.com',
+      archive_location: 'collections/long-trail-news/1922.pdf',
+      pages: '5',
+    })} {...baseProps} />);
+    fireEvent.click(screen.getByTitle('View PDF'));
+    expect(openPdf).toHaveBeenCalledWith('collections/long-trail-news/1922.pdf', 5);
+  });
+
 });

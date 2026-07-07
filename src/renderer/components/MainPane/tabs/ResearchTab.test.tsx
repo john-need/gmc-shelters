@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import sheltersReducer from '../../../store/sheltersSlice';
 import sourcesReducer from '../../../store/sourcesSlice';
 import uiReducer from '../../../store/uiSlice';
+import researchReducer from '../../../store/researchSlice';
 import ResearchTab from './ResearchTab';
 import type { Shelter, WikiSearchResult } from '../../../../shared/ipc-types';
 
@@ -22,12 +23,55 @@ const PAGE_HIT: WikiSearchResult = {
   edition: 'December',
   printed_volume: '5',
   printed_issue: '2',
+  author: '',
+  publication_date: '1922-12',
   resource: 'collections/long-trail-news/1922_12_Dec.pdf',
   citation_type: 'magazine',
   kind: 'page',
   page: 2,
   image: '',
   snippet: '<mark>Monroe Lodge</mark> will be built next year',
+};
+
+const BOOK_HIT: WikiSearchResult = {
+  path: 'books/Long Trail System Shelter History.md',
+  okf_type: 'Book',
+  title: 'Long Trail System Shelter History',
+  publisher: 'Green Mountain Club',
+  volume: '',
+  edition: '2nd',
+  printed_volume: '',
+  printed_issue: '',
+  author: 'Woodward, Paul & Joanne',
+  publication_date: '1999-09-29',
+  resource: 'collections/Books/Long Trail System Shelter History.pdf',
+  citation_type: 'book',
+  kind: 'page',
+  page: 42,
+  image: '',
+  snippet: '<mark>Monroe</mark> Lodge shelter history',
+};
+
+// Reproduces a real indexed document whose OKF header is missing author and
+// publication_date, and whose title equals its own collection folder name
+// ("Long Trail News") — both are legitimate, not signs of a missing title.
+const AUGUST_1946_HIT: WikiSearchResult = {
+  path: 'Long Trail News/1946_08_Aug.md',
+  okf_type: 'Newsletter',
+  title: 'Long Trail News',
+  publisher: 'Green Mountain Club',
+  volume: '1946',
+  edition: 'August',
+  printed_volume: '',
+  printed_issue: '',
+  author: '',
+  publication_date: '',
+  resource: 'collections/Long Trail News/1946_08_Aug.pdf',
+  citation_type: 'magazine',
+  kind: 'page',
+  page: 5,
+  image: '',
+  snippet: 'Kandahar Lodge is especially desirable to folks',
 };
 
 const ILLUSTRATION_HIT: WikiSearchResult = {
@@ -40,7 +84,9 @@ const ILLUSTRATION_HIT: WikiSearchResult = {
 
 function makeStore() {
   return configureStore({
-    reducer: { shelters: sheltersReducer, sources: sourcesReducer, ui: uiReducer },
+    reducer: {
+      shelters: sheltersReducer, sources: sourcesReducer, ui: uiReducer, research: researchReducer,
+    },
     preloadedState: {
       shelters: {
         list: [SHELTER], selectedId: 7, editBuffer: SHELTER,
@@ -65,17 +111,53 @@ async function renderWithResults(results: WikiSearchResult[]) {
 describe('ResearchTab', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('shows page number and publication metadata for a hit', async () => {
+  it('shows title, edition, and date on line one and author/publisher/pages on line two', async () => {
     await renderWithResults([PAGE_HIT]);
-    expect(await screen.findByText('Long Trail News')).toBeInTheDocument();
-    expect(
-      screen.getByText('Green Mountain Club · Vol. 5 · No. 2 · December 1922 · p. 2'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/monroe lodge/i)).toBeInTheDocument();
+    expect(screen.getByText('Long Trail News')).toBeInTheDocument();
+    expect(screen.getByText('ed. December (1922-12)')).toBeInTheDocument();
+    expect(screen.getByText('Green Mountain Club, Pp. 2')).toBeInTheDocument();
+  });
+
+  it('starts line two with the author and shows the book\'s own title on line one', async () => {
+    await renderWithResults([BOOK_HIT]);
+    expect(screen.getByText('Long Trail System Shelter History')).toBeInTheDocument();
+    expect(screen.getByText('ed. 2nd (1999-09-29)')).toBeInTheDocument();
+    expect(screen.getByText('Woodward, Paul & Joanne, Green Mountain Club, Pp. 42')).toBeInTheDocument();
+  });
+
+  it('still shows a periodical\'s title even when it equals the collection folder name, and does not repeat the edition when publication_date is blank', async () => {
+    await renderWithResults([AUGUST_1946_HIT]);
+    expect(screen.getByText('Long Trail News')).toBeInTheDocument();
+    expect(screen.getByText('ed. August (1946)')).toBeInTheDocument();
+    expect(screen.getByText('Green Mountain Club, Pp. 5')).toBeInTheDocument();
+  });
+
+  it('persists the search query and results across unmount/remount (tab switch)', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT]);
+    const store = makeStore();
+    const { unmount } = render(
+      <Provider store={store}>
+        <ResearchTab />
+      </Provider>,
+    );
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+    unmount();
+
+    render(
+      <Provider store={store}>
+        <ResearchTab />
+      </Provider>,
+    );
+    expect(screen.getByRole('searchbox')).toHaveValue('Monroe');
+    expect(screen.getByText(/monroe lodge/i)).toBeInTheDocument();
   });
 
   it('opens the source PDF at the hit page', async () => {
     await renderWithResults([PAGE_HIT]);
-    fireEvent.click(await screen.findByRole('button', { name: /pdf p\. 2/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /open pdf at page 2/i }));
     expect(window.api.wiki.openPdf).toHaveBeenCalledWith(
       'collections/long-trail-news/1922_12_Dec.pdf', 2,
     );
@@ -86,10 +168,29 @@ describe('ResearchTab', () => {
     expect(await screen.findByText(/illustration/i)).toBeInTheDocument();
   });
 
+  it('styles the result title like a Sources tab title, and the edition/date like its publication year', async () => {
+    await renderWithResults([PAGE_HIT]);
+    expect(await screen.findByText('Long Trail News')).toHaveClass('source-title');
+    expect(screen.getByText('ed. December (1922-12)')).toHaveClass('source-pubdate');
+  });
+
+  it('shows the citation type badge, like the Sources tab', async () => {
+    await renderWithResults([PAGE_HIT]);
+    await screen.findByText(/monroe lodge/i);
+    expect(document.querySelector('.source-type-badge.magazine')).toBeInTheDocument();
+    expect(document.querySelector('.source-type-badge .label')).toHaveTextContent('Magazine article');
+  });
+
+  it('highlights the matched term within a quote-styled snippet, like the Sources tab', async () => {
+    await renderWithResults([PAGE_HIT]);
+    const quote = await screen.findByText((_, el) => el?.className === 'source-quote');
+    expect(quote.querySelector('mark')).toHaveTextContent('Monroe Lodge');
+  });
+
   it('shows an inline error when the PDF is missing on disk', async () => {
     (window.api.wiki.openPdf as jest.Mock).mockResolvedValue({ ok: false });
     await renderWithResults([PAGE_HIT]);
-    fireEvent.click(await screen.findByRole('button', { name: /pdf p\. 2/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /open pdf at page 2/i }));
     expect(await screen.findByText(/pdf.*not found/i)).toBeInTheDocument();
   });
 });

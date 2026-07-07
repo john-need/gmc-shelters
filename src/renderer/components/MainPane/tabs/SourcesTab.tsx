@@ -20,7 +20,6 @@ export default function SourcesTab() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [editing, setEditing] = useState<(Partial<Source> & { shelter_id: number }) | null>(null);
   const [creating, setCreating] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     if (!s) return [];
@@ -73,8 +72,7 @@ export default function SourcesTab() {
 
   const handleSave = async (edited: Partial<Source> & { shelter_id: number }) => {
     if (creating) {
-      const result = await dispatch(createSource(edited as SourceInput));
-      if (createSource.fulfilled.match(result)) setSelectedId(result.payload.source.id);
+      await dispatch(createSource(edited as SourceInput));
     } else {
       await dispatch(updateSource(edited as Source));
     }
@@ -86,7 +84,6 @@ export default function SourcesTab() {
     const src = sources.find((x) => x.id === id);
     if (!confirm(`Delete this source?\n\n${src?.author || src?.title || 'Unnamed source'}`)) return;
     await dispatch(deleteSource({ id, shelterId: s.id }));
-    if (selectedId === id) setSelectedId(null);
   };
 
   return (
@@ -164,8 +161,6 @@ export default function SourcesTab() {
               <SourceCard
                 key={src.id}
                 s={src}
-                selected={src.id === selectedId}
-                onClick={() => setSelectedId(src.id === selectedId ? null : src.id)}
                 onToggleInclude={(include) => { void dispatch(updateSource({ ...src, include_in_history: include })); }}
                 onEdit={() => startEdit(src)}
                 onDelete={() => handleDelete(src.id)}

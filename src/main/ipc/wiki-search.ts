@@ -62,6 +62,7 @@ export function serializeFrontmatter(fields: Record<string, string>): string {
 const FRONTMATTER_ORDER = [
   'type', 'citation_type', 'title', 'description', 'resource', 'timestamp',
   'publisher', 'volume', 'edition', 'printed_volume', 'printed_issue', 'author', 'pages', 'language',
+  'publication_date',
 ];
 
 interface PreservedFields {
@@ -115,24 +116,35 @@ export function writeWikiHeader(mdPath: string, citationType: string, fields: Re
   fs.writeFileSync(mdPath, serializeFrontmatter(out) + body, 'utf-8');
 }
 
+/** Narrows a highlighted page body down to just the paragraph(s) containing a match. */
+export function paragraphSnippet(highlightedBody: string): string {
+  return highlightedBody
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p.includes('<mark>'))
+    .join('\n\n');
+}
+
 export function registerWikiSearchHandlers(): void {
   ipcMain.handle(CHANNELS.WIKI_SEARCH, (_e, query: string): WikiSearchResult[] => {
     if (!query?.trim()) return [];
     const conn = getDb();
     if (!conn) return [];
     try {
-      return conn
+      const rows = conn
         .prepare<[string], WikiSearchResult>(`
           SELECT path, okf_type, title, publisher, volume, edition,
-                 printed_volume, printed_issue, resource, citation_type, kind,
+                 printed_volume, printed_issue, author, publication_date,
+                 resource, citation_type, kind,
                  CAST(page AS INTEGER) AS page, image,
-                 snippet(wiki_fts, -1, '<mark>', '</mark>', '…', 40) AS snippet
+                 highlight(wiki_fts, 15, '<mark>', '</mark>') AS snippet
           FROM wiki_fts
           WHERE wiki_fts MATCH ?
           ORDER BY rank
           LIMIT 50
         `)
         .all(query) as WikiSearchResult[];
+      return rows.map((r) => ({ ...r, snippet: paragraphSnippet(r.snippet) }));
     } catch {
       return [];
     }

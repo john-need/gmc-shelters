@@ -7,6 +7,7 @@ import mapMarkersReducer from './mapMarkersSlice';
 import uiReducer from './uiSlice';
 import architecturesReducer from './architecturesSlice';
 import categoriesReducer from './categoriesSlice';
+import researchReducer from './researchSlice';
 import { showToast } from './uiSlice';
 
 const toastLogger: Middleware = () => (next) => (action) => {
@@ -32,6 +33,7 @@ export const store = configureStore({
     ui: uiReducer,
     architectures: architecturesReducer,
     categories: categoriesReducer,
+    research: researchReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(toastLogger),
 });

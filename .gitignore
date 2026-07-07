@@ -182,8 +182,11 @@ __pycache__/
 .venv/
 venv/
 
-# collections library (user-supplied PDFs/scans, too large for git)
-collections/
+# collections library — PDFs/scans are user-supplied and too large for git;
+# the conversion cache is derived/rebuildable. Pipeline scripts and per-
+# collection metadata/download scripts are source and stay tracked.
+collections/**/*.pdf
+collections/.conversion_cache/
 
 # wiki search index (derived, rebuildable, exceeds GitHub's 100MB limit)
 wiki/search.db

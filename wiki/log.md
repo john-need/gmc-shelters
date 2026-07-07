@@ -1,5 +1,14 @@
 # Collections Update Log
 
+## 2026-07-07
+* **Update**: Re-indexed [The Crumb](The Crumb/index.md) — 1 document(s)
+
+## 2026-07-07
+* **Update**: Re-indexed [Long Trail Guide Books](Long Trail Guide Books/index.md) — 1 document(s)
+
+## 2026-07-07
+* **Update**: Re-indexed [Articles](Articles/index.md) — 1 document(s)
+
 ## 2026-07-02
 * **Update**: Re-indexed [Articles](Articles/index.md) — 3 document(s)
 * **Update**: Re-indexed [Books](Books/index.md) — 4 document(s)

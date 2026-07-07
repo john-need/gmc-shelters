@@ -37,6 +37,7 @@ type CitationFormatter = {
   italic: (value: string) => string;
   quote: (value: string) => string;
   link: (value: string) => string;
+  strong: (value: string) => string;
 };
 
 function monthName(m: number): string {
@@ -61,11 +62,14 @@ function startCitation(author: string, title: string | undefined, f: CitationFor
   return p;
 }
 
-function fmtBook(s: Source, f: CitationFormatter, author: string, year: string): string[] {
-  const p = startCitation(author, s.title, f);
+function fmtBook(s: Source, f: CitationFormatter, author: string, year: string, compact: boolean): string[] {
+  const p = startCitation(author, compact ? undefined : s.title, f);
   if (s.editor) p.push(`Edited by ${f.escape(s.editor)}.`);
   if (s.edition && s.edition.toLowerCase() !== '1st') p.push(`${f.escape(s.edition)} ed.`);
-  const pubLine = [[s.place, s.publisher].filter(Boolean).map(f.escape).join(': '), year].filter(Boolean).join(', ');
+  const placePublisher = [s.place ? f.escape(s.place) : '', s.publisher ? f.strong(f.escape(s.publisher)) : '']
+    .filter(Boolean).join(': ');
+  // compact (card view) puts the year in the heading next to the title, magazine-style
+  const pubLine = [placePublisher, compact ? '' : year].filter(Boolean).join(', ');
   if (pubLine) p.push(pubLine + '.');
   if (s.pages) p.push(`Pp. ${f.escape(s.pages)}.`);
   return p;
@@ -97,12 +101,17 @@ function fmtNewspaper(s: Source, f: CitationFormatter, author: string, year: str
   return p;
 }
 
-function fmtMagazine(s: Source, f: CitationFormatter, year: string): string[] {
+function fmtMagazine(s: Source, f: CitationFormatter, year: string, compact: boolean): string[] {
   const p: string[] = [];
   if (s.author) p.push(`${f.escape(s.author)},`);
-  if (s.title) p.push(`"${f.escape(s.title)}."`);
-  const tail = [s.container_title ? f.italic(s.container_title) : '', year].filter(Boolean).join(', ');
-  if (tail) p.push(tail + '.');
+  if (s.title && !compact) p.push(`"${f.escape(s.title)}."`);
+  let vol = s.container_title ? f.italic(s.container_title) : '';
+  const hasVolumeOrIssue = Boolean(s.volume || s.issue);
+  if (s.volume) vol += ` ${f.escape(s.volume)}`;
+  if (s.issue) vol += `, no. ${f.escape(s.issue)}`;
+  if (year) vol += hasVolumeOrIssue ? ` (${year})` : `, ${year}`;
+  if (vol) p.push(vol + '.');
+  if (s.publisher) p.push(f.escape(s.publisher) + '.');
   if (s.pages) p.push(f.escape(s.pages) + '.');
   if (s.url) p.push(f.link(s.url) + '.');
   return p;
@@ -157,16 +166,16 @@ function fmtOther(s: Source, f: CitationFormatter, author: string, year: string)
   return p;
 }
 
-function citeChicagoWithFormatter(s: Source, formatter: CitationFormatter): string {
+function citeChicagoWithFormatter(s: Source, formatter: CitationFormatter, compact = false): string {
   if (!s) return '';
   const author = s.author ? formatter.escape(s.author) + '.' : '';
   const year = s.year ? String(s.year) : '';
   let parts: string[];
   switch (s.type) {
-    case 'book': case 'chapter': case 'report': parts = fmtBook(s, formatter, author, year); break;
+    case 'book': case 'chapter': case 'report': parts = fmtBook(s, formatter, author, year, compact); break;
     case 'journal':   parts = fmtJournal(s, formatter, author, year); break;
     case 'newspaper': parts = fmtNewspaper(s, formatter, author, year); break;
-    case 'magazine':  parts = fmtMagazine(s, formatter, year); break;
+    case 'magazine':  parts = fmtMagazine(s, formatter, year, compact); break;
     case 'website':   parts = fmtWebsite(s, formatter, author, year); break;
     case 'archive': case 'manuscript': parts = fmtArchive(s, formatter, author, year); break;
     case 'interview': parts = fmtInterview(s, formatter, year); break;
@@ -176,13 +185,16 @@ function citeChicagoWithFormatter(s: Source, formatter: CitationFormatter): stri
   return parts.filter(Boolean).join(' ');
 }
 
-export function citeChicago(s: Source): string {
+// compact: for card/list views that already show title and year in a heading —
+// book and magazine citations otherwise repeat the title, and books repeat the year.
+export function citeChicago(s: Source, compact = false): string {
   return citeChicagoWithFormatter(s, {
     escape: esc,
     italic: it,
     quote: q,
     link: linkify,
-  });
+    strong: (t) => `<strong>${t}</strong>`,
+  }, compact);
 }
 
 export function citeChicagoText(s: Source): string {
@@ -191,6 +203,7 @@ export function citeChicagoText(s: Source): string {
     italic: txt,
     quote: (value) => `“${txt(value)}.”`,
     link: txt,
+    strong: txt,
   });
 }
 
@@ -200,5 +213,6 @@ export function citeChicagoMarkdown(s: Source): string {
     italic: markdownItalic,
     quote: (value) => `“${txt(value)}.”`,
     link: markdownLink,
+    strong: (t) => `**${t}**`,
   });
 }
