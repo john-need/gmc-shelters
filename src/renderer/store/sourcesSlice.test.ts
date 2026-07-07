@@ -3,6 +3,7 @@ import sourcesReducer, {
   createSource,
   updateSource,
   deleteSource,
+  cleanUpQuote,
   SourcesState,
 } from './sourcesSlice';
 import type { Source } from '@shared/ipc-types';
@@ -36,7 +37,7 @@ const source = (overrides: Partial<Source> = {}): Source => ({
   ...overrides,
 });
 
-const initialState: SourcesState = { byShelter: {}, loading: false };
+const initialState: SourcesState = { byShelter: {}, loading: false, cleaningQuoteIds: [] };
 
 describe('sourcesSlice', () => {
   it('has correct initial state', () => {
@@ -71,7 +72,7 @@ describe('sourcesSlice', () => {
   describe('createSource', () => {
     it('prepends source to shelter list on fulfilled', () => {
       const existing = source({ id: 1, title: 'First' });
-      const state: SourcesState = { byShelter: { 10: [existing] }, loading: false };
+      const state: SourcesState = { byShelter: { 10: [existing] }, loading: false, cleaningQuoteIds: [] };
       const newSource = source({ id: 2, title: 'Second' });
       const input = { shelter_id: 10, include_in_history: false, type: 'book' as const, author: '', title: 'Second', container_title: '', container_author: '', editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '', year: null, date: '', url: '', access_date: '', archive: '', archive_location: '', annotation: '', notes: '', quote: '' };
       const next = sourcesReducer(
@@ -97,7 +98,7 @@ describe('sourcesSlice', () => {
     it('replaces source in list on fulfilled', () => {
       const old = source({ id: 5, author: 'Old' });
       const updated = source({ id: 5, author: 'New' });
-      const state: SourcesState = { byShelter: { 10: [old] }, loading: false };
+      const state: SourcesState = { byShelter: { 10: [old] }, loading: false, cleaningQuoteIds: [] };
       const next = sourcesReducer(
         state,
         updateSource.fulfilled({ shelterId: 10, source: updated }, '', updated),
@@ -111,6 +112,7 @@ describe('sourcesSlice', () => {
       const state: SourcesState = {
         byShelter: { 10: [source({ id: 1 }), source({ id: 2 })] },
         loading: false,
+        cleaningQuoteIds: [],
       };
       const next = sourcesReducer(
         state,
@@ -118,6 +120,40 @@ describe('sourcesSlice', () => {
       );
       expect(next.byShelter[10]).toHaveLength(1);
       expect(next.byShelter[10][0].id).toBe(2);
+    });
+  });
+
+  describe('cleanUpQuote', () => {
+    it('adds the source id to cleaningQuoteIds on pending', () => {
+      const state: SourcesState = { byShelter: { 10: [source({ id: 1 })] }, loading: false, cleaningQuoteIds: [] };
+      const next = sourcesReducer(
+        state,
+        cleanUpQuote.pending('', { id: 1, shelterId: 10 }),
+      );
+      expect(next.cleaningQuoteIds).toEqual([1]);
+    });
+
+    it('replaces the source and clears the id on fulfilled', () => {
+      const old = source({ id: 1, quote: 'messy' });
+      const cleaned = source({ id: 1, quote: 'clean' });
+      const state: SourcesState = { byShelter: { 10: [old] }, loading: false, cleaningQuoteIds: [1] };
+      const next = sourcesReducer(
+        state,
+        cleanUpQuote.fulfilled({ shelterId: 10, source: cleaned }, '', { id: 1, shelterId: 10 }),
+      );
+      expect(next.byShelter[10][0].quote).toBe('clean');
+      expect(next.cleaningQuoteIds).toEqual([]);
+    });
+
+    it('clears the id on rejected without altering the source already in state', () => {
+      const existing = source({ id: 1, quote: 'original' });
+      const state: SourcesState = { byShelter: { 10: [existing] }, loading: false, cleaningQuoteIds: [1] };
+      const next = sourcesReducer(
+        state,
+        cleanUpQuote.rejected(new Error('boom'), '', { id: 1, shelterId: 10 }),
+      );
+      expect(next.cleaningQuoteIds).toEqual([]);
+      expect(next.byShelter[10][0].quote).toBe('original');
     });
   });
 });

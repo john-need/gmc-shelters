@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Source, SourceInput } from '@shared/ipc-types';
-import { createSource, updateSource, deleteSource } from '../../../store/sourcesSlice';
+import { createSource, updateSource, deleteSource, cleanUpQuote } from '../../../store/sourcesSlice';
+import { loadApiKey, selectHasValidApiKey } from '../../../store/aiSettingsSlice';
+import { showToast } from '../../../store/uiSlice';
 import { SOURCE_TYPES, BLANK_SOURCE } from './sourceTypes';
 import SourceCard from './SourceCard';
 import SourceModal from './SourceModal';
@@ -13,6 +15,12 @@ export default function SourcesTab() {
   const sources = useSelector((state: RootState) =>
     s ? (state.sources.byShelter[s.id] ?? []) : [],
   );
+  const cleaningQuoteIds = useSelector((state: RootState) => state.sources.cleaningQuoteIds);
+  const hasValidApiKey = useSelector(selectHasValidApiKey);
+
+  useEffect(() => {
+    dispatch(loadApiKey());
+  }, [dispatch]);
 
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
@@ -164,6 +172,16 @@ export default function SourcesTab() {
                 onToggleInclude={(include) => { void dispatch(updateSource({ ...src, include_in_history: include })); }}
                 onEdit={() => startEdit(src)}
                 onDelete={() => handleDelete(src.id)}
+                hasValidApiKey={hasValidApiKey}
+                cleaning={cleaningQuoteIds.includes(src.id)}
+                onCleanUpQuote={() => {
+                  dispatch(cleanUpQuote({ id: src.id, shelterId: s.id })).unwrap().catch(() => {
+                    dispatch(showToast({
+                      id: `clean-quote-${src.id}-error`,
+                      message: 'Could not clean up this quote. The original text was kept.',
+                    }));
+                  });
+                }}
               />
             ))
           )}

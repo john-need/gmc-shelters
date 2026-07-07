@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { fireEvent, render, within } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import SettingsLayout from './SettingsLayout';
+import aiSettingsReducer from '../../store/aiSettingsSlice';
 import type { CollectionStatus } from '../../../shared/ipc-types';
 
 const STATUS: CollectionStatus[] = [];
 
 function Wrapper({ initialPage = 'ai' }: { initialPage?: string }) {
   const [page, setPage] = useState(initialPage);
-  return <SettingsLayout page={page} setPage={setPage} onClose={() => {}} />;
+  const store = configureStore({ reducer: { aiSettings: aiSettingsReducer } });
+  return (
+    <Provider store={store}>
+      <SettingsLayout page={page} setPage={setPage} onClose={() => {}} />
+    </Provider>
+  );
 }
 
 function nav() {

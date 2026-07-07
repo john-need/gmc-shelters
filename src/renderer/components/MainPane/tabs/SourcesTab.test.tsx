@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import sheltersReducer from '../../../store/sheltersSlice';
 import sourcesReducer from '../../../store/sourcesSlice';
 import uiReducer, { type UiState } from '../../../store/uiSlice';
+import aiSettingsReducer, { apiKeyChanged } from '../../../store/aiSettingsSlice';
 import SourcesTab from './SourcesTab';
 import type { Shelter, Source } from '../../../../shared/ipc-types';
 
@@ -62,14 +63,16 @@ function makeSource(overrides: Partial<Source> = {}): Source {
   };
 }
 
-function makeStore(shelter: Shelter, sources: Source[] = []) {
+function makeStore(shelter: Shelter, sources: Source[] = [], apiKey = 'sk-ant-valid') {
   return configureStore({
     reducer: {
       shelters: sheltersReducer,
       sources: sourcesReducer,
       ui: uiReducer,
+      aiSettings: aiSettingsReducer,
     },
     preloadedState: {
+      aiSettings: { apiKey },
       shelters: {
         list: [shelter],
         selectedId: shelter.id,
@@ -85,6 +88,7 @@ function makeStore(shelter: Shelter, sources: Source[] = []) {
       sources: {
         byShelter: { [shelter.id]: sources },
         loading: false,
+        cleaningQuoteIds: [],
       },
       ui: {
         sidebarCollapsed: false,
@@ -175,6 +179,74 @@ describe('SourcesTab', () => {
         '/custom/shelters',
       );
     });
+  });
+
+  it('gates the clean-up button on selectHasValidApiKey, reflecting store changes without remounting', async () => {
+    const shelter = makeShelter();
+    const existingSource = makeSource({ id: 21, quote: 'a messy quote' });
+    const store = makeStore(shelter, [existingSource], '');
+
+    render(
+      <Provider store={store}>
+        <SourcesTab />
+      </Provider>,
+    );
+
+    expect(screen.getByTitle('Clean up quote (requires AI API key)')).toBeDisabled();
+
+    store.dispatch(apiKeyChanged('sk-ant-newly-valid'));
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Clean up quote')).not.toBeDisabled();
+    });
+  });
+
+  it('wires each SourceCard\'s clean-up button to the cleanUpQuote thunk, reflecting cleaningQuoteIds', async () => {
+    const shelter = makeShelter();
+    const existingSource = makeSource({ id: 21, quote: 'a messy quote' });
+    const store = makeStore(shelter, [existingSource]);
+    window.api.sources.cleanUpQuote = jest.fn().mockResolvedValue({ ...existingSource, quote: 'clean quote' });
+    (window.api.ai.getApiKey as jest.Mock).mockResolvedValue('sk-ant-valid');
+
+    render(
+      <Provider store={store}>
+        <SourcesTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByTitle('Clean up quote'));
+
+    expect(window.api.sources.cleanUpQuote).toHaveBeenCalledWith({ id: 21, shelterId: shelter.id });
+    // busy while the request is in flight
+    expect(screen.getByTitle('Clean up quote')).toBeDisabled();
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Clean up quote')).not.toBeDisabled();
+    });
+  });
+
+  it('shows an error toast and un-busies the button when clean-up fails', async () => {
+    const shelter = makeShelter();
+    const existingSource = makeSource({ id: 21, quote: 'a messy quote' });
+    const store = makeStore(shelter, [existingSource]);
+    window.api.sources.cleanUpQuote = jest.fn().mockRejectedValue(new Error('boom'));
+    (window.api.ai.getApiKey as jest.Mock).mockResolvedValue('sk-ant-valid');
+
+    render(
+      <Provider store={store}>
+        <SourcesTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByTitle('Clean up quote'));
+    expect(screen.getByTitle('Clean up quote')).toBeDisabled();
+
+    await waitFor(() => {
+      expect(store.getState().ui.toast).not.toBeNull();
+    });
+    expect(screen.getByTitle('Clean up quote')).not.toBeDisabled();
+    // original quote preserved
+    expect(store.getState().sources.byShelter[shelter.id][0].quote).toBe('a messy quote');
   });
 });
 

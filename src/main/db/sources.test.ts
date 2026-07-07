@@ -1,5 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import Database from 'better-sqlite3';
-import { getSourcesByShelter, getAllSources, createSource, updateSource, deleteSource } from './sources';
+import { getSourcesByShelter, getAllSources, createSource, updateSource, deleteSource, getSourceQuote, updateSourceQuote } from './sources';
 
 jest.mock('./connection');
 import { getDb } from './connection';
@@ -118,5 +120,42 @@ describe('db/sources', () => {
     const s = createSource({ ...blank, shelter_id: shelterId, title: 'ToGo', type: 'website' });
     deleteSource(s.id);
     expect(getSourcesByShelter(shelterId)).toHaveLength(0);
+  });
+
+  describe('getSourceQuote', () => {
+    it('returns the current quote for the matching row', () => {
+      const s = createSource({ ...blank, shelter_id: shelterId, quote: 'original quote' });
+      expect(getSourceQuote(shelterId, s.id)).toBe('original quote');
+    });
+  });
+
+  describe('updateSourceQuote', () => {
+    it('updates only shelter_sources.quote for the matching row', () => {
+      const s = createSource({
+        ...blank, shelter_id: shelterId, author: 'Doe', title: 'A Book',
+        quote: 'messy quote', annotation: 'keep me', include_in_history: true,
+      });
+      const result = updateSourceQuote(shelterId, s.id, 'cleaned quote');
+      expect(result.quote).toBe('cleaned quote');
+      expect(result.author).toBe('Doe');
+      expect(result.title).toBe('A Book');
+      expect(result.annotation).toBe('keep me');
+      expect(result.include_in_history).toBe(true);
+    });
+
+    it('does not touch sources.updated', () => {
+      const s = createSource({ ...blank, shelter_id: shelterId, quote: 'messy quote' });
+      const before = (db.prepare('SELECT updated FROM sources WHERE id = ?').get(s.id) as { updated: string }).updated;
+      db.exec(`UPDATE sources SET updated = '1999-01-01' WHERE id = ${s.id}`);
+      updateSourceQuote(shelterId, s.id, 'cleaned quote');
+      const after = (db.prepare('SELECT updated FROM sources WHERE id = ?').get(s.id) as { updated: string }).updated;
+      expect(after).toBe('1999-01-01');
+      expect(after).not.toBe(before);
+    });
+
+    it('does not reference any wiki-file write function (source module never touches markdown files)', () => {
+      const src = fs.readFileSync(path.join(__dirname, 'sources.ts'), 'utf-8');
+      expect(src).not.toMatch(/writeWikiHeader|wiki-search/);
+    });
   });
 });

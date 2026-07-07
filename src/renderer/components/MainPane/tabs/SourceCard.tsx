@@ -9,9 +9,14 @@ export interface SourceCardProps {
   onToggleInclude: (include: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
+  hasValidApiKey: boolean;
+  cleaning: boolean;
+  onCleanUpQuote: () => void;
 }
 
-export default function SourceCard({ s, onToggleInclude, onEdit, onDelete }: SourceCardProps) {
+export default function SourceCard({
+  s, onToggleInclude, onEdit, onDelete, hasValidApiKey, cleaning, onCleanUpQuote,
+}: SourceCardProps) {
   const typeLabel = SOURCE_TYPES.find((t) => t.v === s.type)?.label ?? s.type;
   const html = citeChicago(s, true);
   const citationRef = useRef<HTMLDivElement>(null);
@@ -111,6 +116,18 @@ export default function SourceCard({ s, onToggleInclude, onEdit, onDelete }: Sou
             </svg>
           )}
         </button>
+        {s.quote && (
+          <button
+            className="btn icon sm"
+            title={hasValidApiKey ? 'Clean up quote' : 'Clean up quote (requires AI API key)'}
+            disabled={!hasValidApiKey || cleaning}
+            onClick={onCleanUpQuote}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.5-6.5-2.1 2.1M8.6 15.4l-2.1 2.1m12-2.1-2.1-2.1M8.6 8.6 6.5 6.5"/>
+            </svg>
+          </button>
+        )}
         <button className="btn icon sm" title="Edit source" onClick={onEdit}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

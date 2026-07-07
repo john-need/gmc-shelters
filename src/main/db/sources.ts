@@ -151,6 +151,24 @@ export function updateSource(source: Source): Source {
     .get(source.id, source.shelter_id) as Source);
 }
 
+export function getSourceQuote(shelterId: number, sourceId: number): string {
+  const db = getDb();
+  const row = db
+    .prepare('SELECT quote FROM shelter_sources WHERE shelter_id = ? AND source_id = ?')
+    .get(shelterId, sourceId) as { quote: string } | undefined;
+  return row?.quote ?? '';
+}
+
+export function updateSourceQuote(shelterId: number, sourceId: number, quote: string): Source {
+  const db = getDb();
+  db.prepare('UPDATE shelter_sources SET quote = ? WHERE shelter_id = ? AND source_id = ?')
+    .run(quote, shelterId, sourceId);
+
+  return hydrateSource(db
+    .prepare(`${SELECT_SOURCE} WHERE s.id = ? AND ss.shelter_id = ?`)
+    .get(sourceId, shelterId) as Source);
+}
+
 export function deleteSource(id: number): void {
   const db = getDb();
   // shelter_sources cascade-deletes via FK ON DELETE CASCADE on source_id

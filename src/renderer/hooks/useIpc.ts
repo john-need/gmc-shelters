@@ -20,7 +20,7 @@ const noopApi: ElectronAPI = {
   shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop },
   photos: { getByShelter: noop, update: noop, delete: noop, move: noop, setDefault: noop, reorder: noop, upload: noop, readMetadata: noop, export: noop, readFileMetadata: noop, writeFileMetadata: noop, reconcileScan: noop, reconcileApply: noop },
   history: { read: noopHistoryRead, write: noop },
-  sources: { getByShelter: noop, getAll: noop, create: noop, update: noop, delete: noop },
+  sources: { getByShelter: noop, getAll: noop, create: noop, update: noop, delete: noop, cleanUpQuote: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   export: { build: noop },
   publish: { preflight: noop, toWeb: () => Promise.resolve(undefined as never), cancel: noop, testConnection: noop, checkCredentials: noop, importCredentials: noop, onProgress: () => () => {} },

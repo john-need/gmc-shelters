@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { AI_MODEL_OPTIONS } from '@shared/ipc-types';
 import type { AiModelTier } from '@shared/ipc-types';
+import { isValidAnthropicKey } from '@shared/anthropic-key';
+import { apiKeyChanged } from '../../store/aiSettingsSlice';
 
 export default function AiSettingsPage() {
     return (
@@ -61,6 +64,7 @@ function ModelCard() {
 }
 
 function ApiKeyCard() {
+    const dispatch = useDispatch();
     const [saved, setSaved] = useState('');
     const [draft, setDraft] = useState('');
     const [reveal, setReveal] = useState(false);
@@ -71,8 +75,9 @@ function ApiKeyCard() {
         window.api.ai.getApiKey().then((key) => {
             setSaved(key);
             setDraft(key);
+            dispatch(apiKeyChanged(key));
         });
-    }, []);
+    }, [dispatch]);
 
     const flash = (msg: string) => {
         setToast(msg);
@@ -81,7 +86,7 @@ function ApiKeyCard() {
 
     const save = async () => {
         const key = draft.trim();
-        if (key && !key.startsWith('sk-ant-')) {
+        if (key && !isValidAnthropicKey(key)) {
             setError('That does not look like an Anthropic key — it should start with sk-ant-.');
             return;
         }
@@ -89,6 +94,7 @@ function ApiKeyCard() {
         await window.api.ai.setApiKey(key);
         setSaved(key);
         setDraft(key);
+        dispatch(apiKeyChanged(key));
         flash(key ? 'API key saved' : 'API key removed');
     };
 
@@ -97,6 +103,7 @@ function ApiKeyCard() {
         await window.api.ai.setApiKey('');
         setSaved('');
         setDraft('');
+        dispatch(apiKeyChanged(''));
         flash('API key removed');
     };
 

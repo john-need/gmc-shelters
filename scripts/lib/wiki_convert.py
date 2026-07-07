@@ -160,6 +160,24 @@ def clean_pages(pages: list[str], llm: Callable[[str], str]) -> list[str]:
     return cleaned
 
 
+QUOTE_CLEANUP_PROMPT = """You are restoring OCR text from a short quoted excerpt.
+Rules — follow them exactly:
+- Fix obvious OCR character errors and rejoin words hyphenated across lines.
+- NEVER paraphrase, summarize, or add text. Preserve the original wording.
+- Preserve proper nouns exactly unless the correction is unambiguous from \
+the surrounding context.
+- Mark text you cannot confidently read as [illegible] instead of guessing.
+Return only the restored text, no commentary.
+
+Quote:
+{quote}"""
+
+
+def clean_quote(text: str, llm: Callable[[str], str]) -> str:
+    """One LLM call to clean up a single citation-source quote."""
+    return llm(QUOTE_CLEANUP_PROMPT.format(quote=text))
+
+
 def garbled_ratio(text: str) -> float:
     """Fraction of tokens that look like OCR noise — flags docs for escalation."""
     tokens = re.findall(r'\S+', text)
