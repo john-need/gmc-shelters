@@ -20,6 +20,9 @@ const baseProps = {
   onToggleInclude: jest.fn(),
   onEdit: jest.fn(),
   onDelete: jest.fn(),
+  hasValidApiKey: true,
+  cleaning: false,
+  onCleanUpQuote: jest.fn(),
 };
 
 describe('SourceCard', () => {
@@ -171,4 +174,36 @@ describe('SourceCard', () => {
     expect(openPdf).toHaveBeenCalledWith('collections/long-trail-news/1922.pdf', 5);
   });
 
+  describe('Clean up quote button', () => {
+    it('is absent when the source has no quote', () => {
+      render(<SourceCard s={makeSource({ quote: '' })} {...baseProps} />);
+      expect(screen.queryByTitle('Clean up quote')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Clean up quote (requires AI API key)')).not.toBeInTheDocument();
+    });
+
+    it('is enabled and titled "Clean up quote" when a valid key is configured and not cleaning', () => {
+      render(<SourceCard s={makeSource({ quote: 'a messy quote' })} {...baseProps} hasValidApiKey={true} cleaning={false} />);
+      const btn = screen.getByTitle('Clean up quote');
+      expect(btn).not.toBeDisabled();
+    });
+
+    it('is disabled and titled "Clean up quote (requires AI API key)" when no valid key is configured', () => {
+      render(<SourceCard s={makeSource({ quote: 'a messy quote' })} {...baseProps} hasValidApiKey={false} cleaning={false} />);
+      const btn = screen.getByTitle('Clean up quote (requires AI API key)');
+      expect(btn).toBeDisabled();
+    });
+
+    it('is disabled with a busy state while cleaning', () => {
+      render(<SourceCard s={makeSource({ quote: 'a messy quote' })} {...baseProps} hasValidApiKey={true} cleaning={true} />);
+      const btn = screen.getByTitle('Clean up quote');
+      expect(btn).toBeDisabled();
+    });
+
+    it('calls onCleanUpQuote when clicked', () => {
+      const onCleanUpQuote = jest.fn();
+      render(<SourceCard s={makeSource({ quote: 'a messy quote' })} {...baseProps} onCleanUpQuote={onCleanUpQuote} />);
+      fireEvent.click(screen.getByTitle('Clean up quote'));
+      expect(onCleanUpQuote).toHaveBeenCalledTimes(1);
+    });
+  });
 });

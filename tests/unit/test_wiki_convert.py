@@ -388,6 +388,27 @@ class TestCleanupAndCache:
         assert len(llm2.calls) == 2
 
 
+class TestQuoteCleanup:
+    def test_clean_quote_calls_llm_once_with_fidelity_rules_and_no_column_language(self):
+        llm = FakeLlm()
+        cleaned = wc.clean_quote('raw quote text', llm)
+        assert cleaned == 'CLEANED'
+        assert len(llm.calls) == 1
+        prompt = llm.calls[0]
+        assert 'raw quote text' in prompt
+        # same fidelity contract as the page-cleanup prompt
+        assert 'never paraphrase' in prompt.lower()
+        assert '[illegible]' in prompt
+        assert 'proper nouns' in prompt.lower()
+        # but not the page/column-reconstruction language — a quote is a short excerpt
+        assert 'column' not in prompt.lower()
+        assert 'reading order' not in prompt.lower()
+
+    def test_clean_quote_returns_llm_output_verbatim(self):
+        cleaned = wc.clean_quote('anything', lambda prompt: 'exact llm output')
+        assert cleaned == 'exact llm output'
+
+
 class TestIllustrations:
     def test_render_lists_captions_with_pages_and_untitled_fallback(self):
         section = wc.render_illustrations([

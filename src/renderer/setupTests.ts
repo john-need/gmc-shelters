@@ -60,6 +60,7 @@ const mockApi: ElectronAPI = {
     create: noop,
     update: noop,
     delete: noop,
+    cleanUpQuote: noop,
   },
   mapMarkers: {
     getByShelter: jest.fn().mockResolvedValue([]),

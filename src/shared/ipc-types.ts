@@ -42,6 +42,7 @@ export const CHANNELS = {
   SOURCES_CREATE: 'sources:create',
   SOURCES_UPDATE: 'sources:update',
   SOURCES_DELETE: 'sources:delete',
+  SOURCES_CLEAN_QUOTE: 'sources:cleanQuote',
   MAP_MARKERS_GET_BY_SHELTER: 'mapMarkers:getByShelter',
   MAP_MARKERS_CREATE: 'mapMarkers:create',
   MAP_MARKERS_UPDATE: 'mapMarkers:update',
@@ -573,6 +574,7 @@ export interface ElectronAPI {
     create: (input: SourceInput) => Promise<Source>;
     update: (source: Source) => Promise<Source>;
     delete: (id: number) => Promise<void>;
+    cleanUpQuote: (args: { id: number; shelterId: number }) => Promise<Source>;
   };
   mapMarkers: {
     getByShelter: (shelterId: number) => Promise<MapMarker[]>;

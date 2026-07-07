@@ -7,6 +7,7 @@ import { saveHistory } from './sheltersSlice';
 export interface SourcesState {
   byShelter: Record<number, Source[]>;
   loading: boolean;
+  cleaningQuoteIds: number[];
 }
 
 interface SyncState {
@@ -25,6 +26,7 @@ interface SyncState {
 const initialState: SourcesState = {
   byShelter: {},
   loading: false,
+  cleaningQuoteIds: [],
 };
 
 async function getHistoryBaseContent(state: SyncState, shelterId: number, historyRelPath: string, shelterName: string): Promise<string> {
@@ -128,6 +130,14 @@ export const deleteSource = createAsyncThunk(
   },
 );
 
+export const cleanUpQuote = createAsyncThunk(
+  'sources/cleanUpQuote',
+  async ({ id, shelterId }: { id: number; shelterId: number }) => {
+    const source = await window.api.sources.cleanUpQuote({ id, shelterId });
+    return { shelterId, source };
+  },
+);
+
 const sourcesSlice = createSlice({
   name: 'sources',
   initialState,
@@ -162,6 +172,21 @@ const sourcesSlice = createSlice({
         if (state.byShelter[shelterId]) {
           state.byShelter[shelterId] = state.byShelter[shelterId].filter((s) => s.id !== id);
         }
+      })
+      .addCase(cleanUpQuote.pending, (state, action) => {
+        state.cleaningQuoteIds.push(action.meta.arg.id);
+      })
+      .addCase(cleanUpQuote.fulfilled, (state, action) => {
+        const { shelterId, source } = action.payload;
+        state.cleaningQuoteIds = state.cleaningQuoteIds.filter((id) => id !== source.id);
+        const list = state.byShelter[shelterId];
+        if (list) {
+          const idx = list.findIndex((s) => s.id === source.id);
+          if (idx >= 0) list[idx] = source;
+        }
+      })
+      .addCase(cleanUpQuote.rejected, (state, action) => {
+        state.cleaningQuoteIds = state.cleaningQuoteIds.filter((id) => id !== action.meta.arg.id);
       });
   },
 });

@@ -67,6 +67,8 @@ const api: ElectronAPI = {
     create: (input: SourceInput) => ipcRenderer.invoke(CHANNELS.SOURCES_CREATE, input),
     update: (source: Source) => ipcRenderer.invoke(CHANNELS.SOURCES_UPDATE, source),
     delete: (id: number) => ipcRenderer.invoke(CHANNELS.SOURCES_DELETE, { id }),
+    cleanUpQuote: (args: { id: number; shelterId: number }) =>
+      ipcRenderer.invoke(CHANNELS.SOURCES_CLEAN_QUOTE, args),
   },
   mapMarkers: {
     getByShelter: (shelterId: number) =>
