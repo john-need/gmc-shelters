@@ -274,6 +274,21 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
                   <path d="m9 18 6-6-6-6"/>
                 </svg>
               </button>
+              <button className="settings-menu-item" onClick={() => openPage('ai-settings')}>
+                <span className="ico">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    <circle cx="12" cy="12" r="4"/>
+                  </svg>
+                </span>
+                <span className="text">
+                  <span className="title">AI Settings</span>
+                  <span className="sub">Model &amp; api key</span>
+                </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', color: 'var(--ink-4)' }}>
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
               <button className="settings-menu-item" onClick={() => openPage('about')}>
                 <span className="ico">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
