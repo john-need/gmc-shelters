@@ -55,4 +55,13 @@ describe('AppHeader', () => {
     expect(store.getState().ui.toast).not.toBeNull();
     expect(store.getState().ui.toast?.message).toMatch(/publish/i);
   });
+
+  it('opens the AI Settings page from the settings cog menu', () => {
+    const store = makeStore();
+    const onOpenSettings = jest.fn();
+    render(<Provider store={store}><AppHeader onNewShelter={jest.fn()} onOpenSettings={onOpenSettings} /></Provider>);
+    fireEvent.click(screen.getByTitle('Settings'));
+    fireEvent.click(screen.getByText('AI Settings'));
+    expect(onOpenSettings).toHaveBeenCalledWith('ai-settings');
+  });
 });
