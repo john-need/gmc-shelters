@@ -185,6 +185,8 @@ export interface WikiSearchResult {
   edition: string;
   printed_volume: string;
   printed_issue: string;
+  author: string;
+  publication_date: string;
   resource: string;
   citation_type: string;
   kind: 'page' | 'illustration';
@@ -321,6 +323,7 @@ export interface Source {
   author: string;
   title: string;
   container_title: string;
+  container_author: string;
   editor: string;
   edition: string;
   volume: string;
@@ -348,7 +351,7 @@ export type SourceInput = Omit<Source, 'id' | 'created' | 'updated'>;
  * Used by the "browse existing sources" picker to reuse data across shelters.
  */
 export type SourceRef = Pick<Source,
-  | 'id' | 'type' | 'author' | 'title' | 'container_title' | 'editor' | 'edition'
+  | 'id' | 'type' | 'author' | 'title' | 'container_title' | 'container_author' | 'editor' | 'edition'
   | 'volume' | 'issue' | 'pages' | 'publisher' | 'place' | 'year' | 'date'
   | 'url' | 'access_date' | 'archive' | 'archive_location'>;
 
@@ -579,7 +582,7 @@ export interface ElectronAPI {
     onProgress: (callback: (progress: PublishProgress) => void) => () => void;
   };
   wiki: {
-    search: (query: string) => Promise<WikiSearchResult[]>;
+    search: (query: string, collections?: string[]) => Promise<WikiSearchResult[]>;
     openPdf: (resource: string, page: number) => Promise<{ ok: boolean }>;
     indexReport: () => Promise<WikiIndexReport | null>;
     getHeader: (resource: string) => Promise<WikiHeaderPayload | null>;

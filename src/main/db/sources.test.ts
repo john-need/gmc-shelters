@@ -17,6 +17,7 @@ const NORMALIZED_SCHEMA = `
     author           TEXT NOT NULL DEFAULT '',
     title            TEXT NOT NULL DEFAULT '',
     container_title  TEXT NOT NULL DEFAULT '',
+    container_author TEXT NOT NULL DEFAULT '',
     editor           TEXT NOT NULL DEFAULT '',
     edition          TEXT NOT NULL DEFAULT '',
     volume           TEXT NOT NULL DEFAULT '',
@@ -62,7 +63,7 @@ describe('db/sources', () => {
   const blank = {
     shelter_id: 0, type: 'book' as const,
     include_in_history: false,
-    author: '', title: '', container_title: '', editor: '', edition: '',
+    author: '', title: '', container_title: '', container_author: '', editor: '', edition: '',
     volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '',
     archive_location: '', annotation: '', notes: '', quote: '',
@@ -93,6 +94,16 @@ describe('db/sources', () => {
     createSource({ ...blank, shelter_id: shelterId, title: 'X', type: 'book' });
     createSource({ ...blank, shelter_id: shelterId, title: 'Y', type: 'journal' });
     expect(getSourcesByShelter(shelterId)).toHaveLength(2);
+  });
+
+  it('stores container_author for a book chapter, distinct from the chapter author and editor', () => {
+    const s = createSource({
+      ...blank, shelter_id: shelterId, type: 'chapter',
+      author: 'Chapter Writer', editor: 'Book Editor', container_author: 'Book Author',
+    });
+    expect(s.container_author).toBe('Book Author');
+    expect(s.author).toBe('Chapter Writer');
+    expect(s.editor).toBe('Book Editor');
   });
 
   it('updateSource updates fields', () => {

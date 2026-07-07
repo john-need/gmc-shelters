@@ -12,6 +12,7 @@ import {
     HEADER_PROPERTIES,
     HEADER_PROPERTY_CONTROL,
     HEADER_SCHEMA,
+    LANGUAGE_OPTIONS,
     SOURCE_TYPES,
     validateHeader,
 } from '../../../shared/wiki-header-schema';
@@ -639,15 +640,35 @@ function HeaderEditorDialog({path, notAdded, onClose}: {
                                             onChange={(e) => setField(prop, e.target.value)}
                                             style={{display: 'block', width: '100%', marginTop: 4, minHeight: 60, boxSizing: 'border-box'}}
                                         />
-                                    ) : (
-                                        <input
+                                    ) : control === 'select' && prop === 'language' ? (
+                                        <select
                                             id={id}
                                             className="input"
-                                            type="text"
                                             value={fields[prop] ?? ''}
                                             onChange={(e) => setField(prop, e.target.value)}
-                                            style={{display: 'block', width: '100%', marginTop: 4, boxSizing: 'border-box'}}
-                                        />
+                                            style={{display: 'block', width: '100%', marginTop: 4}}
+                                        >
+                                            {LANGUAGE_OPTIONS.map((o) => (
+                                                <option key={o.value} value={o.value}>{o.label}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <>
+                                            <input
+                                                id={id}
+                                                className="input"
+                                                type="text"
+                                                value={fields[prop] ?? ''}
+                                                onChange={(e) => setField(prop, e.target.value)}
+                                                placeholder={control === 'flexible-date' ? 'YYYY-MM-DD, YYYY-MM, YYYY, or "Spring 1996"' : undefined}
+                                                style={{display: 'block', width: '100%', marginTop: 4, boxSizing: 'border-box'}}
+                                            />
+                                            {control === 'flexible-date' && (
+                                                <div style={{fontSize: 11, color: 'var(--ink-3)', marginTop: 2}}>
+                                                    Full date, month, year, or season (e.g. &quot;Spring 1996&quot;).
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             );
@@ -814,6 +835,18 @@ function CollectionDefaultsDialog({name, citationType, defaults, existingNames =
                                     onChange={(e) => setField(prop, e.target.value)}
                                     style={{display: 'block', width: '100%', marginTop: 4, minHeight: 60, boxSizing: 'border-box'}}
                                 />
+                            ) : control === 'select' && prop === 'language' ? (
+                                <select
+                                    id={id}
+                                    className="input"
+                                    value={fields[prop] ?? ''}
+                                    onChange={(e) => setField(prop, e.target.value)}
+                                    style={{display: 'block', width: '100%', marginTop: 4}}
+                                >
+                                    {LANGUAGE_OPTIONS.map((o) => (
+                                        <option key={o.value} value={o.value}>{o.label}</option>
+                                    ))}
+                                </select>
                             ) : (
                                 <input
                                     id={id}

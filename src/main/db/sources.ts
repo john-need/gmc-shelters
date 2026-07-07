@@ -34,7 +34,7 @@ export function getAllSources(): SourceRef[] {
   const db = getDb();
   return db
     .prepare(
-      `SELECT id, type, author, title, container_title, editor, edition,
+      `SELECT id, type, author, title, container_title, container_author, editor, edition,
               volume, issue, pages, publisher, place, year, date, url,
               access_date, archive, archive_location
        FROM sources
@@ -50,17 +50,18 @@ export function createSource(input: SourceInput): Source {
   const result = db
     .prepare(
       `INSERT INTO sources
-         (type, author, title, container_title, editor, edition,
+         (type, author, title, container_title, container_author, editor, edition,
           volume, issue, pages, publisher, place, year, date, url, access_date,
           archive, archive_location, created, updated)
        VALUES
-         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       input.type,
       input.author ?? '',
       input.title ?? '',
       input.container_title ?? '',
+      input.container_author ?? '',
       input.editor ?? '',
       input.edition ?? '',
       input.volume ?? '',
@@ -104,7 +105,7 @@ export function updateSource(source: Source): Source {
 
   db.prepare(
     `UPDATE sources SET
-       type = ?, author = ?, title = ?, container_title = ?, editor = ?,
+       type = ?, author = ?, title = ?, container_title = ?, container_author = ?, editor = ?,
        edition = ?, volume = ?, issue = ?, pages = ?, publisher = ?, place = ?,
        year = ?, date = ?, url = ?, access_date = ?, archive = ?,
        archive_location = ?, updated = ?
@@ -114,6 +115,7 @@ export function updateSource(source: Source): Source {
     source.author ?? '',
     source.title ?? '',
     source.container_title ?? '',
+    source.container_author ?? '',
     source.editor ?? '',
     source.edition ?? '',
     source.volume ?? '',

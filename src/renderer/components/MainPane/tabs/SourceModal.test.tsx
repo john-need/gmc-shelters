@@ -5,7 +5,7 @@ import type { Source, SourceRef } from '../../../../shared/ipc-types';
 
 function makeSource(overrides: Partial<Source> = {}): Partial<Source> & { shelter_id: number } {
   return {
-    shelter_id: 7, type: 'book', author: '', title: '', container_title: '',
+    shelter_id: 7, type: 'book', author: '', title: '', container_title: '', container_author: '',
     editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '',
     place: '', year: null, date: '', url: '', access_date: '', archive: '',
     archive_location: '', annotation: '', notes: '', quote: '',
@@ -16,7 +16,7 @@ function makeSource(overrides: Partial<Source> = {}): Partial<Source> & { shelte
 
 function ref(o: Partial<SourceRef> = {}): SourceRef {
   return {
-    id: 0, type: 'book', author: '', title: '', container_title: '', editor: '',
+    id: 0, type: 'book', author: '', title: '', container_title: '', container_author: '', editor: '',
     edition: '', volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '', archive_location: '',
     ...o,
@@ -67,6 +67,13 @@ describe('SourceModal', () => {
     expect(screen.queryByPlaceholderText('Long Trail News')).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'journal' } });
     expect(screen.getByText(/journal \/ magazine/i)).toBeInTheDocument();
+  });
+
+  it('shows Book author field only when type is chapter', () => {
+    render(<SourceModal source={makeSource()} creating onCancel={jest.fn()} onSave={jest.fn()} />);
+    expect(screen.queryByText(/^book author$/i)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'chapter' } });
+    expect(screen.getByText(/^book author$/i)).toBeInTheDocument();
   });
 
   it('shows the browse button and opens picker when clicked', async () => {

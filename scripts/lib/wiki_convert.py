@@ -1,6 +1,6 @@
 """PDF-collection → OKF-profile markdown conversion logic.
 
-Pure, testable core used by collections/ocr_to_markdown.py. Subprocess and
+Pure, testable core used by scripts/ocr_to_markdown.py. Subprocess and
 LLM interactions are injected by the CLI so everything here runs in tests.
 
 OKF profile (project-defined; OKF itself only mandates `type`):
@@ -12,11 +12,15 @@ No `tags`. No `date`.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
+import io
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
+
+from PIL import Image
 
 # Bump when the cleanup prompt or output format changes, to invalidate caches
 PIPELINE_VERSION = '1'
@@ -244,6 +248,25 @@ def convert_document(*, pdf: Path, repo_root: Path, wiki_root: Path, cache_dir: 
     audit['status'] = 'converted'
     audit['flagged'] = garbled_ratio(body) > 0.15
     return audit
+
+
+# Anthropic rejects base64 image payloads over 10_485_760 bytes; full-page
+# scans from pdfimages routinely blow past that, so shrink until it fits.
+MAX_IMAGE_B64_BYTES = 10_000_000
+
+
+def encode_image_b64(png: Path) -> str:
+    """Base64-encode an image, downscaling it if it exceeds the API's size cap."""
+    b64 = base64.standard_b64encode(png.read_bytes()).decode('ascii')
+    if len(b64) <= MAX_IMAGE_B64_BYTES:
+        return b64
+    img = Image.open(png)
+    while len(b64) > MAX_IMAGE_B64_BYTES and max(img.size) > 200:
+        img = img.resize((img.width * 3 // 4, img.height * 3 // 4))
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        b64 = base64.standard_b64encode(buf.getvalue()).decode('ascii')
+    return b64
 
 
 def harvest_illustrations(pdf: Path, images_dir: Path, *,

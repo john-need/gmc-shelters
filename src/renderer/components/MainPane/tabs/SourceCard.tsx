@@ -1,50 +1,21 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import type { Source } from '../../../../shared/ipc-types';
 import { citeChicago } from '../../../../shared/cite-chicago';
-import { SOURCE_TYPES, SOURCE_GLYPH, prettyUrl } from './sourceTypes';
+import { SOURCE_TYPES, SOURCE_GLYPH, prettyUrl, collectionResource } from './sourceTypes';
+import QuoteBlock from './QuoteBlock';
 
 export interface SourceCardProps {
   s: Source;
-  selected: boolean;
-  onClick: () => void;
   onToggleInclude: (include: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function SourceQuote({ text }: { text: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const [overflows, setOverflows] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || expanded) return;
-    const measure = () => setOverflows(el.scrollHeight > el.clientHeight);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [text, expanded]);
-
-  return (
-    <div className="source-quote-wrap" onClick={(e) => e.stopPropagation()}>
-      <div ref={ref} className={`source-quote${expanded ? ' expanded' : ''}`}>
-        &ldquo;{text}&rdquo;
-      </div>
-      {overflows && (
-        <button className="source-quote-toggle" onClick={() => setExpanded((v) => !v)}>
-          {expanded ? 'show less' : 'show more'}
-        </button>
-      )}
-    </div>
-  );
-}
-
-export default function SourceCard({ s, selected, onClick, onToggleInclude, onEdit, onDelete }: SourceCardProps) {
+export default function SourceCard({ s, onToggleInclude, onEdit, onDelete }: SourceCardProps) {
   const typeLabel = SOURCE_TYPES.find((t) => t.v === s.type)?.label ?? s.type;
-  const html = citeChicago(s);
+  const html = citeChicago(s, true);
   const citationRef = useRef<HTMLDivElement>(null);
+  const resource = collectionResource(s);
 
   useLayoutEffect(() => {
     const el = citationRef.current;
@@ -58,27 +29,42 @@ export default function SourceCard({ s, selected, onClick, onToggleInclude, onEd
   }, []);
 
   return (
-    <div className={`source-card ${selected ? 'selected' : ''}`} onClick={onClick}>
-      <div className={`source-type-badge ${s.type}`}>
-        <span className="glyph">{SOURCE_GLYPH[s.type] ?? '?'}</span>
-        <span className="label">{typeLabel}</span>
-      </div>
-
-      <div style={{ minWidth: 0 }}>
-        <div ref={citationRef} className="source-citation" dangerouslySetInnerHTML={{ __html: html }} />
-
-        <div className="source-meta-row">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
+    <div className="source-card">
+      <div className="source-type-col">
+        <div className={`source-type-badge ${s.type}`}>
+          <span className="glyph">{SOURCE_GLYPH[s.type] ?? '?'}</span>
+          <span className="label">{typeLabel}</span>
+        </div>
+        <div className="include-toggle">
+          <label className="toggle-switch" title="Include in history">
             <input
               type="checkbox"
               checked={s.include_in_history}
               aria-label="Include in history"
               onChange={(e) => onToggleInclude(e.target.checked)}
             />
-            <span>Include in history</span>
+            <span className="toggle-track" />
           </label>
-          {s.year && <span className="chip">{s.year}</span>}
-          {s.pages && <span className="chip">pp. {s.pages}</span>}
+          <span className="toggle-label">Cite This</span>
+        </div>
+      </div>
+
+      <div style={{ minWidth: 0 }}>
+        <div className="source-header">
+          <span className="source-title">{s.title || 'Untitled source'}</span>
+          {(s.year || s.date) && <span className="source-pubdate">{s.year || s.date}</span>}
+          <span style={{
+            marginLeft: 'auto', opacity: 0.7,
+            fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.04em', color: 'var(--ink-3)',
+          }}>
+            updated {s.updated}
+          </span>
+        </div>
+
+        <div ref={citationRef} className="source-citation" dangerouslySetInnerHTML={{ __html: html }} />
+
+        {(s.archive || s.url) && (
+        <div className="source-meta-row">
           {s.archive && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -88,31 +74,43 @@ export default function SourceCard({ s, selected, onClick, onToggleInclude, onEd
             </span>
           )}
           {s.url && (
-            <a href={s.url} onClick={(e) => { e.stopPropagation(); if (window.api) window.api.shell.openExternal(s.url); e.preventDefault(); }}>
+            <a href={s.url} onClick={(e) => { e.preventDefault(); if (window.api) window.api.shell.openExternal(s.url); }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-2 2"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l2-2"/>
               </svg>
               {' '}{prettyUrl(s.url)}
             </a>
           )}
-          <span style={{ marginLeft: 'auto', opacity: 0.7 }}>updated {s.updated}</span>
         </div>
+        )}
 
-        {s.quote && <SourceQuote text={s.quote} />}
+        {s.quote && <QuoteBlock text={s.quote} />}
 
-        {s.annotation && selected && (
+        {s.annotation && (
           <div className="source-annotation">{s.annotation}</div>
         )}
       </div>
 
-      <div className="source-actions" onClick={(e) => e.stopPropagation()}>
-        {s.url && (
-          <button className="btn icon sm" title="Open in browser" onClick={() => window.api?.shell.openExternal(s.url)}>
+      <div className="source-actions">
+        <button
+          className="btn icon sm"
+          title={resource ? 'View PDF' : s.url ? 'Open in browser' : 'No document or URL'}
+          disabled={!resource && !s.url}
+          onClick={() => {
+            if (resource) window.api?.wiki.openPdf(resource, parseInt(s.pages, 10) || 1);
+            else if (s.url) window.api?.shell.openExternal(s.url);
+          }}
+        >
+          {resource ? (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+            </svg>
+          ) : (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-2 2"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l2-2"/>
             </svg>
-          </button>
-        )}
+          )}
+        </button>
         <button className="btn icon sm" title="Edit source" onClick={onEdit}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

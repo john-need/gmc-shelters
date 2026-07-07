@@ -8,8 +8,11 @@ timestamp: "2026-07-02T18:58:54Z"
 publisher: "Upper Valley/Ottauquechee Section, Green Mountain Club"
 volume: "2013"
 edition: "December"
+printed_volume: "36"
+printed_issue: "4"
 pages: "6"
 language: "en"
+publication_date: "2013-12"
 ---
 
 <!-- page: 1 -->

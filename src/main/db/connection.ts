@@ -157,4 +157,18 @@ function applyMigrations(database: Database.Database, repoRoot: string): void {
       log.info('Applied migration: 010-add-categories-timestamps.sql');
     }
   }
+
+  // Apply 011-add-container-author-to-sources.sql if sources.container_author column doesn't exist
+  const containerAuthorCol = database
+    .prepare("SELECT COUNT(*) AS n FROM pragma_table_info('sources') WHERE name='container_author'")
+    .get() as { n: number };
+
+  if (containerAuthorCol.n === 0) {
+    const migrationPath = path.join(migrationsDir, '011-add-container-author-to-sources.sql');
+    if (fs.existsSync(migrationPath)) {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      database.exec(sql);
+      log.info('Applied migration: 011-add-container-author-to-sources.sql');
+    }
+  }
 }

@@ -5,7 +5,7 @@ import type { SourceRef } from '../../../../shared/ipc-types';
 
 function ref(o: Partial<SourceRef> = {}): SourceRef {
   return {
-    id: 0, type: 'book', author: '', title: '', container_title: '', editor: '',
+    id: 0, type: 'book', author: '', title: '', container_title: '', container_author: '', editor: '',
     edition: '', volume: '', issue: '', pages: '', publisher: '', place: '',
     year: null, date: '', url: '', access_date: '', archive: '', archive_location: '',
     ...o,

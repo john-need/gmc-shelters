@@ -76,7 +76,7 @@ def main() -> None:
         md.unlink()
     if stale:
         print(f'removed {len(stale)} stale wiki files — re-add smoke-and-blazes '
-              f'from the app or run: python3 collections/ocr_to_markdown.py smoke-and-blazes')
+              f'from the app or run: python3 scripts/ocr_to_markdown.py smoke-and-blazes')
 
 
 if __name__ == '__main__':

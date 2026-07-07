@@ -6,7 +6,7 @@ description: "History of the Green Mountain Club, Burlington Section."
 resource: "collections/Books/Marjorie-Holmes-History-GMC-BTV.pdf"
 timestamp: "2026-07-02T18:58:53Z"
 publisher: "Green Mountain Club"
-author: "Marjorie Holmes"
+author: "Holmes, Marjorie "
 pages: "23"
 language: "en"
 ---

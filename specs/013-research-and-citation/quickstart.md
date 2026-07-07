@@ -30,11 +30,11 @@ always agree. The search index rebuilds automatically after each run.
 ## From the terminal
 
 ```bash
-python3 collections/ocr_to_markdown.py                       # everything
-python3 collections/ocr_to_markdown.py books                 # one collection
-python3 collections/ocr_to_markdown.py --files collections/books/x.pdf
-python3 collections/ocr_to_markdown.py --no-clean --no-images  # offline add
-python3 collections/ocr_to_markdown.py --force --files ...     # redo cached files
+python3 scripts/ocr_to_markdown.py                       # everything
+python3 scripts/ocr_to_markdown.py books                 # one collection
+python3 scripts/ocr_to_markdown.py --files collections/books/x.pdf
+python3 scripts/ocr_to_markdown.py --no-clean --no-images  # offline add
+python3 scripts/ocr_to_markdown.py --force --files ...     # redo cached files
 python3 scripts/build_wiki_index.py                          # rebuild search index
 python3 scripts/collection_status.py                         # status JSON
 ```

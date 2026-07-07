@@ -1,15 +1,16 @@
 ---
 type: "Guidebook"
 citation_type: "book"
-title: "Long Trail Guide Books"
-description: "Long Trail Guide Books, 1960."
+title: "Guide Book of the Long Trail"
+description: "Long Trail Guide Book -  50th Anniversary Edition"
 resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed16_1960.pdf"
 timestamp: "2026-07-02T18:59:15Z"
 publisher: "Green Mountain Club"
-volume: "1960"
+edition: "16"
 author: "Green Mountain Club"
 pages: "72"
 language: "en"
+publication_date: "1960"
 ---
 
 <!-- page: 1 -->

@@ -1,15 +1,16 @@
 ---
 type: "Guidebook"
 citation_type: "book"
-title: "Long Trail Guide Books"
+title: "Long Trail Guide Book"
 description: "Long Trail Guide Books, 1940."
 resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed12_1940.pdf"
 timestamp: "2026-07-02T18:59:14Z"
 publisher: "Green Mountain Club"
-volume: "1940"
+edition: "12"
 author: "Green Mountain Club"
 pages: "76"
 language: "en"
+publication_date: "1940"
 ---
 
 <!-- page: 1 -->

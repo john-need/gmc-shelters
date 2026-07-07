@@ -1,0 +1,17 @@
+organization: "Green Mountain Club"
+files:
+  Trails and Summits of the Green Mountains.pdf:
+    author: "Walter Collins O'Kane"
+    title: "Trails and Summits of the Green Mountains"
+  Marjorie-Holmes-History-GMC-BTV.pdf:
+    author: "Marjorie Holmes"
+    title: "History of the Green Mountain Club, Burlington Section"
+  history-of-stratton-vt.pdf:
+    # TODO: verify author
+    author: "Unknown"
+    title: "History of Stratton, Vermont"
+citation_type: "book"
+title: ""
+description: ""
+language: ""
+author: ""

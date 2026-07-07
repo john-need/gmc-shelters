@@ -94,8 +94,8 @@ const api: ElectronAPI = {
     },
   },
   wiki: {
-    search: (query: string): Promise<WikiSearchResult[]> =>
-      ipcRenderer.invoke(CHANNELS.WIKI_SEARCH, query),
+    search: (query: string, collections?: string[]): Promise<WikiSearchResult[]> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_SEARCH, query, collections),
     openPdf: (resource: string, page: number): Promise<{ ok: boolean }> =>
       ipcRenderer.invoke(CHANNELS.WIKI_OPEN_PDF, { resource, page }),
     indexReport: (): Promise<WikiIndexReport | null> =>

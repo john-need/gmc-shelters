@@ -9,7 +9,7 @@ function source(overrides: Partial<Source> = {}): Source {
     type: 'book',
     author: 'Doe, Jane',
     title: 'Shelter Notes',
-    container_title: '',
+    container_title: '', container_author: '',
     editor: '',
     edition: '',
     volume: '',

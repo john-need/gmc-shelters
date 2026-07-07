@@ -71,7 +71,7 @@ describe('ipc/collections', () => {
     });
     const convertArgs = (spawn as jest.Mock).mock.calls[0][1] as string[];
     expect(convertArgs).toEqual(expect.arrayContaining([
-      '/repo/collections/ocr_to_markdown.py', '--no-clean', '--no-images',
+      '/repo/scripts/ocr_to_markdown.py', '--no-clean', '--no-images',
       '--files', 'collections/books/a.pdf',
     ]));
     expect(convertArgs).not.toContain('--force');

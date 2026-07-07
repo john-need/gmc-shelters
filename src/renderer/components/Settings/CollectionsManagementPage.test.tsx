@@ -8,6 +8,7 @@ const MAGAZINE_HEADER: WikiHeaderPayload = {
     title: 'Long Trail News',
     description: 'Long Trail News, December 1922.',
     language: 'en',
+    publication_date: '1922-12',
     author: '',
     publisher: 'Green Mountain Club',
     edition: 'December',
@@ -429,6 +430,29 @@ describe('CollectionsManagementPage', () => {
     expect(screen.getByText(/collections\/long-trail-news\/a_clean\.pdf/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/^resource$/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/^type$/i)).not.toBeInTheDocument();
+  });
+
+  it('renders language as a select with English pinned first', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    const languageSelect = await screen.findByLabelText(/^language/i);
+    expect(languageSelect.tagName).toBe('SELECT');
+    expect(languageSelect).toHaveValue('en');
+    expect(within(languageSelect as HTMLElement).getAllByRole('option')[0]).toHaveTextContent('English');
+  });
+
+  it('renders publication date as a text field with a format hint', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    expect(await screen.findByLabelText(/publication date/i)).toHaveValue('1922-12');
+  });
+
+  it('blocks Save when publication date does not match an accepted format', async () => {
+    (window.api.wiki.getHeader as jest.Mock).mockResolvedValue(MAGAZINE_HEADER);
+    await openHeaderEditor();
+    fireEvent.change(await screen.findByLabelText(/publication date/i), { target: { value: 'not a date' } });
+    expect(await screen.findByText(/publication_date.*must be a date/i)).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).getByRole('button', { name: /^save$/i })).toBeDisabled();
   });
 
   it('still opens and flags an unrecognized on-disk citation type instead of erroring', async () => {

@@ -24,7 +24,7 @@ Most of the originally requested feature already exists:
 
 - **Research tab** (`src/renderer/components/MainPane/tabs/ResearchTab.tsx`): FTS5 search with snippets, metadata display, and an "Add Citation" button.
 - **Sources tab** (`SourcesTab.tsx`): Chicago Notes-Bibliography citation CRUD; `sources` + `shelter_sources` tables (quote column exists).
-- **Conversion pipeline** (`collections/ocr_to_markdown.py`): pdftotext → ocrmypdf fallback → pyspellchecker → OKF frontmatter → `wiki/`.
+- **Conversion pipeline** (`scripts/ocr_to_markdown.py`): pdftotext → ocrmypdf fallback → pyspellchecker → OKF frontmatter → `wiki/`.
 - **Smoke & Blazes splitter** (`collections/smoke-and-blazes/split_smoke_and_blazes.py`).
 - **Search index** (`scripts/build_wiki_index.py` → `wiki/search.db`, whole-document FTS5).
 

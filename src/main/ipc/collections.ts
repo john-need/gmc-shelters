@@ -61,7 +61,7 @@ export function registerCollectionsHandlers(): void {
       cancelRequested = false;
       const root = app.getAppPath();
 
-      const args = [path.join(root, 'collections', 'ocr_to_markdown.py')];
+      const args = [path.join(root, 'scripts', 'ocr_to_markdown.py')];
       if (mode === 'add') args.push('--no-clean', '--no-images');
       if (force) args.push('--force');
       if (files.length) args.push('--files', ...files);

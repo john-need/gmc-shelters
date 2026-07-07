@@ -107,6 +107,8 @@ def parse_md(path: Path, wiki: Path) -> list[tuple] | None:
         fm.get('edition', ''),
         fm.get('printed_volume', ''),
         fm.get('printed_issue', ''),
+        fm.get('author', ''),
+        fm.get('publication_date', ''),
         resource,
         fm.get('citation_type', ''),
     )
@@ -136,6 +138,8 @@ def build(db_path: Path, wiki: Path) -> int:
             edition        UNINDEXED,
             printed_volume UNINDEXED,
             printed_issue  UNINDEXED,
+            author         UNINDEXED,
+            publication_date UNINDEXED,
             resource       UNINDEXED,
             citation_type  UNINDEXED,
             kind           UNINDEXED,
@@ -160,7 +164,7 @@ def build(db_path: Path, wiki: Path) -> int:
             rows.extend(doc_rows)
 
     con.executemany(
-        'INSERT INTO wiki_fts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO wiki_fts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         rows,
     )
     con.commit()
@@ -178,7 +182,7 @@ def build(db_path: Path, wiki: Path) -> int:
 def main() -> None:
     if not WIKI.exists():
         print(f'wiki/ not found at {WIKI}')
-        print('Run collections/ocr_to_markdown.py first.')
+        print('Run scripts/ocr_to_markdown.py first.')
         sys.exit(1)
 
     print(f'Indexing {WIKI} → {DB_PATH}')
