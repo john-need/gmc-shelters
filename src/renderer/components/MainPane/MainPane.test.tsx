@@ -29,9 +29,9 @@ describe('MainPane', () => {
     store.dispatch(setSelectedId(SHELTER_A.id));
     store.dispatch(setQuery('Monroe'));
     store.dispatch(setResults([HIT]));
-    expect(store.getState().research).toEqual({ query: 'Monroe', results: [HIT] });
+    expect(store.getState().research).toEqual({ query: 'Monroe', results: [HIT], excludedCollections: [] });
 
     store.dispatch(setSelectedId(SHELTER_B.id));
-    await waitFor(() => expect(store.getState().research).toEqual({ query: '', results: [] }));
+    await waitFor(() => expect(store.getState().research).toEqual({ query: '', results: [], excludedCollections: [] }));
   });
 });

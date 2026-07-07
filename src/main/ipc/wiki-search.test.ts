@@ -54,6 +54,13 @@ function buildFixtureDb(dir: string) {
       'Refreshments were served afterward on the porch.',
     ].join('\n\n'),
   );
+  insert.run(
+    'trail-guide/1930_Guide.md', 'Guidebook', 'Trail Guide',
+    'Green Mountain Club', '1930', '', '', '',
+    'Green Mountain Club', '1930',
+    'collections/trail-guide/1930_Guide.pdf', 'book', 'page', '1', '',
+    'Wildflowers bloom along the ridge trail every June.',
+  );
   db.close();
 }
 
@@ -180,6 +187,27 @@ describe('ipc/wiki-search', () => {
     // the other two paragraphs in the same page don't mention Killington, so they're excluded
     expect(results[0].snippet).not.toContain('annual meeting');
     expect(results[0].snippet).not.toContain('Refreshments');
+  });
+
+  it('filters results down to the given collections', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    const unfiltered = (await handler(null, 'Wildflowers')) as WikiSearchResult[];
+    expect(unfiltered).toHaveLength(1);
+
+    const wrongCollection = (await handler(null, 'Wildflowers', ['long-trail-news'])) as WikiSearchResult[];
+    expect(wrongCollection).toHaveLength(0);
+
+    const rightCollection = (await handler(null, 'Wildflowers', ['trail-guide'])) as WikiSearchResult[];
+    expect(rightCollection).toHaveLength(1);
+  });
+
+  it('returns no results when every collection is excluded (empty selection)', async () => {
+    buildFixtureDb(tmpDir);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SEARCH);
+    expect(await handler(null, 'Monroe Lodge', [])).toEqual([]);
   });
 
   it('WIKI_OPEN_PDF opens a window at the requested page', async () => {

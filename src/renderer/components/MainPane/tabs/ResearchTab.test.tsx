@@ -6,7 +6,14 @@ import sourcesReducer from '../../../store/sourcesSlice';
 import uiReducer from '../../../store/uiSlice';
 import researchReducer from '../../../store/researchSlice';
 import ResearchTab from './ResearchTab';
-import type { Shelter, WikiSearchResult } from '../../../../shared/ipc-types';
+import type { CollectionStatus, Shelter, WikiSearchResult } from '../../../../shared/ipc-types';
+
+const COLLECTION_A: CollectionStatus = {
+  name: 'long-trail-news', total: 1, added: 1, cleaned: 1, files: [], citationType: null, defaults: {},
+};
+const COLLECTION_B: CollectionStatus = {
+  name: 'trail-guide', total: 1, added: 1, cleaned: 1, files: [], citationType: null, defaults: {},
+};
 
 const SHELTER = {
   id: 7,
@@ -192,5 +199,61 @@ describe('ResearchTab', () => {
     await renderWithResults([PAGE_HIT]);
     fireEvent.click(await screen.findByRole('button', { name: /open pdf at page 2/i }));
     expect(await screen.findByText(/pdf.*not found/i)).toBeInTheDocument();
+  });
+
+  describe('collection filter', () => {
+    beforeEach(() => {
+      (window.api.collections.status as jest.Mock).mockResolvedValue([COLLECTION_A, COLLECTION_B]);
+    });
+
+    it('lists every collection, all checked by default', async () => {
+      await renderWithResults([PAGE_HIT]);
+      const a = await screen.findByRole('checkbox', { name: 'long-trail-news' });
+      const b = screen.getByRole('checkbox', { name: 'trail-guide' });
+      expect(a).toBeChecked();
+      expect(b).toBeChecked();
+      expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe');
+    });
+
+    it('searches only the checked collections once one is unchecked', async () => {
+      await renderWithResults([PAGE_HIT]);
+      fireEvent.click(await screen.findByRole('checkbox', { name: 'trail-guide' }));
+      await waitFor(() =>
+        expect(window.api.wiki.search).toHaveBeenLastCalledWith('Monroe', ['long-trail-news']),
+      );
+    });
+
+    it('shows a spinner while collections are loading, then the All/None controls', async () => {
+      let resolveStatus!: (v: CollectionStatus[]) => void;
+      (window.api.collections.status as jest.Mock).mockReturnValue(
+        new Promise<CollectionStatus[]>((resolve) => { resolveStatus = resolve; }),
+      );
+      render(
+        <Provider store={makeStore()}>
+          <ResearchTab />
+        </Provider>,
+      );
+      expect(screen.getByText('Collections').parentElement?.querySelector('svg')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
+
+      resolveStatus([COLLECTION_A]);
+      expect(await screen.findByRole('button', { name: 'All' })).toBeInTheDocument();
+      expect(screen.getByText('Collections').parentElement?.querySelector('svg')).not.toBeInTheDocument();
+    });
+
+    it('None unchecks every collection and All rechecks them', async () => {
+      await renderWithResults([PAGE_HIT]);
+      fireEvent.click(screen.getByRole('button', { name: 'None' }));
+      const a = await screen.findByRole('checkbox', { name: 'long-trail-news' });
+      const b = screen.getByRole('checkbox', { name: 'trail-guide' });
+      expect(a).not.toBeChecked();
+      expect(b).not.toBeChecked();
+      await waitFor(() => expect(window.api.wiki.search).toHaveBeenLastCalledWith('Monroe', []));
+
+      fireEvent.click(screen.getByRole('button', { name: 'All' }));
+      expect(a).toBeChecked();
+      expect(b).toBeChecked();
+      await waitFor(() => expect(window.api.wiki.search).toHaveBeenLastCalledWith('Monroe'));
+    });
   });
 });

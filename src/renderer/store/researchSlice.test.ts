@@ -1,4 +1,4 @@
-import reducer, { setQuery, setResults, resetResearch } from './researchSlice';
+import reducer, { setQuery, setResults, setExcludedCollections, resetResearch } from './researchSlice';
 import type { WikiSearchResult } from '../../shared/ipc-types';
 
 const HIT: WikiSearchResult = {
@@ -9,9 +9,9 @@ const HIT: WikiSearchResult = {
 };
 
 describe('researchSlice', () => {
-  it('starts with empty query and results', () => {
+  it('starts with empty query, results, and no excluded collections', () => {
     const state = reducer(undefined, { type: '@@INIT' });
-    expect(state).toEqual({ query: '', results: [] });
+    expect(state).toEqual({ query: '', results: [], excludedCollections: [] });
   });
 
   it('setQuery updates the query text', () => {
@@ -24,10 +24,16 @@ describe('researchSlice', () => {
     expect(state.results).toEqual([HIT]);
   });
 
-  it('resetResearch clears both query and results', () => {
+  it('resetResearch clears query and results but keeps excludedCollections', () => {
     let state = reducer(undefined, setQuery('Monroe'));
     state = reducer(state, setResults([HIT]));
+    state = reducer(state, setExcludedCollections(['1922']));
     state = reducer(state, resetResearch());
-    expect(state).toEqual({ query: '', results: [] });
+    expect(state).toEqual({ query: '', results: [], excludedCollections: ['1922'] });
+  });
+
+  it('setExcludedCollections updates which collections are excluded', () => {
+    const state = reducer(undefined, setExcludedCollections(['1922', '1923']));
+    expect(state.excludedCollections).toEqual(['1922', '1923']);
   });
 });

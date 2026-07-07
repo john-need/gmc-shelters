@@ -5,7 +5,7 @@ import type { Source, SourceInput, WikiSearchResult } from '@shared/ipc-types';
 import { wikiResultToSource } from '@shared/wiki-cite';
 import { createSource } from '../../../store/sourcesSlice';
 import { showToast } from '../../../store/uiSlice';
-import { setQuery, setResults } from '../../../store/researchSlice';
+import { setQuery, setResults, setExcludedCollections } from '../../../store/researchSlice';
 import { BLANK_SOURCE, SOURCE_TYPES, SOURCE_GLYPH } from './sourceTypes';
 import SourceModal from './SourceModal';
 import QuoteBlock from './QuoteBlock';
@@ -15,17 +15,28 @@ export default function ResearchTab() {
   const s = useSelector((state: RootState) => state.shelters.editBuffer);
   const query = useSelector((state: RootState) => state.research.query);
   const results = useSelector((state: RootState) => state.research.results);
+  const excludedCollections = useSelector((state: RootState) => state.research.excludedCollections);
 
   const [loading, setLoading] = useState(false);
   const [noIndex, setNoIndex] = useState(false);
   const [editing, setEditing] = useState<(Partial<Source> & { shelter_id: number }) | null>(null);
   const [creating, setCreating] = useState(false);
+  const [collectionNames, setCollectionNames] = useState<string[]>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
 
-  const search = useCallback(async (q: string) => {
+  useEffect(() => {
+    window.api.collections.status()
+      .then((cs) => setCollectionNames(cs.map((c) => c.name)))
+      .finally(() => setCollectionsLoading(false));
+  }, []);
+
+  const search = useCallback(async (q: string, excluded: string[]) => {
     if (!q.trim()) { dispatch(setResults([])); return; }
     setLoading(true);
     try {
-      const res = await window.api.wiki.search(q.trim());
+      const res = excluded.length
+        ? await window.api.wiki.search(q.trim(), collectionNames.filter((n) => !excluded.includes(n)))
+        : await window.api.wiki.search(q.trim());
       dispatch(setResults(res));
       setNoIndex(false);
     } catch {
@@ -34,7 +45,7 @@ export default function ResearchTab() {
     } finally {
       setLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, collectionNames]);
 
   // Skip the very first run: `query` may already be populated from a persisted
   // search (tab switch or shelter change), whose matching `results` are already
@@ -44,9 +55,17 @@ export default function ResearchTab() {
     if (!mounted.current) { mounted.current = true; return; }
     if (!query.trim()) { dispatch(setResults([])); setLoading(false); return; }
     setLoading(true);
-    const t = setTimeout(() => search(query), 300);
+    const t = setTimeout(() => search(query, excludedCollections), 300);
     return () => clearTimeout(t);
-  }, [query, search, dispatch]);
+  }, [query, excludedCollections, search, dispatch]);
+
+  function toggleCollection(name: string) {
+    dispatch(setExcludedCollections(
+      excludedCollections.includes(name)
+        ? excludedCollections.filter((n) => n !== name)
+        : [...excludedCollections, name],
+    ));
+  }
 
   function openCitation(result: WikiSearchResult) {
     if (!s) return;
@@ -62,8 +81,8 @@ export default function ResearchTab() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 0 }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 12, padding: '12px 16px', overflow: 'hidden' }}>
+      <div className="settings-card" style={{ padding: '16px', marginBottom: 0, flexShrink: 0 }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             className="input"
@@ -80,9 +99,48 @@ export default function ResearchTab() {
             {results.length} result{results.length !== 1 ? 's' : ''}
           </div>
         )}
+
+        {(collectionsLoading || collectionNames.length > 0) && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Collections
+              </span>
+              {collectionsLoading ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+              ) : (
+                <>
+                  <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections([]))}>
+                    All
+                  </button>
+                  <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections(collectionNames))}>
+                    None
+                  </button>
+                </>
+              )}
+            </div>
+            {!collectionsLoading && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+                {collectionNames.map((name) => (
+                  <label key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={!excludedCollections.includes(name)}
+                      onChange={() => toggleCollection(name)}
+                    />
+                    {name}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <style>{'@keyframes spin { to { transform: rotate(360deg); } }'}</style>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 16px' }}>
+      <div className="settings-card" style={{ padding: '8px 16px', marginBottom: 0, flex: 1, overflowY: 'auto' }}>
         {noIndex && (
           <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
             No search index found.{' '}

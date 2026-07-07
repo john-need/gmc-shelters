@@ -126,13 +126,19 @@ export function paragraphSnippet(highlightedBody: string): string {
 }
 
 export function registerWikiSearchHandlers(): void {
-  ipcMain.handle(CHANNELS.WIKI_SEARCH, (_e, query: string): WikiSearchResult[] => {
+  ipcMain.handle(CHANNELS.WIKI_SEARCH, (_e, query: string, collections?: string[]): WikiSearchResult[] => {
     if (!query?.trim()) return [];
+    if (collections && collections.length === 0) return []; // every collection deselected
     const conn = getDb();
     if (!conn) return [];
     try {
+      // `path` is `<collectionName>/<stem>.md` (see scripts/build_wiki_index.py) — its
+      // first segment is the collection, so a prefix match filters by collection.
+      const collectionFilter = collections?.length
+        ? `AND (${collections.map(() => `path LIKE ? || '/%'`).join(' OR ')})`
+        : '';
       const rows = conn
-        .prepare<[string], WikiSearchResult>(`
+        .prepare<unknown[], WikiSearchResult>(`
           SELECT path, okf_type, title, publisher, volume, edition,
                  printed_volume, printed_issue, author, publication_date,
                  resource, citation_type, kind,
@@ -140,10 +146,11 @@ export function registerWikiSearchHandlers(): void {
                  highlight(wiki_fts, 15, '<mark>', '</mark>') AS snippet
           FROM wiki_fts
           WHERE wiki_fts MATCH ?
+          ${collectionFilter}
           ORDER BY rank
           LIMIT 50
         `)
-        .all(query) as WikiSearchResult[];
+        .all(query, ...(collections ?? [])) as WikiSearchResult[];
       return rows.map((r) => ({ ...r, snippet: paragraphSnippet(r.snippet) }));
     } catch {
       return [];

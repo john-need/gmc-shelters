@@ -582,7 +582,7 @@ export interface ElectronAPI {
     onProgress: (callback: (progress: PublishProgress) => void) => () => void;
   };
   wiki: {
-    search: (query: string) => Promise<WikiSearchResult[]>;
+    search: (query: string, collections?: string[]) => Promise<WikiSearchResult[]>;
     openPdf: (resource: string, page: number) => Promise<{ ok: boolean }>;
     indexReport: () => Promise<WikiIndexReport | null>;
     getHeader: (resource: string) => Promise<WikiHeaderPayload | null>;
