@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -131,6 +131,10 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.COLLECTIONS_DELETE_FILE, request),
     delete: (request: CollectionsDeleteRequest): Promise<{ ok: boolean }> =>
       ipcRenderer.invoke(CHANNELS.COLLECTIONS_DELETE, request),
+  },
+  research: {
+    webSearch: (query: string, context?: string): Promise<WebSearchResponse> =>
+      ipcRenderer.invoke(CHANNELS.RESEARCH_WEB_SEARCH, query, context),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke(CHANNELS.SHELL_OPEN_EXTERNAL, { url }),

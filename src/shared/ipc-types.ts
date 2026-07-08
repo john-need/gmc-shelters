@@ -83,6 +83,7 @@ export const CHANNELS = {
   COLLECTIONS_ADD_FILES: 'collections:addFiles',
   COLLECTIONS_DELETE_FILE: 'collections:deleteFile',
   COLLECTIONS_DELETE: 'collections:delete',
+  RESEARCH_WEB_SEARCH: 'research:webSearch',
 } as const;
 
 export interface CollectionFileStatus {
@@ -528,6 +529,20 @@ export const AI_MODEL_OPTIONS: { id: AiModelTier; label: string }[] = [
   { id: 'escalation', label: 'Capable (escalation)' },
 ];
 
+export interface WebResearchResult {
+  title: string;
+  url: string;
+  snippet: string;
+  /** Absolute path to a locally cached thumbnail, or null if no photo was found/cached. Never the original external URL. */
+  localImagePath: string | null;
+}
+
+export type WebResearchError = 'no_api_key' | 'timeout' | 'network';
+
+export type WebSearchResponse =
+  | { ok: true; results: WebResearchResult[] }
+  | { ok: false; error: WebResearchError };
+
 export interface ElectronAPI {
   architectures: {
     getAll: () => Promise<Architecture[]>;
@@ -619,6 +634,9 @@ export interface ElectronAPI {
     addFiles: (request: CollectionsAddFilesRequest) => Promise<CollectionsAddFilesResult>;
     deleteFile: (request: CollectionsDeleteFileRequest) => Promise<{ ok: boolean }>;
     delete: (request: CollectionsDeleteRequest) => Promise<{ ok: boolean }>;
+  };
+  research: {
+    webSearch: (query: string, context?: string) => Promise<WebSearchResponse>;
   };
   shell: {
     openExternal: (url: string) => Promise<void>;

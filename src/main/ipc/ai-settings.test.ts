@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { ipcMain, app } from 'electron';
-import { registerAiSettingsHandlers } from './ai-settings';
+import { registerAiSettingsHandlers, readStoredApiKey, readStoredModelTier } from './ai-settings';
 import { CHANNELS } from '@shared/ipc-types';
 
 function getHandler(channel: string) {
@@ -80,5 +80,26 @@ describe('ipc/ai-settings', () => {
     await expect(set(null, { tier: 'not-a-real-tier' })).rejects.toThrow();
     expect(fs.existsSync(path.join(tmpDir, '.ai_model'))).toBe(false);
     expect(await get(null)).toBe('default');
+  });
+
+  describe('readStoredApiKey/readStoredModelTier (exported helpers)', () => {
+    it('readStoredApiKey returns "" when no key is saved, and the saved key once one is', async () => {
+      expect(readStoredApiKey()).toBe('');
+      const set = getHandler(CHANNELS.AI_SET_API_KEY);
+      await set(null, { key: 'sk-ant-test123' });
+      expect(readStoredApiKey()).toBe('sk-ant-test123');
+    });
+
+    it('readStoredModelTier returns "default" when no file exists, and the saved tier once one is', async () => {
+      expect(readStoredModelTier()).toBe('default');
+      const set = getHandler(CHANNELS.AI_SET_MODEL);
+      await set(null, { tier: 'escalation' });
+      expect(readStoredModelTier()).toBe('escalation');
+    });
+
+    it('readStoredModelTier falls back to "default" for an unrecognized file value', () => {
+      fs.writeFileSync(path.join(tmpDir, '.ai_model'), 'not-a-real-tier');
+      expect(readStoredModelTier()).toBe('default');
+    });
   });
 });

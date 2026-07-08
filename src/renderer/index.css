@@ -818,6 +818,7 @@ html, body {
   overflow-y: auto;
   position: relative;
 }
+.tab-fade { animation: fade 0.18s; }
 .tab-body::-webkit-scrollbar { width: 10px; }
 .tab-body::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 5px; border: 2px solid var(--bg-app); }
 

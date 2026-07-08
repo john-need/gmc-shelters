@@ -161,7 +161,7 @@ export default function MainPane() {
         ))}
       </div>
 
-      <div className={`tab-body${activeTab === 'markers' ? ' tab-body--map' : ''}`}>
+      <div key={activeTab} className={`tab-body tab-fade${activeTab === 'markers' ? ' tab-body--map' : ''}`}>
         {activeTab === 'shelter' && <ShelterTab />}
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'sources' && <SourcesTab />}

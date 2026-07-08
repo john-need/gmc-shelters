@@ -15,6 +15,7 @@ import { registerPublishHandlers } from './ipc/publish';
 import { registerWikiSearchHandlers } from './ipc/wiki-search';
 import { registerAiSettingsHandlers } from './ipc/ai-settings';
 import { registerCollectionsHandlers } from './ipc/collections';
+import { registerResearchWebSearchHandlers } from './ipc/research-web-search';
 import { getThumbnailPath, type ThumbnailSizeClass } from './fs/thumbnails';
 
 protocol.registerSchemesAsPrivileged([
@@ -165,6 +166,7 @@ if (!app.requestSingleInstanceLock()) {
     registerPublishHandlers();
     registerWikiSearchHandlers();
     registerAiSettingsHandlers();
+    registerResearchWebSearchHandlers();
     registerCollectionsHandlers();
     createWindow();
   });
