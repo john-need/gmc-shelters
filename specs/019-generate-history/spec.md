@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: User description: "Add a new feature, \"Generate History\" Add a button on the history tab, after the \"source\", \"both\", \"preview\" buttons. this button will gather the information from the shelter tab, and the citations on the sources tab, and whatever is currently in the history panel, and send off a prompt to claude to write a factual history of the [shelter name] give these facts. Tell it to add its own research. When the results come back, show the user the new narrative in a modal window in markdown preview mode. Give the user to chance to accept or reject the new history narrative. if the user accepts, replace the history on this history tab. otherwise discard the new narrative."
 
+## Clarifications
+
+### Session 2026-07-07
+
+- Q: How should the existing mechanically-managed `### Sources` section (auto-synced onto the History file whenever a Sources-tab citation's inclusion changes) interact with Generate History? → A: Strip the `### Sources` section before sending "current history" to Claude; after Accept, immediately re-run the existing citation sync to reattach the current mechanical Sources section beneath the new narrative.
+- Q: New History files are seeded with a `# {Shelter Name}` heading as their first line (see today's "Create File" behavior) — should Claude's generated narrative include its own top-level heading, or should the app supply/preserve that heading separately from Claude's output? → A: Claude writes only the body prose; the app always prepends/preserves the `# {Shelter Name}` heading itself, separate from whatever Claude returns.
+- Q: Should the generated narrative visibly distinguish statements grounded in the given local facts/citations from Claude's own added research, or read as one blended account? → A: One blended prose narrative with no in-text distinction between given facts and Claude's own research — the human accept/reject review step is the only safeguard.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Draft a new history narrative from current facts (Priority: P1)
@@ -17,7 +25,7 @@ A researcher has entered a shelter's basic facts on the Shelter tab and added ci
 
 **Acceptance Scenarios**:
 
-1. **Given** a shelter with facts on the Shelter tab and included citations on the Sources tab, **When** the user clicks "Generate History," **Then** the system sends those facts, the included citations, and the current History tab content to Claude with an instruction to write a factual narrative history and to add its own relevant research.
+1. **Given** a shelter with facts on the Shelter tab and included citations on the Sources tab, **When** the user clicks "Generate History," **Then** the system sends those facts, the included citations, and the current History tab content (with its mechanical Sources section stripped) to Claude with an instruction to write a single blended factual narrative body and to add its own relevant research.
 2. **Given** a generation request is in progress, **When** the user looks at the "Generate History" button, **Then** it shows a busy/in-progress state and cannot be clicked again until the request finishes.
 3. **Given** the History tab currently has no content (a new/blank history), **When** the user clicks "Generate History," **Then** the system still sends the available Shelter-tab facts and citations (with an empty history) and returns a narrative.
 
@@ -33,7 +41,7 @@ Once Claude returns a draft, the user wants to see exactly what will replace the
 
 **Acceptance Scenarios**:
 
-1. **Given** Claude has returned a generated narrative, **When** the response arrives, **Then** the system shows it in a modal window rendered in markdown preview mode (headings, lists, emphasis, links formatted, not shown as raw markdown source).
+1. **Given** Claude has returned a generated narrative, **When** the response arrives, **Then** the system shows the full resulting document — the `# {Shelter Name}` heading, the generated body, and the reattached Sources section — in a modal window rendered in markdown preview mode (headings, lists, emphasis, links formatted, not shown as raw markdown source).
 2. **Given** the generated narrative is shown in the review modal, **When** the user clicks Accept, **Then** the History tab's content is replaced with the generated narrative and the tab reflects it as an unsaved edit, exactly as if the user had typed it in — the existing Save action still governs writing it to disk.
 3. **Given** the review modal is open, **When** the user clicks Accept, **Then** the modal closes and the History tab (in whichever view mode is active) shows the new content.
 
@@ -69,7 +77,7 @@ The user reviews the draft and decides it isn't right — wrong emphasis, invent
 ### Canonical Inputs
 
 - **Source Data**: The selected shelter's fields on the Shelter tab (name, architecture, built-by, notes, and other displayed facts), the citations on the Sources tab marked for inclusion in the history (the same `include_in_history` selection already used to compile this document's existing Sources section), the History tab's current content (including unsaved edits), and the configured Claude API key/model already used elsewhere in the app.
-- **Derived Outputs**: An ephemeral generated narrative, held only in the review modal until the user accepts or rejects it. On accept, it becomes the History tab's in-editor content (an unsaved edit like any other); nothing is written to disk until the user explicitly saves, matching today's History tab behavior.
+- **Derived Outputs**: An ephemeral generated narrative, held only in the review modal until the user accepts or rejects it. On accept, it becomes the History tab's in-editor content with the current mechanical `### Sources` section reattached beneath it (an unsaved edit like any other); nothing is written to disk until the user explicitly saves, matching today's History tab behavior.
 - **Out-of-Repo Consumers**: None. The Anthropic API is called as an external generation service; its output is never treated as canonical shelter data until a human reviews and accepts it.
 
 ### Contracts & Operations
@@ -83,11 +91,11 @@ The user reviews the draft and decides it isn't right — wrong emphasis, invent
 ### Functional Requirements
 
 - **FR-001**: The History tab MUST show a "Generate History" button positioned after the existing "Source," "Both," and "Preview" view-mode buttons.
-- **FR-002**: When clicked, the system MUST gather the current shelter's Shelter-tab facts, the Sources-tab citations marked for inclusion in the history, and the History tab's current content (including unsaved edits), and send them to Claude with an instruction to write a factual narrative history of the shelter from those facts and to add its own relevant research.
+- **FR-002**: When clicked, the system MUST gather the current shelter's Shelter-tab facts, the Sources-tab citations marked for inclusion in the history, and the History tab's current content with its mechanical `### Sources` section (if present) stripped out, and send them to Claude with an instruction to write only the body prose of a single blended factual narrative history of the shelter from those facts (no top-level title heading, and no in-text distinction between given facts and Claude's own research) and to add its own relevant research.
 - **FR-003**: The system MUST NOT modify the History tab's content in any way until the user explicitly accepts a generated narrative.
-- **FR-004**: On receiving a generated narrative, the system MUST display it in a modal window rendered in markdown preview mode.
+- **FR-004**: On receiving a generated narrative, the system MUST display it in a modal window rendered in markdown preview mode, showing the exact document that would replace the History tab's content if accepted — the `# {Shelter Name}` heading, the generated body, and the reattached mechanical `### Sources` section together — not just the bare narrative body.
 - **FR-005**: The review modal MUST offer exactly two actions: accept the narrative or reject it; dismissing the modal without an explicit accept MUST be treated as reject.
-- **FR-006**: If the user accepts, the system MUST replace the History tab's current content with the generated narrative, marking it as an unsaved edit consistent with normal manual edits, without altering any other tab's data.
+- **FR-006**: If the user accepts, the system MUST replace the History tab's current content with a `# {Shelter Name}` heading followed by the generated narrative body, then immediately reattach the current mechanical `### Sources` section beneath it (via the same citation sync already used elsewhere), marking the result as an unsaved edit consistent with normal manual edits, without altering any other tab's data.
 - **FR-007**: If the user rejects, the system MUST discard the generated narrative entirely, leaving the History tab's content and dirty/saved state exactly as they were before the request.
 - **FR-008**: The system MUST show a busy/in-progress state on the "Generate History" button while a request is running and MUST prevent starting a second concurrent request for the same shelter during that time.
 - **FR-009**: The system MUST disable the "Generate History" button when no Claude API key is configured or the configured key does not match the existing format check used elsewhere in the app, with a title indicating an AI API key is required.

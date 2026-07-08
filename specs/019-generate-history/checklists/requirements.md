@@ -32,3 +32,4 @@
 ## Notes
 
 - All items pass on first validation pass. No [NEEDS CLARIFICATION] markers were needed — three scope questions (which citations count, whether accept auto-saves, where the button lives) were resolved via reasonable defaults documented in Assumptions, each grounded in existing app conventions (`include_in_history` flag, existing Save-button-gated persistence, existing view-mode toggle placement).
+- 2026-07-07 `/speckit-clarify` session: 3 additional questions resolved and integrated (see spec's Clarifications section) — mechanical `### Sources` section is stripped before sending to Claude and reattached after Accept; Claude writes body prose only, the app supplies the `# {Shelter Name}` heading; the narrative is a single blended account with no in-text provenance distinction between given facts and Claude's own research.
