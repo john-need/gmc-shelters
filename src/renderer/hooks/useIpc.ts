@@ -42,6 +42,7 @@ const noopApi: ElectronAPI = {
     deleteFile: noop,
     delete: noop,
   },
+  research: { webSearch: () => Promise.resolve({ ok: true, results: [] }) },
   shell: { openExternal: noop },
   app: {
     getVersion: noop,

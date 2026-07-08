@@ -1,14 +1,42 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
-import type { Source, SourceInput, WikiSearchResult } from '@shared/ipc-types';
-import { wikiResultToSource } from '@shared/wiki-cite';
+import type { Source, SourceInput, WikiSearchResult, WebResearchResult, Shelter } from '@shared/ipc-types';
+import { wikiResultToSource, stripMarks } from '@shared/wiki-cite';
+import { webResultToSource } from '@shared/web-research-cite';
 import { createSource } from '../../../store/sourcesSlice';
 import { showToast } from '../../../store/uiSlice';
 import { setQuery, setResults, setExcludedCollections } from '../../../store/researchSlice';
 import { BLANK_SOURCE, SOURCE_TYPES, SOURCE_GLYPH } from './sourceTypes';
 import SourceModal from './SourceModal';
 import QuoteBlock from './QuoteBlock';
+
+// ponytail: caps at 5 local hits so the prompt stays small — Claude only needs
+// enough of what we already have to avoid duplicating it, not the full set.
+function buildResearchContext(shelter: Shelter | null, collectionResults: WikiSearchResult[]): string | undefined {
+  const parts: string[] = [];
+
+  if (shelter) {
+    const shelterLines = [
+      `Shelter: ${shelter.name}`,
+      shelter.start_year && `Built: ${shelter.start_year}${shelter.end_year ? `–${shelter.end_year}` : ''}`,
+      shelter.architecture && `Architecture: ${shelter.architecture}`,
+      shelter.built_by && `Built by: ${shelter.built_by}`,
+      shelter.category && `Category: ${shelter.category}`,
+      shelter.description && `Description: ${shelter.description}`,
+    ].filter(Boolean).join('\n');
+    parts.push(shelterLines);
+  }
+
+  if (collectionResults.length) {
+    const lines = collectionResults.slice(0, 5)
+      .map((r) => `- ${r.title}: ${stripMarks(r.snippet)}`)
+      .join('\n');
+    parts.push(`Already found in local collections (don't just repeat these — dig further):\n${lines}`);
+  }
+
+  return parts.length ? parts.join('\n\n') : undefined;
+}
 
 export default function ResearchTab() {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,6 +51,11 @@ export default function ResearchTab() {
   const [creating, setCreating] = useState(false);
   const [collectionNames, setCollectionNames] = useState<string[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
+
+  const [webPhase, setWebPhase] = useState<'idle' | 'loading' | 'success' | 'empty' | 'no_api_key' | 'error'>('idle');
+  const [webResults, setWebResults] = useState<WebResearchResult[]>([]);
+  const [resultTab, setResultTab] = useState<'collections' | 'web'>('collections');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     window.api.collections.status()
@@ -67,9 +100,32 @@ export default function ResearchTab() {
     ));
   }
 
+  async function handleSearchWebClick() {
+    const q = query.trim();
+    if (!q || webPhase === 'loading') return;
+    setResultTab('web');
+    setWebPhase('loading');
+
+    const res = await window.api.research.webSearch(q, buildResearchContext(s, results));
+
+    if (!res.ok) {
+      setWebPhase(res.error === 'no_api_key' ? 'no_api_key' : 'error');
+      setWebResults([]);
+      return;
+    }
+    setWebResults(res.results);
+    setWebPhase(res.results.length ? 'success' : 'empty');
+  }
+
   function openCitation(result: WikiSearchResult) {
     if (!s) return;
     setEditing({ ...BLANK_SOURCE, ...wikiResultToSource(result), shelter_id: s.id });
+    setCreating(true);
+  }
+
+  function openWebCitation(result: WebResearchResult) {
+    if (!s) return;
+    setEditing({ ...BLANK_SOURCE, ...webResultToSource(result), shelter_id: s.id });
     setCreating(true);
   }
 
@@ -83,7 +139,7 @@ export default function ResearchTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 12, padding: '12px 16px', overflow: 'hidden' }}>
       <div className="settings-card" style={{ padding: '16px', marginBottom: 0, flexShrink: 0 }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
           <input
             className="input"
             style={{ flex: 1 }}
@@ -93,73 +149,151 @@ export default function ResearchTab() {
             onChange={(e) => dispatch(setQuery(e.target.value))}
             autoFocus
           />
+          <button
+            type="button"
+            className="btn primary"
+            style={{ height: 'auto' }}
+            disabled={!query.trim() || webPhase === 'loading'}
+            onClick={handleSearchWebClick}
+          >
+            Research w/AI
+          </button>
         </div>
-        {results.length > 0 && !loading && (
-          <div style={{ marginTop: 6, fontSize: 11, color: 'var(--ink-3)' }}>
-            {results.length} result{results.length !== 1 ? 's' : ''}
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+          {(collectionsLoading || collectionNames.length > 0) && (
+            <button type="button" className="btn ghost sm" onClick={() => setFiltersOpen((v) => !v)}>
+              Collection filters
+            </button>
+          )}
+        </div>
 
         {(collectionsLoading || collectionNames.length > 0) && (
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Collections
-              </span>
-              {collectionsLoading ? (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-              ) : (
-                <>
-                  <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections([]))}>
-                    All
-                  </button>
-                  <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections(collectionNames))}>
-                    None
-                  </button>
-                </>
-              )}
-            </div>
-            {!collectionsLoading && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
-                {collectionNames.map((name) => (
-                  <label key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={!excludedCollections.includes(name)}
-                      onChange={() => toggleCollection(name)}
-                    />
-                    {name}
-                  </label>
-                ))}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: filtersOpen ? '1fr' : '0fr',
+              transition: 'grid-template-rows 200ms ease',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ minHeight: 0 }} aria-hidden={!filtersOpen}>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Collections
+                  </span>
+                  {collectionsLoading ? (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                  ) : (
+                    <>
+                      <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections([]))}>
+                        All
+                      </button>
+                      <button type="button" className="btn ghost sm" onClick={() => dispatch(setExcludedCollections(collectionNames))}>
+                        None
+                      </button>
+                    </>
+                  )}
+                </div>
+                {!collectionsLoading && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+                    {collectionNames.map((name) => (
+                      <label key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={!excludedCollections.includes(name)}
+                          onChange={() => toggleCollection(name)}
+                        />
+                        {name}
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
         <style>{'@keyframes spin { to { transform: rotate(360deg); } }'}</style>
       </div>
 
-      <div className="settings-card" style={{ padding: '8px 16px', marginBottom: 0, flex: 1, overflowY: 'auto' }}>
-        {noIndex && (
-          <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
-            No search index found.{' '}
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-              Run scripts/build_wiki_index.py to build it.
-            </span>
-          </div>
-        )}
-
-        {!noIndex && !loading && query && results.length === 0 && (
-          <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
-            No results for <em>{query}</em>
-          </div>
-        )}
-
-        {results.map((r, i) => (
-          <ResultCard key={`${r.path}:${r.kind}:${r.page}:${i}`} result={r} onAdd={() => openCitation(r)} />
-        ))}
+      <div className="tabs" style={{ flexShrink: 0 }}>
+        <button
+          type="button"
+          className={`tab ${resultTab === 'collections' ? 'active' : ''}`}
+          onClick={() => setResultTab('collections')}
+        >
+          Collections ({results.length})
+        </button>
+        <button
+          type="button"
+          className={`tab ${resultTab === 'web' ? 'active' : ''}`}
+          onClick={() => setResultTab('web')}
+        >
+          Web Sources ({webResults.length})
+        </button>
       </div>
+
+      {resultTab === 'collections' && (
+        <div className="settings-card tab-fade" style={{ padding: '8px 16px', marginBottom: 0, flex: 1, overflowY: 'auto' }}>
+          {noIndex && (
+            <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              No search index found.{' '}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                Run scripts/build_wiki_index.py to build it.
+              </span>
+            </div>
+          )}
+
+          {!noIndex && !loading && query && results.length === 0 && (
+            <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              No results for <em>{query}</em>
+            </div>
+          )}
+
+          {!noIndex && !query && results.length === 0 && (
+            <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              No active search. Type a query above to search the collections.
+            </div>
+          )}
+
+          {results.map((r, i) => (
+            <ResultCard key={`${r.path}:${r.kind}:${r.page}:${i}`} result={r} onAdd={() => openCitation(r)} />
+          ))}
+        </div>
+      )}
+
+      {resultTab === 'web' && (
+        <div className="settings-card tab-fade" style={{ padding: '8px 16px', marginBottom: 0, flex: 1, overflowY: 'auto' }}>
+          {webPhase === 'idle' && (
+            <div style={{ padding: '24px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              Click Search Web to research this query.
+            </div>
+          )}
+          {webPhase === 'loading' && (
+            <div style={{ padding: '12px 0', color: 'var(--ink-3)', fontSize: 13 }}>Searching the web…</div>
+          )}
+          {webPhase === 'no_api_key' && (
+            <div style={{ padding: '12px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              No Anthropic API key configured — add one in Settings → AI Settings.
+            </div>
+          )}
+          {webPhase === 'error' && (
+            <div style={{ padding: '12px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              Web search failed — try again.
+            </div>
+          )}
+          {webPhase === 'empty' && (
+            <div style={{ padding: '12px 0', color: 'var(--ink-3)', fontSize: 13 }}>
+              No web sources found for <em>{query}</em>
+            </div>
+          )}
+          {webPhase === 'success' && webResults.map((r, i) => (
+            <WebResultCard key={`${r.url}:${i}`} result={r} onAdd={() => openWebCitation(r)} />
+          ))}
+        </div>
+      )}
 
       {editing && (
         <SourceModal
@@ -232,6 +366,35 @@ function ResultCard({ result, onAdd }: { result: WikiSearchResult; onAdd: () => 
               PDF not found — this collection may need to be re-added.
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WebResultCard({ result, onAdd }: { result: WebResearchResult; onAdd: () => void }) {
+  return (
+    <div className="research-result">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        {result.localImagePath && (
+          <img
+            src={`shelter://${encodeURI(result.localImagePath)}`}
+            alt=""
+            style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="source-header" style={{ marginBottom: 2 }}>
+            <a className="source-title" href={result.url} target="_blank" rel="noreferrer">{result.title}</a>
+          </div>
+          {result.snippet && <div style={{ fontSize: 12.5, marginTop: 2 }}>{result.snippet}</div>}
+        </div>
+        <div style={{ flexShrink: 0 }}>
+          <button type="button" className="btn icon sm" title="Add citation" onClick={onAdd}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

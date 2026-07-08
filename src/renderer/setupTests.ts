@@ -101,6 +101,9 @@ const mockApi: ElectronAPI = {
     deleteFile: jest.fn().mockResolvedValue({ ok: true }),
     delete: jest.fn().mockResolvedValue({ ok: true }),
   },
+  research: {
+    webSearch: jest.fn().mockResolvedValue({ ok: true, results: [] }),
+  },
   shell: { openExternal: noop },
   app: {
     getVersion: jest.fn().mockResolvedValue('0.1.0'),

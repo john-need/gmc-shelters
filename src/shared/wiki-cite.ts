@@ -28,7 +28,7 @@ function citationType(r: WikiSearchResult): SourceType {
   return OKF_TO_SOURCE[r.okf_type] ?? 'other';
 }
 
-function stripMarks(html: string): string {
+export function stripMarks(html: string): string {
   return html.replace(/<\/?mark>/g, '').replace(/…/g, '...');
 }
 
