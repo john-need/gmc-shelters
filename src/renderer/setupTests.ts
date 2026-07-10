@@ -53,6 +53,7 @@ const mockApi: ElectronAPI = {
   history: {
     read: jest.fn().mockResolvedValue(defaultHistoryRead),
     write: noop,
+    generate: jest.fn().mockResolvedValue({ ok: false, error: 'no_api_key' }),
   },
   sources: {
     getByShelter: jest.fn().mockResolvedValue([]),

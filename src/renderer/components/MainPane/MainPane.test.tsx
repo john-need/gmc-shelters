@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { store } from '../../store';
 import { loadShelters, setSelectedId } from '../../store/sheltersSlice';
-import { setQuery, setResults } from '../../store/researchSlice';
+import { setQuery, setResults, setWebPhase, setWebResults } from '../../store/researchSlice';
 import MainPane from './MainPane';
 import type { Shelter, WikiSearchResult } from '@shared/ipc-types';
 
@@ -17,7 +17,7 @@ const HIT: WikiSearchResult = {
 };
 
 describe('MainPane', () => {
-  it('resets research query/results when the selected shelter changes', async () => {
+  it('resets research query/results and web search results when the selected shelter changes', async () => {
     (window.api.shelters.getAll as jest.Mock).mockResolvedValue([SHELTER_A, SHELTER_B]);
     render(
       <Provider store={store}>
@@ -29,9 +29,19 @@ describe('MainPane', () => {
     store.dispatch(setSelectedId(SHELTER_A.id));
     store.dispatch(setQuery('Monroe'));
     store.dispatch(setResults([HIT]));
-    expect(store.getState().research).toEqual({ query: 'Monroe', results: [HIT], excludedCollections: [] });
+    store.dispatch(setWebPhase('success'));
+    store.dispatch(setWebResults([{ title: 'NOAA Almanac', url: 'https://example.com/a', snippet: 'a snippet', localImagePath: null }]));
+    expect(store.getState().research).toEqual({
+      query: 'Monroe',
+      results: [HIT],
+      excludedCollections: [],
+      webPhase: 'success',
+      webResults: [{ title: 'NOAA Almanac', url: 'https://example.com/a', snippet: 'a snippet', localImagePath: null }],
+    });
 
     store.dispatch(setSelectedId(SHELTER_B.id));
-    await waitFor(() => expect(store.getState().research).toEqual({ query: '', results: [], excludedCollections: [] }));
+    await waitFor(() => expect(store.getState().research).toEqual({
+      query: '', results: [], excludedCollections: [], webPhase: 'idle', webResults: [],
+    }));
   });
 });

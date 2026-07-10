@@ -368,6 +368,41 @@ describe('ResearchTab', () => {
       expect(screen.getByText(/monroe lodge/i)).toBeInTheDocument();
     });
 
+    it('persists web search results across unmount/remount (tab switch), same as collection results', async () => {
+      (window.api.wiki.search as jest.Mock).mockResolvedValue([]);
+      (window.api.research.webSearch as jest.Mock).mockResolvedValue({
+        ok: true,
+        results: [{ title: 'NOAA Weather Almanac', url: 'https://example.com/almanac', snippet: 'a great primary source', localImagePath: null }],
+      });
+      const store = makeStore();
+      const { unmount } = render(<Provider store={store}><ResearchTab /></Provider>);
+      checkAndType('Monroe');
+      clickSearchWeb();
+      await screen.findByRole('link', { name: 'NOAA Weather Almanac' });
+      unmount();
+
+      render(<Provider store={store}><ResearchTab /></Provider>);
+      fireEvent.click(screen.getByRole('button', { name: 'Web Sources (1)' }));
+      expect(screen.getByRole('link', { name: 'NOAA Weather Almanac' })).toBeInTheDocument();
+      expect(screen.getByText('a great primary source')).toBeInTheDocument();
+    });
+
+    it('opens a web result link in the default external browser instead of navigating in-app', async () => {
+      (window.api.wiki.search as jest.Mock).mockResolvedValue([]);
+      (window.api.research.webSearch as jest.Mock).mockResolvedValue({
+        ok: true,
+        results: [{ title: 'NOAA Weather Almanac', url: 'https://example.com/almanac', snippet: 'a great primary source', localImagePath: null }],
+      });
+      render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+      checkAndType('Monroe');
+      clickSearchWeb();
+
+      const link = await screen.findByRole('link', { name: 'NOAA Weather Almanac' });
+      fireEvent.click(link);
+
+      expect(window.api.shell.openExternal).toHaveBeenCalledWith('https://example.com/almanac');
+    });
+
     it('renders a message pointing to AI Settings when no API key is configured', async () => {
       (window.api.research.webSearch as jest.Mock).mockResolvedValue({ ok: false, error: 'no_api_key' });
       render(<Provider store={makeStore()}><ResearchTab /></Provider>);

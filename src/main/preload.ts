@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse, GenerateHistoryRequest, GenerateHistoryResponse } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -59,6 +59,8 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.HISTORY_READ, { historyRelPath, sheltersRoot }),
     write: (historyRelPath: string, content: string, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { historyRelPath, content, sheltersRoot }),
+    generate: (request: GenerateHistoryRequest): Promise<GenerateHistoryResponse> =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_GENERATE, request),
   },
   sources: {
     getByShelter: (shelterId: number) =>

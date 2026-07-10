@@ -553,6 +553,47 @@ html, body {
   color: var(--surface);
 }
 
+.adv-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 12px var(--font-ui);
+  color: var(--ink-1);
+  cursor: pointer;
+}
+.adv-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex-shrink: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  background: var(--bg-app);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s;
+}
+.adv-checkbox input[type="checkbox"]:hover { border-color: var(--line-strong); }
+.adv-checkbox input[type="checkbox"]:checked {
+  background: var(--forest);
+  border-color: var(--forest-deep);
+}
+.adv-checkbox input[type="checkbox"]:checked::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid var(--surface);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.adv-checkbox input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
 .adv-clear {
   margin-top: 2px;
   display: flex;
@@ -2262,6 +2303,7 @@ html, body {
   flex-direction: column;
 }
 .modal.wide { width: 760px; }
+.modal.generate-history-modal { width: 90%; max-width: 1400px; }
 .modal-body.scroll { overflow-y: auto; flex: 1; min-height: 0; }
 
 /* Browse-existing-sources slide-in panel (overlays the source form) */

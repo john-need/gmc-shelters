@@ -19,7 +19,7 @@ const noopApi: ElectronAPI = {
   architectures: { getAll: noop, create: noop, update: noop, delete: noop },
   shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop },
   photos: { getByShelter: noop, update: noop, delete: noop, move: noop, setDefault: noop, reorder: noop, upload: noop, readMetadata: noop, export: noop, readFileMetadata: noop, writeFileMetadata: noop, reconcileScan: noop, reconcileApply: noop },
-  history: { read: noopHistoryRead, write: noop },
+  history: { read: noopHistoryRead, write: noop, generate: () => Promise.resolve({ ok: false, error: 'no_api_key' }) },
   sources: { getByShelter: noop, getAll: noop, create: noop, update: noop, delete: noop, cleanUpQuote: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   export: { build: noop },
