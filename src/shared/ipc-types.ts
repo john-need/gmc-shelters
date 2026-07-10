@@ -84,6 +84,7 @@ export const CHANNELS = {
   COLLECTIONS_DELETE_FILE: 'collections:deleteFile',
   COLLECTIONS_DELETE: 'collections:delete',
   RESEARCH_WEB_SEARCH: 'research:webSearch',
+  HISTORY_GENERATE: 'history:generate',
 } as const;
 
 export interface CollectionFileStatus {
@@ -543,6 +544,33 @@ export type WebSearchResponse =
   | { ok: true; results: WebResearchResult[] }
   | { ok: false; error: WebResearchError };
 
+export interface GenerateHistoryShelterFacts {
+  name: string;
+  architecture: string;
+  built_by: string;
+  description: string;
+  notes: string;
+  start_year: number;
+  end_year: number | null;
+  is_extant: boolean;
+  is_gmc: boolean;
+  category: string;
+}
+
+export interface GenerateHistoryRequest {
+  shelter: GenerateHistoryShelterFacts;
+  /** Already filtered to include_in_history === true by the caller. */
+  citations: Source[];
+  /** Already stripped of the mechanical ### Sources section by the caller. */
+  currentHistory: string;
+}
+
+export type GenerateHistoryError = 'no_api_key' | 'network' | 'timeout';
+
+export type GenerateHistoryResponse =
+  | { ok: true; narrative: string }
+  | { ok: false; error: GenerateHistoryError };
+
 export interface ElectronAPI {
   architectures: {
     getAll: () => Promise<Architecture[]>;
@@ -582,6 +610,7 @@ export interface ElectronAPI {
   history: {
     read: (historyRelPath: string, sheltersRoot: string) => Promise<HistoryReadResult>;
     write: (historyRelPath: string, content: string, sheltersRoot: string) => Promise<void>;
+    generate: (request: GenerateHistoryRequest) => Promise<GenerateHistoryResponse>;
   };
   sources: {
     getByShelter: (shelterId: number) => Promise<Source[]>;

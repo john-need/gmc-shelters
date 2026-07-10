@@ -1,77 +1,15 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setHistoryContent, saveHistory, setShelterHistoryThunk, loadHistory } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
+import { loadApiKey, selectHasValidApiKey } from '../../../store/aiSettingsSlice';
 import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
 import { loadHistoryViewMode, saveHistoryViewMode, type HistoryViewMode } from '../../../historyViewSettings';
-
-function inline(s: string): string {
-  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
-  s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  return s;
-}
-
-function renderMarkdown(src: string): string {
-  if (!src) return '';
-  const lines = src.split('\n');
-  const out: string[] = [];
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    let m: RegExpMatchArray | null;
-
-    if ((m = line.match(/^(#{1,3})\s+(.+)$/))) {
-      const lvl = m[1].length;
-      out.push(`<h${lvl}>${inline(m[2])}</h${lvl}>`);
-      i++; continue;
-    }
-    if (line.match(/^---+$/)) { out.push('<hr/>'); i++; continue; }
-    if (line.match(/^>\s*/)) {
-      const block: string[] = [];
-      while (i < lines.length && lines[i].match(/^>\s*/)) {
-        block.push(lines[i].replace(/^>\s?/, ''));
-        i++;
-      }
-      out.push('<blockquote><p>' + inline(block.join(' ')) + '</p></blockquote>');
-      continue;
-    }
-    if (line.match(/^[-*]\s+/)) {
-      const items: string[] = [];
-      while (i < lines.length && lines[i].match(/^[-*]\s+/)) {
-        items.push('<li>' + inline(lines[i].replace(/^[-*]\s+/, '')) + '</li>');
-        i++;
-      }
-      out.push('<ul>' + items.join('') + '</ul>');
-      continue;
-    }
-    if (line.match(/^\d+\.\s+/)) {
-      const items: string[] = [];
-      while (i < lines.length && lines[i].match(/^\d+\.\s+/)) {
-        items.push('<li>' + inline(lines[i].replace(/^\d+\.\s+/, '')) + '</li>');
-        i++;
-      }
-      out.push('<ol>' + items.join('') + '</ol>');
-      continue;
-    }
-    if (line.trim() === '') { i++; continue; }
-    const para = [line];
-    i++;
-    while (
-      i < lines.length &&
-      lines[i].trim() !== '' &&
-      !lines[i].match(/^(#{1,3}\s|>\s|---+|[-*]\s|\d+\.\s)/)
-    ) {
-      para.push(lines[i]); i++;
-    }
-    out.push('<p>' + inline(para.join(' ')) + '</p>');
-  }
-  return out.join('\n');
-}
+import { stripSourcesSection, assembleAcceptedHistory } from '../../../../shared/generate-history';
+import type { GenerateHistoryError, GenerateHistoryRequest } from '../../../../shared/ipc-types';
+import { renderMarkdown } from '../../../markdown';
+import GenerateHistoryModal from './GenerateHistoryModal';
 
 export default function HistoryTab() {
   const dispatch = useDispatch<AppDispatch>();
@@ -79,13 +17,69 @@ export default function HistoryTab() {
   const value = useSelector((state: RootState) => state.shelters.historyContent);
   const dirty = useSelector((state: RootState) => state.shelters.historyDirty);
   const missing = useSelector((state: RootState) => state.shelters.historyMissing);
+  const selectedId = useSelector((state: RootState) => state.shelters.selectedId);
+  const sourcesForShelter = useSelector((state: RootState) => (s ? state.sources.byShelter[s.id] : undefined)) ?? [];
+  const hasValidApiKey = useSelector(selectHasValidApiKey);
   const ref = useRef<HTMLTextAreaElement>(null);
   const [browsingPath, setBrowsingPath] = useState(false);
   const [viewMode, setViewMode] = useState<HistoryViewMode>(loadHistoryViewMode);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [draftNarrative, setDraftNarrative] = useState<string | null>(null);
+  const selectedIdRef = useRef(selectedId);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    dispatch(loadApiKey());
+  }, [dispatch]);
 
   const changeViewMode = (mode: HistoryViewMode) => {
     setViewMode(mode);
     saveHistoryViewMode(mode);
+  };
+
+  const generateErrorMessage = (error: GenerateHistoryError): string => (
+    error === 'no_api_key'
+      ? 'No Anthropic API key configured — add one in Settings → AI Settings.'
+      : 'Generate History failed — try again.'
+  );
+
+  const handleGenerateHistory = async () => {
+    if (!s || generating) return;
+    const targetShelterId = s.id;
+    setGenerating(true);
+    setGenerateError(null);
+    const request: GenerateHistoryRequest = {
+      shelter: {
+        name: s.name,
+        architecture: s.architecture,
+        built_by: s.built_by,
+        description: s.description,
+        notes: s.notes,
+        start_year: s.start_year,
+        end_year: s.end_year,
+        is_extant: s.is_extant,
+        is_gmc: s.is_gmc,
+        category: s.category,
+      },
+      citations: sourcesForShelter.filter((src) => src.include_in_history),
+      currentHistory: stripSourcesSection(value),
+    };
+    try {
+      const result = await window.api.history.generate(request);
+      if (selectedIdRef.current === targetShelterId) {
+        if (result.ok) {
+          setDraftNarrative(result.narrative);
+        } else {
+          setGenerateError(generateErrorMessage(result.error));
+        }
+      }
+    } finally {
+      setGenerating(false);
+    }
   };
 
   if (!s) return null;
@@ -228,6 +222,15 @@ export default function HistoryTab() {
           ))}
         </div>
 
+        <button
+          className="btn sm"
+          title={hasValidApiKey ? 'Generate History' : 'Generate History (requires AI API key)'}
+          disabled={!hasValidApiKey || generating}
+          onClick={handleGenerateHistory}
+        >
+          {generating ? 'Generating…' : 'Generate History'}
+        </button>
+
         <span className="md-tool-label">
           {dirty ? (
             <>
@@ -244,6 +247,12 @@ export default function HistoryTab() {
           )}
         </span>
       </div>
+
+      {generateError && (
+        <div role="alert" style={{ padding: '4px 12px', color: 'var(--rust)', fontSize: 12 }}>
+          {generateError}
+        </div>
+      )}
 
       <div className={`md-split mode-${viewMode}`}>
         <div className="md-pane md-pane--source" aria-hidden={viewMode === 'preview'}>
@@ -301,6 +310,24 @@ export default function HistoryTab() {
           {' '}Save file
         </button>
       </div>
+
+      {draftNarrative !== null && (
+        <GenerateHistoryModal
+          shelterName={s.name}
+          narrative={draftNarrative}
+          citations={sourcesForShelter.filter((src) => src.include_in_history)}
+          onAccept={() => {
+            dispatch(setHistoryContent(
+              assembleAcceptedHistory(s.name, draftNarrative, sourcesForShelter.filter((src) => src.include_in_history)),
+            ));
+            setDraftNarrative(null);
+          }}
+          onReject={() => {
+            setDraftNarrative(null);
+            setGenerateError(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -70,4 +70,17 @@ describe('preload contextBridge', () => {
     await api.research.webSearch('Aeolus View Camp', 'Shelter: Aeolus View Camp');
     expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.RESEARCH_WEB_SEARCH, 'Aeolus View Camp', 'Shelter: Aeolus View Camp');
   });
+
+  it('history.generate is exposed as a function that invokes CHANNELS.HISTORY_GENERATE with the given request', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { history: { generate: (request: unknown) => Promise<unknown> } }];
+
+    expect(typeof api.history.generate).toBe('function');
+    const req = { shelter: { name: 'Aeolus View Camp' }, citations: [], currentHistory: '' };
+    await api.history.generate(req);
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE, req);
+  });
 });

@@ -7,7 +7,7 @@ import architecturesReducer from '../../../store/architecturesSlice';
 import categoriesReducer from '../../../store/categoriesSlice';
 import uiReducer, { type UiState } from '../../../store/uiSlice';
 import ShelterTab from './ShelterTab';
-import type { Photo, Shelter } from '../../../../shared/ipc-types';
+import type { Architecture, Photo, Shelter } from '../../../../shared/ipc-types';
 
 function makeShelter(overrides: Partial<Shelter> = {}): Shelter {
   return {
@@ -52,7 +52,13 @@ function makePhoto(overrides: Partial<Photo> = {}): Photo {
   };
 }
 
-function makeStore(shelter: Shelter, photos: Photo[] = []) {
+function makeArchitecture(overrides: Partial<Architecture> = {}): Architecture {
+  return {
+    id: 1, name: 'Adirondack', description: '', created: '2020-01-01', updated: '2020-01-02', ...overrides,
+  };
+}
+
+function makeStore(shelter: Shelter, photos: Photo[] = [], architectures: Architecture[] = []) {
   return configureStore({
     reducer: {
       shelters: sheltersReducer,
@@ -80,7 +86,7 @@ function makeStore(shelter: Shelter, photos: Photo[] = []) {
         loading: false,
         uploading: false,
       },
-      architectures: { list: [], loading: false, error: null },
+      architectures: { list: architectures, loading: false, error: null },
       categories: { list: [], loading: false, error: null },
       ui: {
         sidebarCollapsed: false,
@@ -186,6 +192,38 @@ describe('ShelterTab', () => {
 
     expect(screen.getByText(/no default photo selected/i)).toBeInTheDocument();
     expect(screen.getByText(/pick a lead image in the photos tab/i)).toBeInTheDocument();
+  });
+
+  it('shows "---" in the Architecture dropdown when the shelter has no architecture set, rather than defaulting to the first option', async () => {
+    const shelter = makeShelter({ architecture: '' });
+    const architectures = [makeArchitecture({ id: 1, name: 'Adirondack' }), makeArchitecture({ id: 2, name: 'Lean-to' })];
+    const store = makeStore(shelter, [], architectures);
+
+    render(
+      <Provider store={store}>
+        <ShelterTab />
+      </Provider>,
+    );
+
+    await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+    expect(screen.getByRole('combobox', { name: 'Architecture' })).toHaveValue('');
+  });
+
+  it('shows the shelter\'s architecture selected in the dropdown when one is set', async () => {
+    const shelter = makeShelter({ architecture: 'Lean-to' });
+    const architectures = [makeArchitecture({ id: 1, name: 'Adirondack' }), makeArchitecture({ id: 2, name: 'Lean-to' })];
+    const store = makeStore(shelter, [], architectures);
+
+    render(
+      <Provider store={store}>
+        <ShelterTab />
+      </Provider>,
+    );
+
+    await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+    expect(screen.getByRole('combobox', { name: 'Architecture' })).toHaveValue('Lean-to');
   });
 
   it('reverts edited fields back to the selected shelter state', async () => {

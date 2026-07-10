@@ -1,5 +1,5 @@
-import reducer, { setQuery, setResults, setExcludedCollections, resetResearch } from './researchSlice';
-import type { WikiSearchResult } from '../../shared/ipc-types';
+import reducer, { setQuery, setResults, setExcludedCollections, setWebPhase, setWebResults, resetResearch } from './researchSlice';
+import type { WebResearchResult, WikiSearchResult } from '../../shared/ipc-types';
 
 const HIT: WikiSearchResult = {
   path: 'a.md', okf_type: 'Newsletter', title: 'Long Trail News',
@@ -9,9 +9,11 @@ const HIT: WikiSearchResult = {
 };
 
 describe('researchSlice', () => {
-  it('starts with empty query, results, and no excluded collections', () => {
+  it('starts with empty query, results, no excluded collections, and idle web search state', () => {
     const state = reducer(undefined, { type: '@@INIT' });
-    expect(state).toEqual({ query: '', results: [], excludedCollections: [] });
+    expect(state).toEqual({
+      query: '', results: [], excludedCollections: [], webPhase: 'idle', webResults: [],
+    });
   });
 
   it('setQuery updates the query text', () => {
@@ -24,12 +26,28 @@ describe('researchSlice', () => {
     expect(state.results).toEqual([HIT]);
   });
 
-  it('resetResearch clears query and results but keeps excludedCollections', () => {
+  it('setWebPhase updates the web search phase', () => {
+    const state = reducer(undefined, setWebPhase('loading'));
+    expect(state.webPhase).toBe('loading');
+  });
+
+  it('setWebResults updates the web results list', () => {
+    const webHit: WebResearchResult = { title: 'NOAA Almanac', url: 'https://example.com/a', snippet: 'a snippet', localImagePath: null };
+    const state = reducer(undefined, setWebResults([webHit]));
+    expect(state.webResults).toEqual([webHit]);
+  });
+
+  it('resetResearch clears query, results, webPhase, and webResults but keeps excludedCollections', () => {
+    const webHit: WebResearchResult = { title: 'NOAA Almanac', url: 'https://example.com/a', snippet: 'a snippet', localImagePath: null };
     let state = reducer(undefined, setQuery('Monroe'));
     state = reducer(state, setResults([HIT]));
     state = reducer(state, setExcludedCollections(['1922']));
+    state = reducer(state, setWebPhase('success'));
+    state = reducer(state, setWebResults([webHit]));
     state = reducer(state, resetResearch());
-    expect(state).toEqual({ query: '', results: [], excludedCollections: ['1922'] });
+    expect(state).toEqual({
+      query: '', results: [], excludedCollections: ['1922'], webPhase: 'idle', webResults: [],
+    });
   });
 
   it('setExcludedCollections updates which collections are excluded', () => {

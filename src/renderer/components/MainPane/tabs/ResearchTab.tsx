@@ -6,7 +6,7 @@ import { wikiResultToSource, stripMarks } from '@shared/wiki-cite';
 import { webResultToSource } from '@shared/web-research-cite';
 import { createSource } from '../../../store/sourcesSlice';
 import { showToast } from '../../../store/uiSlice';
-import { setQuery, setResults, setExcludedCollections } from '../../../store/researchSlice';
+import { setQuery, setResults, setExcludedCollections, setWebPhase, setWebResults } from '../../../store/researchSlice';
 import { BLANK_SOURCE, SOURCE_TYPES, SOURCE_GLYPH } from './sourceTypes';
 import SourceModal from './SourceModal';
 import QuoteBlock from './QuoteBlock';
@@ -44,6 +44,8 @@ export default function ResearchTab() {
   const query = useSelector((state: RootState) => state.research.query);
   const results = useSelector((state: RootState) => state.research.results);
   const excludedCollections = useSelector((state: RootState) => state.research.excludedCollections);
+  const webPhase = useSelector((state: RootState) => state.research.webPhase);
+  const webResults = useSelector((state: RootState) => state.research.webResults);
 
   const [loading, setLoading] = useState(false);
   const [noIndex, setNoIndex] = useState(false);
@@ -51,9 +53,6 @@ export default function ResearchTab() {
   const [creating, setCreating] = useState(false);
   const [collectionNames, setCollectionNames] = useState<string[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
-
-  const [webPhase, setWebPhase] = useState<'idle' | 'loading' | 'success' | 'empty' | 'no_api_key' | 'error'>('idle');
-  const [webResults, setWebResults] = useState<WebResearchResult[]>([]);
   const [resultTab, setResultTab] = useState<'collections' | 'web'>('collections');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -104,17 +103,17 @@ export default function ResearchTab() {
     const q = query.trim();
     if (!q || webPhase === 'loading') return;
     setResultTab('web');
-    setWebPhase('loading');
+    dispatch(setWebPhase('loading'));
 
     const res = await window.api.research.webSearch(q, buildResearchContext(s, results));
 
     if (!res.ok) {
-      setWebPhase(res.error === 'no_api_key' ? 'no_api_key' : 'error');
-      setWebResults([]);
+      dispatch(setWebPhase(res.error === 'no_api_key' ? 'no_api_key' : 'error'));
+      dispatch(setWebResults([]));
       return;
     }
-    setWebResults(res.results);
-    setWebPhase(res.results.length ? 'success' : 'empty');
+    dispatch(setWebResults(res.results));
+    dispatch(setWebPhase(res.results.length ? 'success' : 'empty'));
   }
 
   function openCitation(result: WikiSearchResult) {
@@ -385,7 +384,13 @@ function WebResultCard({ result, onAdd }: { result: WebResearchResult; onAdd: ()
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="source-header" style={{ marginBottom: 2 }}>
-            <a className="source-title" href={result.url} target="_blank" rel="noreferrer">{result.title}</a>
+            <a
+              className="source-title"
+              href={result.url}
+              onClick={(e) => { e.preventDefault(); window.api.shell.openExternal(result.url); }}
+            >
+              {result.title}
+            </a>
           </div>
           {result.snippet && <div style={{ fontSize: 12.5, marginTop: 2 }}>{result.snippet}</div>}
         </div>

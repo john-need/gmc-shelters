@@ -367,7 +367,8 @@ function ShelterFormSections({ s, f, archList, catList, photoCount, photoSummary
       <div className="field-grid">
         <div className="field">
           <label className="label">Architecture</label>
-          <select className="select" value={s.architecture} onChange={f('architecture')}>
+          <select className="select" aria-label="Architecture" value={s.architecture} onChange={f('architecture')}>
+            <option value="">---</option>
             {s.architecture && !archList.some((a) => a.name === s.architecture) && (
               <option value={s.architecture}>{s.architecture}</option>
             )}
