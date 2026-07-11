@@ -182,12 +182,11 @@ describe('ResearchTab', () => {
     expect(screen.getByText(/monroe lodge/i)).toBeInTheDocument();
   });
 
-  it('opens the source PDF at the hit page', async () => {
+  it('opens the source PDF in the OS default viewer, noting the hit page in the button title', async () => {
     await renderWithResults([PAGE_HIT]);
-    fireEvent.click(await screen.findByRole('button', { name: /open pdf at page 2/i }));
-    expect(window.api.wiki.openPdf).toHaveBeenCalledWith(
-      'collections/long-trail-news/1922_12_Dec.pdf', 2,
-    );
+    const button = await screen.findByRole('button', { name: /open pdf.*page 2/i });
+    fireEvent.click(button);
+    expect(window.api.wiki.openPdf).toHaveBeenCalledWith('collections/long-trail-news/1922_12_Dec.pdf');
   });
 
   it('labels illustration hits as photos', async () => {
@@ -217,7 +216,7 @@ describe('ResearchTab', () => {
   it('shows an inline error when the PDF is missing on disk', async () => {
     (window.api.wiki.openPdf as jest.Mock).mockResolvedValue({ ok: false });
     await renderWithResults([PAGE_HIT]);
-    fireEvent.click(await screen.findByRole('button', { name: /open pdf at page 2/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /open pdf.*page 2/i }));
     expect(await screen.findByText(/pdf.*not found/i)).toBeInTheDocument();
   });
 

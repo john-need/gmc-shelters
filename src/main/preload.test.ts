@@ -59,6 +59,18 @@ describe('preload contextBridge', () => {
     expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.PHOTOS_MOVE, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
   });
 
+  it('photos.openFolder forwards to CHANNELS.PHOTOS_OPEN_FOLDER with slug and sheltersRoot', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { photos: { openFolder: (slug: string, sheltersRoot: string) => Promise<unknown> } }];
+
+    expect(typeof api.photos.openFolder).toBe('function');
+    await api.photos.openFolder('test-shelter', '/base/shelters');
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.PHOTOS_OPEN_FOLDER, { slug: 'test-shelter', sheltersRoot: '/base/shelters' });
+  });
+
   it('research.webSearch is exposed as a function that invokes CHANNELS.RESEARCH_WEB_SEARCH with the query and an optional context', async () => {
     const { contextBridge, ipcRenderer } = await import('electron');
     const { CHANNELS } = await import('@shared/ipc-types');

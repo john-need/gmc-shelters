@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { ipcMain, app, dialog, BrowserWindow } from 'electron';
+import { ipcMain, app, dialog, shell, BrowserWindow } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, movePhotoToShelter, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
-import { copyPhotoToShelter, deletePhotoFile, movePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
+import { copyPhotoToShelter, deletePhotoFile, movePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, photosDirForSlug, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
 import { purgeThumbnailsForSource, scanThumbnails, applyThumbnailScan } from '../fs/thumbnails';
 import type { PhotoMoveInput, PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
@@ -35,6 +35,16 @@ export function registerPhotoHandlers(): void {
     CHANNELS.PHOTOS_READ_METADATA,
     (_e, { slug, fileName, sheltersRoot }: { slug: string; fileName: string; sheltersRoot: string }) =>
       readPhotoXmp(slug, fileName, sheltersRoot),
+  );
+
+  ipcMain.handle(
+    CHANNELS.PHOTOS_OPEN_FOLDER,
+    async (_e, { slug, sheltersRoot }: { slug: string; sheltersRoot: string }): Promise<{ ok: boolean }> => {
+      const dir = photosDirForSlug(slug, sheltersRoot);
+      // shell.openPath resolves '' on success, an error message string on failure (e.g. missing folder)
+      const error = await shell.openPath(dir);
+      return { ok: error === '' };
+    },
   );
 
   ipcMain.handle(

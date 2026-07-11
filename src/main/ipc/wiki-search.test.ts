@@ -12,6 +12,7 @@ type ElectronMock = {
   ipcMain: { handle: jest.Mock };
   app: { getAppPath: jest.Mock };
   BrowserWindow: { instances: Array<{ loadURL: jest.Mock }> };
+  shell: { openPath: jest.Mock };
 };
 
 function buildFixtureDb(dir: string) {
@@ -76,6 +77,7 @@ describe('ipc/wiki-search', () => {
     electron = require('electron') as ElectronMock;
     electron.app.getAppPath.mockReturnValue(tmpDir);
     electron.BrowserWindow.instances.length = 0;
+    electron.shell.openPath.mockReset().mockResolvedValue('');
   });
 
   afterEach(() => {
@@ -210,36 +212,43 @@ describe('ipc/wiki-search', () => {
     expect(await handler(null, 'Monroe Lodge', [])).toEqual([]);
   });
 
-  it('WIKI_OPEN_PDF opens a window at the requested page', async () => {
+  it('WIKI_OPEN_PDF opens the PDF in the OS default viewer', async () => {
     register();
     const pdfPath = path.join(tmpDir, 'collections', 'long-trail-news', '1922_12_Dec.pdf');
     fs.mkdirSync(path.dirname(pdfPath), { recursive: true });
     fs.writeFileSync(pdfPath, 'fake pdf bytes');
     const handler = getHandler(CHANNELS.WIKI_OPEN_PDF);
-    const result = await handler(null, { resource: 'collections/long-trail-news/1922_12_Dec.pdf', page: 3 });
+    const result = await handler(null, { resource: 'collections/long-trail-news/1922_12_Dec.pdf' });
     expect(result).toEqual({ ok: true });
-    const instances = electron.BrowserWindow.instances;
-    expect(instances).toHaveLength(1);
-    const url = instances[0].loadURL.mock.calls[0][0] as string;
-    expect(url).toMatch(/^file:\/\//);
-    expect(url).toContain('1922_12_Dec.pdf#page=3');
+    expect(electron.shell.openPath).toHaveBeenCalledWith(pdfPath);
+    expect(electron.BrowserWindow.instances).toHaveLength(0);
   });
 
-  it('WIKI_OPEN_PDF returns ok:false and opens no window when the PDF is missing on disk', async () => {
+  it('WIKI_OPEN_PDF returns ok:false and never calls shell.openPath when the PDF is missing on disk', async () => {
     register();
     const handler = getHandler(CHANNELS.WIKI_OPEN_PDF);
-    const result = await handler(null, { resource: 'collections/long-trail-news/does-not-exist.pdf', page: 1 });
+    const result = await handler(null, { resource: 'collections/long-trail-news/does-not-exist.pdf' });
     expect(result).toEqual({ ok: false });
-    expect(electron.BrowserWindow.instances).toHaveLength(0);
+    expect(electron.shell.openPath).not.toHaveBeenCalled();
   });
 
   it('WIKI_OPEN_PDF rejects paths outside the collections folder', async () => {
     register();
     const handler = getHandler(CHANNELS.WIKI_OPEN_PDF);
-    const result = await handler(null, { resource: '../../etc/passwd', page: 1 });
+    const result = await handler(null, { resource: '../../etc/passwd' });
     expect(result).toEqual({ ok: false });
-    const instances = electron.BrowserWindow.instances;
-    expect(instances).toHaveLength(0);
+    expect(electron.shell.openPath).not.toHaveBeenCalled();
+  });
+
+  it('WIKI_OPEN_PDF returns ok:false when shell.openPath reports an error (e.g. no registered app)', async () => {
+    register();
+    const pdfPath = path.join(tmpDir, 'collections', 'long-trail-news', '1922_12_Dec.pdf');
+    fs.mkdirSync(path.dirname(pdfPath), { recursive: true });
+    fs.writeFileSync(pdfPath, 'fake pdf bytes');
+    electron.shell.openPath.mockResolvedValue('No application is associated with the specified file');
+    const handler = getHandler(CHANNELS.WIKI_OPEN_PDF);
+    const result = await handler(null, { resource: 'collections/long-trail-news/1922_12_Dec.pdf' });
+    expect(result).toEqual({ ok: false });
   });
 
   it('WIKI_INDEX_REPORT reads the last build report', async () => {

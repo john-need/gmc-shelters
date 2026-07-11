@@ -61,6 +61,7 @@ const Menu = {
 
 const shell = {
   openExternal: jest.fn().mockResolvedValue(undefined),
+  openPath: jest.fn().mockResolvedValue(''),
 };
 
 const dialog = {

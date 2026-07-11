@@ -7,6 +7,7 @@ import sheltersReducer, {
   loadHistory,
   saveHistory,
   saveShelter,
+  createShelter,
 } from './sheltersSlice';
 import type { SheltersState } from './sheltersSlice';
 import type { Shelter } from '../../shared/ipc-types';
@@ -161,5 +162,30 @@ describe('sheltersSlice', () => {
     expect(state.historyOriginal).toBe('# New');
     expect(state.historyDirty).toBe(false);
     expect(state.historyMissing).toBe(false);
+  });
+
+  it('createShelter.fulfilled inserts the new shelter alphabetically, not appended at the end', () => {
+    const alpha = { ...mockShelter, id: 1, name: 'Alpha Camp' };
+    const zulu = { ...mockShelter, id: 2, name: 'Zulu Camp' };
+    const monroe = { ...mockShelter, id: 3, name: 'Monroe Lodge' };
+
+    const state = sheltersReducer(
+      { ...initial, list: [alpha, zulu] },
+      { type: createShelter.fulfilled.type, payload: monroe },
+    );
+
+    expect(state.list.map((s) => s.name)).toEqual(['Alpha Camp', 'Monroe Lodge', 'Zulu Camp']);
+  });
+
+  it('createShelter.fulfilled inserts before all existing shelters when it sorts first', () => {
+    const monroe = { ...mockShelter, id: 1, name: 'Monroe Lodge' };
+    const aardvark = { ...mockShelter, id: 2, name: 'Aardvark Camp' };
+
+    const state = sheltersReducer(
+      { ...initial, list: [monroe] },
+      { type: createShelter.fulfilled.type, payload: aardvark },
+    );
+
+    expect(state.list.map((s) => s.name)).toEqual(['Aardvark Camp', 'Monroe Lodge']);
   });
 });

@@ -6,7 +6,7 @@ jest.mock('../fs/thumbnails');
 jest.mock('../db/connection');
 jest.mock('fs/promises');
 
-import { ipcMain, dialog, BrowserWindow } from 'electron';
+import { ipcMain, dialog, BrowserWindow, shell } from 'electron';
 import * as fsp from 'fs/promises';
 import * as dbPhotos from '../db/photos';
 import * as dbShelters from '../db/shelters';
@@ -616,6 +616,29 @@ describe('ipc/photos', () => {
       const result = await scanHandler(null, { shelterId: 1, sheltersRoot: '/shelters' });
 
       expect(result.untrackedFiles).toHaveLength(0);
+    });
+  });
+
+  describe('PHOTOS_OPEN_FOLDER', () => {
+    it('opens the shelter photos folder in the OS file manager', async () => {
+      (fsPhotos.photosDirForSlug as jest.Mock).mockReturnValue('/base/shelters/test-shelter/photos');
+      const handler = getHandler<{ ok: boolean }>(CHANNELS.PHOTOS_OPEN_FOLDER);
+
+      const result = await handler(null, { slug: 'test-shelter', sheltersRoot: '/base/shelters' });
+
+      expect(fsPhotos.photosDirForSlug).toHaveBeenCalledWith('test-shelter', '/base/shelters');
+      expect(shell.openPath).toHaveBeenCalledWith('/base/shelters/test-shelter/photos');
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('returns ok:false when the folder cannot be opened (e.g. missing on disk)', async () => {
+      (fsPhotos.photosDirForSlug as jest.Mock).mockReturnValue('/base/shelters/test-shelter/photos');
+      (shell.openPath as jest.Mock).mockResolvedValue('Path does not exist');
+      const handler = getHandler<{ ok: boolean }>(CHANNELS.PHOTOS_OPEN_FOLDER);
+
+      const result = await handler(null, { slug: 'test-shelter', sheltersRoot: '/base/shelters' });
+
+      expect(result).toEqual({ ok: false });
     });
   });
 });

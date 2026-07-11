@@ -395,7 +395,7 @@ function CollectionsCard({onOpenAiSettings}: {onOpenAiSettings?: () => void}) {
                                                 className="btn icon sm"
                                                 title="Open PDF"
                                                 onClick={async () => {
-                                                    const {ok} = await window.api.wiki.openPdf(p, 1);
+                                                    const {ok} = await window.api.wiki.openPdf(p);
                                                     if (!ok) setSummary(`PDF not found — ${p} is missing on disk.`);
                                                 }}
                                             >

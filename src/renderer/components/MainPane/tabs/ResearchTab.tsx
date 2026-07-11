@@ -350,9 +350,9 @@ function ResultCard({ result, onAdd }: { result: WikiSearchResult; onAdd: () => 
           <button
             type="button"
             className="btn icon sm"
-            title={`Open PDF at page ${result.page || 1}`}
+            title={`Open PDF (page ${result.page || 1})`}
             onClick={async () => {
-              const { ok } = await window.api.wiki.openPdf(result.resource, result.page || 1);
+              const { ok } = await window.api.wiki.openPdf(result.resource);
               setPdfMissing(!ok);
             }}
           >

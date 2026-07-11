@@ -49,6 +49,7 @@ const mockApi: ElectronAPI = {
     writeFileMetadata: noop,
     reconcileScan: jest.fn().mockResolvedValue({ untrackedFiles: [], orphanedRecords: [] }),
     reconcileApply: jest.fn().mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [] }),
+    openFolder: jest.fn().mockResolvedValue({ ok: true }),
   },
   history: {
     read: jest.fn().mockResolvedValue(defaultHistoryRead),

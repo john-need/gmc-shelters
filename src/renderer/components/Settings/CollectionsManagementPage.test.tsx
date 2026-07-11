@@ -119,7 +119,7 @@ describe('CollectionsManagementPage', () => {
     const row = (await screen.findByText('b_raw.pdf')).closest('div')!;
     fireEvent.click(within(row).getByRole('button', { name: /open pdf/i }));
     await waitFor(() => {
-      expect(window.api.wiki.openPdf).toHaveBeenCalledWith('collections/long-trail-news/b_raw.pdf', 1);
+      expect(window.api.wiki.openPdf).toHaveBeenCalledWith('collections/long-trail-news/b_raw.pdf');
     });
   });
 

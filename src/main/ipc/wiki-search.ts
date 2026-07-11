@@ -1,7 +1,6 @@
-import { ipcMain, app, BrowserWindow } from 'electron';
+import { ipcMain, app, shell } from 'electron';
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
 import type { WikiHeaderPayload, WikiIndexReport, WikiSaveHeaderResult, WikiSearchResult } from '../../shared/ipc-types';
 import { CHANNELS } from '../../shared/ipc-types';
 import { HEADER_PROPERTIES, validateHeader } from '../../shared/wiki-header-schema';
@@ -159,22 +158,18 @@ export function registerWikiSearchHandlers(): void {
 
   ipcMain.handle(
     CHANNELS.WIKI_OPEN_PDF,
-    (_e, { resource, page }: { resource: string; page: number }): { ok: boolean } => {
+    async (_e, { resource }: { resource: string }): Promise<{ ok: boolean }> => {
       const root = app.getAppPath();
       const pdfPath = path.resolve(root, resource);
       // resources always live under collections/ — reject anything else
       if (!pdfPath.startsWith(path.join(root, 'collections') + path.sep)) return { ok: false };
-      // stale search index entry (e.g. a since-renamed collection folder) — don't open a dead window
+      // stale search index entry (e.g. a since-renamed collection folder) — don't open a dead file
       if (!fs.existsSync(pdfPath)) return { ok: false };
 
-      // Electron's built-in Chromium PDF viewer honors #page=N
-      const win = new BrowserWindow({
-        width: 1000,
-        height: 850,
-        title: path.basename(pdfPath),
-      });
-      win.loadURL(`${pathToFileURL(pdfPath).href}#page=${Math.max(1, Math.floor(page) || 1)}`);
-      return { ok: true };
+      // shell.openPath resolves '' on success, an error message string on failure
+      // (e.g. no app registered for .pdf)
+      const error = await shell.openPath(pdfPath);
+      return { ok: error === '' };
     },
   );
 

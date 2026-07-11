@@ -313,6 +313,15 @@ export default function PhotosTab() {
             <span>{photos.length} photographs · {photos.filter((p) => p.include_in_post).length} published</span>
           </div>
           <div className="photos-toolbar-right">
+            <button
+              className="btn icon sm ghost"
+              title="Open photos folder"
+              onClick={() => window.api.photos.openFolder(s.slug, sheltersRoot)}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+              </svg>
+            </button>
             <button className="btn sm ghost" onClick={() => setReconcileOpen(true)}>Reconcile</button>
             <button className={`btn sm ${view === 'grid' ? '' : 'ghost'}`} onClick={() => setView('grid')}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

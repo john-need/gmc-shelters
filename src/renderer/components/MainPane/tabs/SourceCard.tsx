@@ -102,7 +102,7 @@ export default function SourceCard({
           title={resource ? 'View PDF' : s.url ? 'Open in browser' : 'No document or URL'}
           disabled={!resource && !s.url}
           onClick={() => {
-            if (resource) window.api?.wiki.openPdf(resource, parseInt(s.pages, 10) || 1);
+            if (resource) window.api?.wiki.openPdf(resource);
             else if (s.url) window.api?.shell.openExternal(s.url);
           }}
         >

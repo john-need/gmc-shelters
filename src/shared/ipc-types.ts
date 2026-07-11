@@ -35,6 +35,7 @@ export const CHANNELS = {
   PHOTOS_WRITE_FILE_METADATA: 'photos:writeFileMetadata',
   PHOTOS_RECONCILE_SCAN: 'photos:reconcileScan',
   PHOTOS_RECONCILE_APPLY: 'photos:reconcileApply',
+  PHOTOS_OPEN_FOLDER: 'photos:openFolder',
   HISTORY_READ: 'history:read',
   HISTORY_WRITE: 'history:write',
   SOURCES_GET_BY_SHELTER: 'sources:getByShelter',
@@ -606,6 +607,7 @@ export interface ElectronAPI {
     writeFileMetadata: (slug: string, fileName: string, sheltersRoot: string, tags: Record<string, string>) => Promise<void>;
     reconcileScan: (shelterId: number, sheltersRoot: string) => Promise<ReconcileScanResult>;
     reconcileApply: (input: ReconcileApplyInput) => Promise<ReconcileApplyResult>;
+    openFolder: (slug: string, sheltersRoot: string) => Promise<{ ok: boolean }>;
   };
   history: {
     read: (historyRelPath: string, sheltersRoot: string) => Promise<HistoryReadResult>;
@@ -640,7 +642,7 @@ export interface ElectronAPI {
   };
   wiki: {
     search: (query: string, collections?: string[]) => Promise<WikiSearchResult[]>;
-    openPdf: (resource: string, page: number) => Promise<{ ok: boolean }>;
+    openPdf: (resource: string) => Promise<{ ok: boolean }>;
     indexReport: () => Promise<WikiIndexReport | null>;
     getHeader: (resource: string) => Promise<WikiHeaderPayload | null>;
     saveHeader: (

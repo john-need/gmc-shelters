@@ -76,6 +76,7 @@ beforeEach(() => {
       export: jest.fn().mockResolvedValue(null),
       delete: jest.fn().mockResolvedValue(undefined),
       move: jest.fn().mockResolvedValue({ id: 1, shelter_id: 20, file_name: 'other-shelter/photos/test.jpg' }),
+      openFolder: jest.fn().mockResolvedValue({ ok: true }),
     },
   };
 });
@@ -91,6 +92,16 @@ describe('ReconcileModal (integration)', () => {
     const store = makeStore(makeShelter());
     render(<Provider store={store}><PhotosTab /></Provider>);
     expect(screen.getByRole('button', { name: /reconcile/i })).toBeInTheDocument();
+  });
+
+  it('renders an "Open photos folder" icon button that opens the shelter\'s photos folder', () => {
+    const shelter = makeShelter();
+    const store = makeStore(shelter);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+
+    fireEvent.click(screen.getByTitle('Open photos folder'));
+
+    expect(window.api.photos.openFolder).toHaveBeenCalledWith('test-shelter', 'shelters/');
   });
 
   it('opens modal and triggers scan when Reconcile button is clicked', async () => {

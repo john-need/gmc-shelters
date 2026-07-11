@@ -53,6 +53,8 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.PHOTOS_RECONCILE_SCAN, { shelterId, sheltersRoot }),
     reconcileApply: (input: ReconcileApplyInput) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_RECONCILE_APPLY, input),
+    openFolder: (slug: string, sheltersRoot: string): Promise<{ ok: boolean }> =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_OPEN_FOLDER, { slug, sheltersRoot }),
   },
   history: {
     read: (historyRelPath: string, sheltersRoot: string) =>
@@ -100,8 +102,8 @@ const api: ElectronAPI = {
   wiki: {
     search: (query: string, collections?: string[]): Promise<WikiSearchResult[]> =>
       ipcRenderer.invoke(CHANNELS.WIKI_SEARCH, query, collections),
-    openPdf: (resource: string, page: number): Promise<{ ok: boolean }> =>
-      ipcRenderer.invoke(CHANNELS.WIKI_OPEN_PDF, { resource, page }),
+    openPdf: (resource: string): Promise<{ ok: boolean }> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_OPEN_PDF, { resource }),
     indexReport: (): Promise<WikiIndexReport | null> =>
       ipcRenderer.invoke(CHANNELS.WIKI_INDEX_REPORT),
     getHeader: (resource: string): Promise<WikiHeaderPayload | null> =>

@@ -216,7 +216,8 @@ const sheltersSlice = createSlice({
         state.saving = false;
       })
       .addCase(createShelter.fulfilled, (state, action) => {
-        state.list.push(action.payload);
+        const insertAt = state.list.findIndex((s) => s.name.localeCompare(action.payload.name) > 0);
+        state.list.splice(insertAt === -1 ? state.list.length : insertAt, 0, action.payload);
         state.selectedId = action.payload.id;
         state.editBuffer = action.payload;
         state.dirty = false;

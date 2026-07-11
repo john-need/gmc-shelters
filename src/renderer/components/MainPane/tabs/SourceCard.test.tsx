@@ -171,7 +171,7 @@ describe('SourceCard', () => {
       pages: '5',
     })} {...baseProps} />);
     fireEvent.click(screen.getByTitle('View PDF'));
-    expect(openPdf).toHaveBeenCalledWith('collections/long-trail-news/1922.pdf', 5);
+    expect(openPdf).toHaveBeenCalledWith('collections/long-trail-news/1922.pdf');
   });
 
   describe('Clean up quote button', () => {
