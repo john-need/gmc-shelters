@@ -26,6 +26,7 @@ export const CHANNELS = {
   PHOTOS_UPDATE: 'photos:update',
   PHOTOS_DELETE: 'photos:delete',
   PHOTOS_MOVE: 'photos:move',
+  PHOTOS_MOVE_TO_UNIDENTIFIED: 'photos:moveToUnidentified',
   PHOTOS_SET_DEFAULT: 'photos:setDefault',
   PHOTOS_REORDER: 'photos:reorder',
   PHOTOS_UPLOAD: 'photos:upload',
@@ -429,6 +430,11 @@ export interface PhotoMoveInput {
   sheltersRoot: string;
 }
 
+export interface PhotoMoveToUnidentifiedInput {
+  photoId: number;
+  sheltersRoot: string;
+}
+
 export interface PhotoUploadInput {
   shelterId: number;
   sourcePath: string;
@@ -598,6 +604,7 @@ export interface ElectronAPI {
     update: (input: PhotoUpdateInput & { id: number; shelter_id: number; sheltersRoot: string }) => Promise<Photo>;
     delete: (id: number, sheltersRoot: string) => Promise<void>;
     move: (photoId: number, targetShelterId: number, sheltersRoot: string) => Promise<Photo>;
+    moveToUnidentified: (photoId: number, sheltersRoot: string) => Promise<void>;
     setDefault: (shelterId: number, photoId: number) => Promise<void>;
     reorder: (input: PhotoReorderInput) => Promise<void>;
     upload: (input: PhotoUploadInput) => Promise<Photo>;

@@ -75,6 +75,38 @@ export async function movePhotoFile(
   return `${targetSlug}/photos/${destName}`;
 }
 
+function unidentifiedShelterDir(): string {
+  return path.resolve(app.getAppPath(), 'unidentified-shelters');
+}
+
+export async function movePhotoFileToUnidentified(
+  sourceSlug: string,
+  fileName: string,
+  sheltersRoot: string,
+): Promise<string> {
+  const sourcePath = photoFilePath(sourceSlug, fileName, sheltersRoot);
+  const targetDir = unidentifiedShelterDir();
+  await fs.mkdir(targetDir, { recursive: true });
+
+  const basename = path.basename(sourcePath);
+  let destName = basename;
+  let dest = path.join(targetDir, destName);
+  try {
+    await fs.access(dest);
+    // Destination already has a file with this name — never overwrite it.
+    const ext = path.extname(basename);
+    const base = path.basename(basename, ext);
+    destName = `${base}-${Date.now()}${ext}`;
+    dest = path.join(targetDir, destName);
+  } catch {
+    // ENOENT means no collision — keep the original basename.
+  }
+
+  await fs.copyFile(sourcePath, dest);
+  log.info(`Photo moved to unidentified-shelters: ${sourcePath} → ${dest}`);
+  return dest;
+}
+
 export async function deletePhotoFile(slug: string, fileName: string, sheltersRoot: string): Promise<void> {
   const filePath = photoFilePath(slug, fileName, sheltersRoot);
   try {
@@ -168,7 +200,7 @@ export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot:
     return {
       title: getString(tags.Title),
       photographer: getString(tags.Creator),
-      date_taken: getString(tags.CreateDate || tags.DateCreated),
+      date_taken: getString(tags.CreateDate || tags.DateCreated || tags.DateTimeOriginal),
       caption: getString(tags.Description),
       alt_text: getString(tags.Headline),
       description: getString(tags.Subject),

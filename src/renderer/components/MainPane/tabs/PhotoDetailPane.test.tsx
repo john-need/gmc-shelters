@@ -80,21 +80,48 @@ describe('PhotoDetailPane', () => {
     expect(screen.getByText('hut.jpg')).toBeInTheDocument();
   });
 
-  it('Save Metadata button is disabled when not dirty', () => {
+  it('Save button is disabled when not dirty', () => {
     render(<PhotoDetailPane {...makeProps({ isMetadataDirty: false })} />);
-    expect(screen.getByRole('button', { name: /save metadata/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
   });
 
-  it('Save Metadata button is enabled when dirty', () => {
+  it('Save button is enabled when dirty', () => {
     render(<PhotoDetailPane {...makeProps({ isMetadataDirty: true })} />);
-    expect(screen.getByRole('button', { name: /save metadata/i })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /^save$/i })).not.toBeDisabled();
   });
 
-  it('calls onSaveMetadata when Save Metadata is clicked', () => {
+  it('calls onSaveMetadata when Save is clicked', () => {
     const onSaveMetadata = jest.fn();
     render(<PhotoDetailPane {...makeProps({ isMetadataDirty: true, onSaveMetadata })} />);
-    fireEvent.click(screen.getByRole('button', { name: /save metadata/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     expect(onSaveMetadata).toHaveBeenCalledTimes(1);
+  });
+
+  it('labels the sync-from-file button "Import"', () => {
+    render(<PhotoDetailPane {...makeProps()} />);
+    expect(screen.getByRole('button', { name: /^import$/i })).toBeInTheDocument();
+  });
+
+  it('renders a "Metadata" header above the action buttons', () => {
+    render(<PhotoDetailPane {...makeProps()} />);
+    expect(screen.getByText('Metadata')).toBeInTheDocument();
+  });
+
+  it('keeps the View / Save / Import buttons outside the scrollable fields area (static footer)', () => {
+    const { container } = render(<PhotoDetailPane {...makeProps()} />);
+    const fields = container.querySelector('.photo-fields');
+    const saveButton = screen.getByRole('button', { name: /^save$/i });
+    expect(fields?.contains(saveButton)).toBe(false);
+  });
+
+  it('View button lives in the static footer, labeled "View", and calls onOpenMetadata', () => {
+    const onOpenMetadata = jest.fn();
+    const { container } = render(<PhotoDetailPane {...makeProps({ onOpenMetadata })} />);
+    const viewButton = screen.getByRole('button', { name: /^view$/i });
+    const actions = container.querySelector('.photo-detail-actions');
+    expect(actions?.contains(viewButton)).toBe(true);
+    fireEvent.click(viewButton);
+    expect(onOpenMetadata).toHaveBeenCalledTimes(1);
   });
 
   it('calls onOpenEditor when the preview is clicked', () => {
@@ -126,13 +153,6 @@ describe('PhotoDetailPane', () => {
   it('enables the move button when canMove is true', () => {
     render(<PhotoDetailPane {...makeProps({ canMove: true })} />);
     expect(screen.getByTitle('Move to shelter')).not.toBeDisabled();
-  });
-
-  it('calls onOpenMetadata when metadata button is clicked', () => {
-    const onOpenMetadata = jest.fn();
-    render(<PhotoDetailPane {...makeProps({ onOpenMetadata })} />);
-    fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
-    expect(onOpenMetadata).toHaveBeenCalledTimes(1);
   });
 
   it('shows the ★ Default badge when isDefault is true', () => {

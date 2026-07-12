@@ -64,11 +64,6 @@ export default function PhotoDetailPane({
             </div>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button className="btn icon sm" aria-label="View photo metadata" title="View photo metadata" onClick={onOpenMetadata}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
-              </svg>
-            </button>
             <button className="btn icon sm" title="Set as default photo" onClick={onSetDefault}>
               {isDefault ? (
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -200,19 +195,28 @@ export default function PhotoDetailPane({
             <span>photo_id: {selected.id}</span>
             <span>shelter_id: {shelterId}</span>
           </div>
+        </div>
 
-          <div className="row-2" style={{ marginTop: 8 }}>
+        <div className="photo-detail-actions">
+          <div className="photo-detail-actions-head">Metadata</div>
+          <div className="photo-detail-actions-row">
+            <button className="btn ghost sm" onClick={onOpenMetadata}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+              </svg>
+              {' '}View
+            </button>
             <button className={`btn ${isMetadataDirty ? 'primary' : ''}`} onClick={onSaveMetadata} disabled={!isMetadataDirty}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>
               </svg>
-              {' '}Save Metadata
+              {' '}Save
             </button>
             <button className="btn ghost sm" title="Copy file metadata values into the editorial record" onClick={onImportMetadata}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>
               </svg>
-              {' '}Sync from File
+              {' '}Import
             </button>
           </div>
         </div>

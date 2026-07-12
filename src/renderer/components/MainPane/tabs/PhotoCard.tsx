@@ -74,14 +74,16 @@ export interface PhotoCardProps extends PhotoCardBodyProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   onOpenEditor: (id: number) => void;
+  onNavigate: (e: React.KeyboardEvent, id: number) => void;
 }
 
-export const PhotoCard = memo(function PhotoCard({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onToggleInclude, photoUrl }: PhotoCardProps) {
+export const PhotoCard = memo(function PhotoCard({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onNavigate, onToggleInclude, photoUrl }: PhotoCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id });
   return (
     <div
       ref={setNodeRef}
       data-testid={`photo-card-${p.id}`}
+      data-photo-id={p.id}
       className={`photo-card ${isSelected ? 'selected' : ''} ${isDefault ? 'default' : ''}`}
       onClick={() => onSelect(p.id)}
       onDoubleClick={() => onOpenEditor(p.id)}
@@ -93,6 +95,7 @@ export const PhotoCard = memo(function PhotoCard({ p, idx, isDefault, isSelected
       }}
       {...attributes}
       {...listeners}
+      onKeyDown={(e) => { onNavigate(e, p.id); listeners?.onKeyDown?.(e); }}
     >
       <PhotoCardBody p={p} idx={idx} isDefault={isDefault} onToggleInclude={onToggleInclude} photoUrl={photoUrl} />
     </div>

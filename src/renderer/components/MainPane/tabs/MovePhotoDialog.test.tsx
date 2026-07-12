@@ -53,4 +53,21 @@ describe('MovePhotoDialog', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  it('lists an "Unidentified" option alongside the real shelters', () => {
+    render(<MovePhotoDialog shelters={shelters} currentShelterId={1} onConfirm={jest.fn()} onCancel={jest.fn()} />);
+    expect(screen.getByText(/unidentified/i)).toBeInTheDocument();
+  });
+
+  it('selecting Unidentified and confirming calls onConfirm("unidentified")', () => {
+    const onConfirm = jest.fn();
+    render(<MovePhotoDialog shelters={shelters} currentShelterId={1} onConfirm={onConfirm} onCancel={jest.fn()} />);
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'unidentified' } });
+    const confirmButton = screen.getByRole('button', { name: /confirm move/i });
+    expect(confirmButton).not.toBeDisabled();
+
+    fireEvent.click(confirmButton);
+    expect(onConfirm).toHaveBeenCalledWith('unidentified');
+  });
 });

@@ -26,8 +26,8 @@ describe('webResultToSource', () => {
 
   it('leaves every other Source field at its BLANK_SOURCE default once merged the way the UI merges it', () => {
     const merged = { ...BLANK_SOURCE, ...webResultToSource(RESULT) };
-    const { type: _type, container_title: _ct, url: _url, access_date: _ad, quote: _q, ...rest } = merged;
-    const { type: _bt, container_title: _bct, url: _burl, access_date: _bad, quote: _bq, ...blankRest } = BLANK_SOURCE;
+    const { type: _, container_title: __, url: ___, access_date: ____, quote: _____, ...rest } = merged;
+    const { type: ______, container_title: _______, url: ________, access_date: _________, quote: __________, ...blankRest } = BLANK_SOURCE;
     expect(rest).toEqual(blankRest);
   });
 });

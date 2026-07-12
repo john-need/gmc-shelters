@@ -39,7 +39,7 @@ function photoItemProps(
   i: number,
   defaultPhotoId: number | null,
   selectedId: number | null,
-  handlers: Pick<PhotoCardProps, 'onSelect' | 'onOpenEditor' | 'onToggleInclude'>,
+  handlers: Pick<PhotoCardProps, 'onSelect' | 'onOpenEditor' | 'onToggleInclude' | 'onNavigate'>,
   repoRoot: string,
   sheltersRoot: string,
   version: number,
@@ -75,6 +75,7 @@ export default function PhotosTab() {
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [pendingMoveId, setPendingMoveId] = useState<number | null>(null);
+  const [pendingUnidentifiedMoveId, setPendingUnidentifiedMoveId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
   const repoRoot = useRepoRoot();
@@ -207,6 +208,22 @@ export default function PhotosTab() {
     }
   };
 
+  const handleMoveToUnidentified = async (id: number) => {
+    setPendingUnidentifiedMoveId(null);
+    try {
+      if (typeof window !== 'undefined' && window.api) {
+        await window.api.photos.moveToUnidentified(id, sheltersRoot);
+      }
+      dispatch(removePhotoLocal({ shelterId: s.id, photoId: id }));
+      if (s.default_photo_id === id) {
+        dispatch(setDefaultPhotoLocal({ shelterId: s.id, photoId: null, fileName: '' }));
+      }
+      dispatch(showToast({ id: Date.now().toString(), message: 'Photo moved to unidentified-shelters.' }));
+    } catch {
+      dispatch(showToast({ id: Date.now().toString(), message: 'Move failed.' }));
+    }
+  };
+
   const handleExportPhoto = async () => {
     if (!selected || !s) return;
     try {
@@ -300,7 +317,30 @@ export default function PhotosTab() {
     if (applied) dispatch(loadPhotos(s.id));
   };
 
-  const itemHandlers = { onSelect: handleSelect, onOpenEditor: handleOpenEditor, onToggleInclude: handleToggleInclude };
+  // Up/Down/Left/Right all move to the adjacent photo in current display order (no
+  // 2D grid-column awareness — the grid's column count is responsive/unmeasurable,
+  // and sequential nav matches how photo review actually works). Tab advances the
+  // same way; Shift+Tab is left alone so reverse-tabbing out of the grid still works.
+  // Always reads the live `photos` array, so a completed drag-reorder is reflected
+  // on the very next keypress.
+  const handleNavigate = (e: React.KeyboardEvent, id: number) => {
+    if (activeDragId !== null) return;
+    let direction: 'next' | 'prev' | null = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') direction = 'next';
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') direction = 'prev';
+    else if (e.key === 'Tab' && !e.shiftKey) direction = 'next';
+    if (!direction) return;
+    e.preventDefault();
+    const idx = photos.findIndex((p) => p.id === id);
+    if (idx === -1) return;
+    const nextIdx = direction === 'next' ? Math.min(photos.length - 1, idx + 1) : Math.max(0, idx - 1);
+    const nextId = photos[nextIdx].id;
+    setSelectedId(nextId);
+    const container = (e.currentTarget as HTMLElement).parentElement;
+    container?.querySelector<HTMLElement>(`[data-photo-id="${nextId}"]`)?.focus();
+  };
+
+  const itemHandlers = { onSelect: handleSelect, onOpenEditor: handleOpenEditor, onToggleInclude: handleToggleInclude, onNavigate: handleNavigate };
 
   return (
     <div className="photos-wrap">
@@ -408,8 +448,24 @@ export default function PhotosTab() {
         <MovePhotoDialog
           shelters={allShelters}
           currentShelterId={s.id}
-          onConfirm={(targetShelterId) => handleMovePhoto(pendingMoveId, targetShelterId)}
+          onConfirm={(target) => {
+            if (target === 'unidentified') {
+              setPendingUnidentifiedMoveId(pendingMoveId);
+              setPendingMoveId(null);
+            } else {
+              handleMovePhoto(pendingMoveId, target);
+            }
+          }}
           onCancel={() => setPendingMoveId(null)}
+        />
+      )}
+
+      {pendingUnidentifiedMoveId !== null && (
+        <ConfirmDialog
+          message="This will remove the photo from the database and move its file to the unidentified-shelters folder. Continue?"
+          confirmLabel="Move"
+          onConfirm={() => handleMoveToUnidentified(pendingUnidentifiedMoveId)}
+          onCancel={() => setPendingUnidentifiedMoveId(null)}
         />
       )}
 

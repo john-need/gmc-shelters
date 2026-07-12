@@ -30,6 +30,7 @@ import {
   copyPhotoToShelter,
   deletePhotoFile,
   movePhotoFile,
+  movePhotoFileToUnidentified,
   ensureShelterDir,
   renameShelterDir,
   writePhotoXmp,
@@ -189,6 +190,33 @@ describe('fs/photos', () => {
     });
   });
 
+  describe('movePhotoFileToUnidentified', () => {
+    it('copies the file into the app-root unidentified-shelters dir (flat, no shelter nesting)', async () => {
+      (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (fsp.access as jest.Mock).mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
+      (fsp.copyFile as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await movePhotoFileToUnidentified('source-shelter', 'source-shelter/photos/shot.jpg', '/base/shelters');
+
+      expect(fsp.mkdir).toHaveBeenCalledWith('/base/unidentified-shelters', { recursive: true });
+      expect(fsp.copyFile).toHaveBeenCalledWith(
+        '/base/shelters/source-shelter/photos/shot.jpg',
+        '/base/unidentified-shelters/shot.jpg',
+      );
+      expect(result).toBe('/base/unidentified-shelters/shot.jpg');
+    });
+
+    it('suffixes the filename with a timestamp on a basename collision, never overwriting', async () => {
+      (fsp.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (fsp.access as jest.Mock).mockResolvedValue(undefined); // destination already exists
+      (fsp.copyFile as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await movePhotoFileToUnidentified('source-shelter', 'source-shelter/photos/shot.jpg', '/base/shelters');
+
+      expect(result).toMatch(/^\/base\/unidentified-shelters\/shot-\d+\.jpg$/);
+    });
+  });
+
   describe('deletePhotoFile', () => {
     it('deletes the file', async () => {
       (fsp.unlink as jest.Mock).mockResolvedValue(undefined);
@@ -318,6 +346,16 @@ describe('readPhotoXmp', () => {
       description: 'Tag1, Tag2',
       notes: 'Read Notes',
     });
+  });
+
+  it('falls back to DateTimeOriginal when CreateDate and DateCreated are both absent', async () => {
+    mockExifToolInstance.read.mockResolvedValue({
+      DateTimeOriginal: { rawValue: '2019:03:02 08:00:00' },
+    });
+
+    const result = await readPhotoXmp('my-shelter', 'shot.jpg', '/abs/shelters');
+
+    expect(result.date_taken).toBe('2019:03:02 08:00:00');
   });
 });
 

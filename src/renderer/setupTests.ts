@@ -40,6 +40,7 @@ const mockApi: ElectronAPI = {
     update: noop,
     delete: noop,
     move: noop,
+    moveToUnidentified: noop,
     setDefault: noop,
     reorder: noop,
     upload: noop,

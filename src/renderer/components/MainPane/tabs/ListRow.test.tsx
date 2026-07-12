@@ -17,7 +17,7 @@ function makePhoto(overrides: Partial<Photo> = {}): Photo {
 
 const baseProps = {
   idx: 0, isDefault: false, isSelected: false,
-  onSelect: jest.fn(), onOpenEditor: jest.fn(), onToggleInclude: jest.fn(),
+  onSelect: jest.fn(), onOpenEditor: jest.fn(), onToggleInclude: jest.fn(), onNavigate: jest.fn(),
   photoUrl: '',
 };
 

@@ -195,6 +195,49 @@ describe('ipc/photos', () => {
     });
   });
 
+  describe('PHOTOS_MOVE_TO_UNIDENTIFIED', () => {
+    function mockPhotoLookup(row: { shelter_id: number; file_name: string } | undefined) {
+      const mockPrepare = jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue(row) });
+      (getDb as jest.Mock).mockReturnValue({ prepare: mockPrepare });
+    }
+
+    it('copies the file to unidentified-shelters, deletes the db record, then best-effort deletes the source file', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 2, slug: 'source-shelter' });
+      (fsPhotos.movePhotoFileToUnidentified as jest.Mock).mockResolvedValue('/base/unidentified-shelters/shot.jpg');
+      (fsPhotos.photoFilePath as jest.Mock).mockReturnValue('/base/shelters/source-shelter/photos/shot.jpg');
+      (fsPhotos.deletePhotoFile as jest.Mock).mockResolvedValue(undefined);
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED);
+      await handler(null, { photoId: 10, sheltersRoot: '/base/shelters' });
+
+      expect(fsPhotos.movePhotoFileToUnidentified).toHaveBeenCalledWith('source-shelter', 'source-shelter/photos/shot.jpg', '/base/shelters');
+      expect(dbPhotos.deletePhoto).toHaveBeenCalledWith(10);
+      expect(fsPhotos.deletePhotoFile).toHaveBeenCalledWith('source-shelter', 'source-shelter/photos/shot.jpg', '/base/shelters');
+      expect(fsThumbnails.purgeThumbnailsForSource).toHaveBeenCalledWith('/base/shelters/source-shelter/photos/shot.jpg');
+    });
+
+    it('on db failure, deletes the copy in unidentified-shelters and rejects without touching the source file', async () => {
+      mockPhotoLookup({ shelter_id: 2, file_name: 'source-shelter/photos/shot.jpg' });
+      (dbShelters.getShelterById as jest.Mock).mockReturnValue({ id: 2, slug: 'source-shelter' });
+      (fsPhotos.movePhotoFileToUnidentified as jest.Mock).mockResolvedValue('/base/unidentified-shelters/shot.jpg');
+      (dbPhotos.deletePhoto as jest.Mock).mockImplementationOnce(() => { throw new Error('db boom'); });
+      (fsp.unlink as jest.Mock).mockResolvedValue(undefined);
+
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED);
+      await expect(handler(null, { photoId: 10, sheltersRoot: '/base/shelters' })).rejects.toThrow('db boom');
+
+      expect(fsp.unlink).toHaveBeenCalledWith('/base/unidentified-shelters/shot.jpg');
+      expect(fsPhotos.deletePhotoFile).not.toHaveBeenCalled();
+    });
+
+    it('throws when the photo is not found', async () => {
+      mockPhotoLookup(undefined);
+      const handler = getHandler(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED);
+      await expect(handler(null, { photoId: 999, sheltersRoot: '/base/shelters' })).rejects.toThrow();
+    });
+  });
+
   it('PHOTOS_SET_DEFAULT calls setDefaultPhoto', () => {
     const handler = getHandler(CHANNELS.PHOTOS_SET_DEFAULT);
     handler(null, { shelterId: 3, photoId: 7 });

@@ -69,16 +69,20 @@ export interface ListRowProps extends ListRowBodyProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   onOpenEditor: (id: number) => void;
+  onNavigate: (e: React.KeyboardEvent, id: number) => void;
 }
 
-export const ListRow = memo(function ListRow({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onToggleInclude, photoUrl }: ListRowProps) {
+export const ListRow = memo(function ListRow({ p, idx, isDefault, isSelected, onSelect, onOpenEditor, onNavigate, onToggleInclude, photoUrl }: ListRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id });
   return (
     <div
       ref={setNodeRef}
       data-testid={`list-row-${p.id}`}
+      data-photo-id={p.id}
+      tabIndex={0}
       onClick={() => onSelect(p.id)}
       onDoubleClick={() => onOpenEditor(p.id)}
+      onKeyDown={(e) => onNavigate(e, p.id)}
       style={{
         position: 'relative',
         display: 'grid',

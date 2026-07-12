@@ -4,9 +4,9 @@ import { ipcMain, app, dialog, shell, BrowserWindow } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
 import { getPhotosByShelter, updatePhoto, deletePhoto, movePhotoToShelter, setDefaultPhoto, insertPhoto, clearDefaultPhoto, reorderPhotos } from '../db/photos';
 import { getShelterById } from '../db/shelters';
-import { copyPhotoToShelter, deletePhotoFile, movePhotoFile, writePhotoXmp, transformPhoto, photoFilePath, photosDirForSlug, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
+import { copyPhotoToShelter, deletePhotoFile, movePhotoFile, movePhotoFileToUnidentified, writePhotoXmp, transformPhoto, photoFilePath, photosDirForSlug, readPhotoXmp, readPhotoFileMetadata, writePhotoFileMetadata, listPhotosDir, listShelterRootImages } from '../fs/photos';
 import { purgeThumbnailsForSource, scanThumbnails, applyThumbnailScan } from '../fs/thumbnails';
-import type { PhotoMoveInput, PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
+import type { PhotoMoveInput, PhotoMoveToUnidentifiedInput, PhotoReorderInput, PhotoUpdateInput, PhotoUploadInput, ReconcileApplyInput, ReconcileApplyResult } from '../../shared/ipc-types';
 
 export function registerPhotoHandlers(): void {
   ipcMain.handle(
@@ -161,6 +161,42 @@ export function registerPhotoHandlers(): void {
     }
 
     return movedPhoto;
+  });
+
+  ipcMain.handle(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED, async (_e, { photoId, sheltersRoot }: PhotoMoveToUnidentifiedInput): Promise<void> => {
+    const { getDb } = await import('../db/connection');
+    const db = getDb();
+    const photo = db.prepare('SELECT shelter_id, file_name FROM photos WHERE id = ?').get(photoId) as
+      | { shelter_id: number; file_name: string }
+      | undefined;
+    if (!photo) throw new Error(`Photo ${photoId} not found`);
+
+    const sourceShelter = getShelterById(photo.shelter_id);
+    if (!sourceShelter) throw new Error('Source shelter not found');
+
+    const destPath = await movePhotoFileToUnidentified(sourceShelter.slug, photo.file_name, sheltersRoot);
+
+    try {
+      deletePhoto(photoId);
+    } catch (err) {
+      // DB delete failed — clean up the copy we just made in unidentified-shelters
+      // so no orphaned duplicate is left behind, then surface the error.
+      try {
+        await fs.unlink(destPath);
+      } catch (cleanupErr) {
+        console.warn('Failed to clean up copied file after move-to-unidentified rollback:', cleanupErr);
+      }
+      throw err;
+    }
+
+    // Best-effort cleanup — the DB is already authoritative at this point.
+    try {
+      const oldFilePath = photoFilePath(sourceShelter.slug, photo.file_name, sheltersRoot);
+      await deletePhotoFile(sourceShelter.slug, photo.file_name, sheltersRoot);
+      purgeThumbnailsForSource(oldFilePath);
+    } catch (err) {
+      console.warn('Old photo file deletion or thumbnail purge failed after move-to-unidentified:', err);
+    }
   });
 
   ipcMain.handle(

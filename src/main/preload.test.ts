@@ -59,6 +59,18 @@ describe('preload contextBridge', () => {
     expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.PHOTOS_MOVE, { photoId: 10, targetShelterId: 3, sheltersRoot: '/base/shelters' });
   });
 
+  it('photos.moveToUnidentified forwards to CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED with the right payload', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { photos: { moveToUnidentified: (photoId: number, sheltersRoot: string) => Promise<unknown> } }];
+
+    expect(typeof api.photos.moveToUnidentified).toBe('function');
+    await api.photos.moveToUnidentified(10, '/base/shelters');
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED, { photoId: 10, sheltersRoot: '/base/shelters' });
+  });
+
   it('photos.openFolder forwards to CHANNELS.PHOTOS_OPEN_FOLDER with slug and sheltersRoot', async () => {
     const { contextBridge, ipcRenderer } = await import('electron');
     const { CHANNELS } = await import('@shared/ipc-types');

@@ -1915,6 +1915,23 @@ html, body {
 .photo-fields::-webkit-scrollbar { width: 8px; }
 .photo-fields::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
 
+.photo-detail-actions {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.photo-detail-actions-head {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.photo-detail-actions-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* ─────────── Sources tab ─────────── */

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act, within } from '@testing-librar
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import sheltersReducer from '../../../store/sheltersSlice';
-import photosReducer from '../../../store/photosSlice';
+import photosReducer, { reorderPhotosLocal } from '../../../store/photosSlice';
 import uiReducer from '../../../store/uiSlice';
 import PhotosTab from './PhotosTab';
 import type { Shelter, Photo } from '../../../../shared/ipc-types';
@@ -76,6 +76,7 @@ beforeEach(() => {
       export: jest.fn().mockResolvedValue(null),
       delete: jest.fn().mockResolvedValue(undefined),
       move: jest.fn().mockResolvedValue({ id: 1, shelter_id: 20, file_name: 'other-shelter/photos/test.jpg' }),
+      moveToUnidentified: jest.fn().mockResolvedValue(undefined),
       openFolder: jest.fn().mockResolvedValue({ ok: true }),
     },
   };
@@ -347,32 +348,32 @@ describe('US4 — Editing tools removed from right-aside panel', () => {
 
 // ─── US1: Metadata Icon Button ───────────────────────────────────────────────
 
-describe('US1 — Metadata icon button', () => {
-  it('T003a: metadata icon button is absent when no photo is selected', () => {
+describe('US1 — View Metadata button', () => {
+  it('T003a: View button is absent when no photo is selected', () => {
     const store = makeStore(makeShelter(), []);
     render(<Provider store={store}><PhotosTab /></Provider>);
-    expect(screen.queryByRole('button', { name: /view photo metadata/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^view$/i })).not.toBeInTheDocument();
   });
 
-  it('T003b: metadata icon button is present in photo-detail-head when a photo is selected', async () => {
+  it('T003b: View button is present in the static footer when a photo is selected', async () => {
     const shelter = makeShelter();
     const photo = makePhoto();
     const store = makeStore(shelter, [photo]);
     render(<Provider store={store}><PhotosTab /></Provider>);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^view$/i })).toBeInTheDocument();
     });
   });
 
-  it('T003c: clicking the metadata icon button opens the metadata dialog', async () => {
+  it('T003c: clicking the View button opens the metadata dialog', async () => {
     const shelter = makeShelter();
     const photo = makePhoto({ title: 'Test Photo' });
     const store = makeStore(shelter, [photo]);
     render(<Provider store={store}><PhotosTab /></Provider>);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^view$/i })).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^view$/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
@@ -382,9 +383,9 @@ describe('US1 — Metadata icon button', () => {
     const store = makeStore(shelter, [photo]);
     render(<Provider store={store}><PhotosTab /></Provider>);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /view photo metadata/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^view$/i })).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /view photo metadata/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^view$/i }));
     expect(window.api.photos.readFileMetadata).toHaveBeenCalledWith('test-shelter', 'shot.jpg', expect.any(String));
   });
 
@@ -489,6 +490,57 @@ describe('US1 — Move to shelter', () => {
     expect(window.api.photos.move).not.toHaveBeenCalled();
   });
 
+  it('selecting Unidentified shows a second confirmation dialog instead of moving immediately', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'unidentified' } });
+    fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+
+    expect(window.api.photos.moveToUnidentified).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /confirm move/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/remove.*from the database/i)).toBeInTheDocument();
+  });
+
+  it('confirming the second dialog calls photos.moveToUnidentified and removes the photo from the list', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ id: 1, file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'unidentified' } });
+    fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^move$/i }));
+    });
+
+    expect(window.api.photos.moveToUnidentified).toHaveBeenCalledWith(1, expect.any(String));
+    expect(store.getState().photos.byShelter[10] ?? []).toHaveLength(0);
+  });
+
+  it('cancelling the second dialog does not call photos.moveToUnidentified', async () => {
+    const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
+    const store = makeStore(makeShelter(), [makePhoto({ file_name: 'shot.jpg' })], [otherShelter]);
+    render(<Provider store={store}><PhotosTab /></Provider>);
+    await waitFor(() => {
+      expect(screen.getByTitle('Move to shelter')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTitle('Move to shelter'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'unidentified' } });
+    fireEvent.click(screen.getByRole('button', { name: /confirm move/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(window.api.photos.moveToUnidentified).not.toHaveBeenCalled();
+    expect(screen.queryByText(/remove.*from the database/i)).not.toBeInTheDocument();
+  });
+
   it('shows a failure toast and makes no state change when photos.move rejects', async () => {
     (window.api.photos.move as jest.Mock).mockRejectedValue(new Error('move failed'));
     const otherShelter = makeShelter({ id: 20, name: 'Other Shelter', slug: 'other-shelter' });
@@ -575,6 +627,113 @@ describe('include_in_post quick-toggle checkbox', () => {
     });
   });
 
+  describe('keyboard navigation', () => {
+    const threePhotos = () => [
+      makePhoto({ id: 1, title: 'First', file_name: 'first.jpg' }),
+      makePhoto({ id: 2, title: 'Second', file_name: 'second.jpg' }),
+      makePhoto({ id: 3, title: 'Third', file_name: 'third.jpg' }),
+    ];
+
+    it('grid: ArrowDown moves selection to the next photo and loads it in the detail pane', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const first = await screen.findByTestId('photo-card-1');
+      fireEvent.keyDown(first, { key: 'ArrowDown' });
+
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Second');
+      });
+    });
+
+    it('grid: ArrowUp moves selection to the previous photo', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const second = await screen.findByTestId('photo-card-2');
+      fireEvent.keyDown(second, { key: 'ArrowUp' });
+
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('First');
+      });
+    });
+
+    it('grid: Tab also advances to the next photo', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const first = await screen.findByTestId('photo-card-1');
+      fireEvent.keyDown(first, { key: 'Tab' });
+
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Second');
+      });
+    });
+
+    it('grid: Shift+Tab does not advance (left for native reverse-tabbing)', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const first = await screen.findByTestId('photo-card-1');
+      fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+
+      expect(container.querySelector('.photo-detail-title')).toHaveTextContent('First');
+    });
+
+    it('grid: ArrowDown on the last photo is a no-op (clamps, does not wrap)', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const third = await screen.findByTestId('photo-card-3');
+      fireEvent.keyDown(third, { key: 'ArrowDown' });
+
+      expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Third');
+    });
+
+    it('grid: ArrowUp on the first photo is a no-op (clamps, does not wrap)', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const first = await screen.findByTestId('photo-card-1');
+      fireEvent.keyDown(first, { key: 'ArrowUp' });
+
+      expect(container.querySelector('.photo-detail-title')).toHaveTextContent('First');
+    });
+
+    it('follows the current display order after a reorder, not the original order', async () => {
+      const shelter = makeShelter();
+      const store = makeStore(shelter, threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+      await screen.findByTestId('photo-card-1');
+
+      // Simulate a completed drag-reorder: First, Third, Second (persisted order changes).
+      act(() => {
+        store.dispatch(reorderPhotosLocal({ shelterId: shelter.id, photoIds: [1, 3, 2] }));
+      });
+
+      const first = await screen.findByTestId('photo-card-1');
+      fireEvent.keyDown(first, { key: 'ArrowDown' });
+
+      // With the new order (First, Third, Second), Down from First must land on Third — not Second.
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Third');
+      });
+    });
+
+    it('list: ArrowDown moves selection to the next photo', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+      fireEvent.click(screen.getByRole('button', { name: /list/i }));
+
+      const first = await screen.findByTestId('list-row-1');
+      fireEvent.keyDown(first, { key: 'ArrowDown' });
+
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Second');
+      });
+    });
+  });
+
   it('grid: renders checked checkbox when include_in_post is true', async () => {
     const store = makeStore(makeShelter(), [makePhoto({ include_in_post: true })]);
     render(<Provider store={store}><PhotosTab /></Provider>);
@@ -625,8 +784,8 @@ describe('include_in_post quick-toggle checkbox', () => {
   });
 });
 
-describe('US1 — Sync from File button', () => {
-  it('T014a: "Sync from File" button is present when a photo is selected', async () => {
+describe('US1 — Import Metadata button', () => {
+  it('T014a: "Import Metadata" button is present when a photo is selected', async () => {
     const shelter = makeShelter();
     const photo = makePhoto();
     const store = makeStore(shelter, [photo]);
@@ -647,7 +806,7 @@ describe('US1 — Sync from File button', () => {
       fireEvent.change(input, { target: { value: '1984' } });
 
       await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: /save metadata/i }));
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
       });
 
       await waitFor(() => {

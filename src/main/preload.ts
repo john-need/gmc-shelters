@@ -36,6 +36,8 @@ const api: ElectronAPI = {
     delete: (id: number, sheltersRoot: string) => ipcRenderer.invoke(CHANNELS.PHOTOS_DELETE, { id, sheltersRoot }),
     move: (photoId: number, targetShelterId: number, sheltersRoot: string) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_MOVE, { photoId, targetShelterId, sheltersRoot }),
+    moveToUnidentified: (photoId: number, sheltersRoot: string): Promise<void> =>
+      ipcRenderer.invoke(CHANNELS.PHOTOS_MOVE_TO_UNIDENTIFIED, { photoId, sheltersRoot }),
     setDefault: (shelterId: number, photoId: number) =>
       ipcRenderer.invoke(CHANNELS.PHOTOS_SET_DEFAULT, { shelterId, photoId }),
     reorder: (input: PhotoReorderInput) =>
