@@ -95,6 +95,49 @@ describe('ai/generate-history runGenerateHistory', () => {
     expect(promptText.toLowerCase()).toContain('do not include a sources');
   });
 
+  it('adds a web_fetch tool sized to the website citation count, and instructs fetching them, when website citations are present', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(claudeResponse('A narrative.'));
+    const citations = [
+      source({ type: 'website', url: 'https://example.com/a' }),
+      source({ type: 'website', url: 'https://example.com/b' }),
+      source({ type: 'book' }),
+    ];
+    await runGenerateHistory('sk-ant-key', 'model-x', request({ citations }), { fetchImpl });
+
+    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(body.tools).toEqual([
+      { type: 'web_search_20260209', name: 'web_search', max_uses: 3, allowed_callers: ['direct'] },
+      { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 2, citations: { enabled: true }, allowed_callers: ['direct'] },
+    ]);
+    expect(body.messages[0].content.toLowerCase()).toContain('web_fetch');
+  });
+
+  it('omits the web_fetch tool when there are no website citations with a URL', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(claudeResponse('A narrative.'));
+    const citations = [source({ type: 'book' }), source({ type: 'website', url: '' })];
+    await runGenerateHistory('sk-ant-key', 'model-x', request({ citations }), { fetchImpl });
+
+    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(body.tools).toEqual([{ type: 'web_search_20260209', name: 'web_search', max_uses: 3, allowed_callers: ['direct'] }]);
+  });
+
+  it('inlines a wiki page excerpt beneath its citation, and instructs treating it as primary source text, when wikiExcerpts are supplied', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(claudeResponse('A narrative.'));
+    const citations = [source({ id: 5, type: 'book', archive_location: 'collections/long-trail-news/x.pdf', pages: '3' })];
+    await runGenerateHistory('sk-ant-key', 'model-x', request({ citations }), {
+      fetchImpl,
+      wikiExcerpts: { 5: 'Killington Peak drew a record crowd of hikers this season.' },
+    });
+
+    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    const promptText = body.messages[0].content;
+    expect(promptText).toContain('Killington Peak drew a record crowd of hikers this season.');
+    expect(promptText.toLowerCase()).toContain('primary source text');
+    // no website citations here, so no web_fetch instruction or tool
+    expect(promptText.toLowerCase()).not.toContain('web_fetch');
+    expect(body.tools).toEqual([{ type: 'web_search_20260209', name: 'web_search', max_uses: 3, allowed_callers: ['direct'] }]);
+  });
+
   it('returns the joined and trimmed narrative text on a well-formed response', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(claudeResponse('  A shelter history.  '));
     const result = await runGenerateHistory('sk-ant-key', 'model-x', request(), { fetchImpl });

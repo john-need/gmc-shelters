@@ -6,7 +6,7 @@ import type { WriteTags } from 'exiftool-vendored';
 import sharp from 'sharp';
 import { log } from '../logger';
 import type { Photo, PhotoTransformInput, FileMetadataTag } from '../../shared/ipc-types';
-import { getPhotoExifDateValue } from '@shared/photo-date';
+import { getPhotoExifDateValue, getPhotoAnyDateValue } from '@shared/photo-date';
 
 const exiftool = new ExifTool({ taskTimeoutMillis: 5000 });
 
@@ -165,8 +165,8 @@ export async function writePhotoXmp(photo: Photo, sheltersRoot: string, slug: st
       Title: photo.title,
       Creator: photo.photographer,
       CreateDate: getPhotoExifDateValue(photo.date_taken),
+      Date: getPhotoAnyDateValue(photo.date_taken),
       Description: photo.caption,
-      Headline: photo.alt_text,
       Subject: photo.description,
       // `Instructions` (XMP-photoshop) is a valid exiftool tag but absent from
       // the vendored WriteTags type, so write it via a cast.
@@ -200,9 +200,8 @@ export async function readPhotoXmp(slug: string, fileName: string, sheltersRoot:
     return {
       title: getString(tags.Title),
       photographer: getString(tags.Creator),
-      date_taken: getString(tags.CreateDate || tags.DateCreated || tags.DateTimeOriginal),
+      date_taken: getString(tags.CreateDate || tags.DateCreated || tags.DateTimeOriginal || (tags as Record<string, unknown>).Date),
       caption: getString(tags.Description),
-      alt_text: getString(tags.Headline),
       description: getString(tags.Subject),
       notes: getString((tags as Record<string, unknown>).Instructions),
     };

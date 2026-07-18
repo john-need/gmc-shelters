@@ -18,3 +18,8 @@ export function getPhotoExifDateValue(value: string | null | undefined): string 
   const normalized = normalizePhotoDateTaken(value);
   return FULL_DATE_RE.test(normalized) ? normalized : undefined;
 }
+
+export function getPhotoAnyDateValue(value: string | null | undefined): string | undefined {
+  const normalized = normalizePhotoDateTaken(value);
+  return normalized || undefined;
+}

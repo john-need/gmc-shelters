@@ -1,5 +1,16 @@
 # Directory Update Log
 
+## 2026-07-15
+* **Update**: Processed [LongTrailGuide_Ed04_1922](LongTrailGuide_Ed04_1922.md)
+* **Update**: Processed [LongTrailGuide_Ed05_1924](LongTrailGuide_Ed05_1924.md)
+* **Update**: Processed [LongTrailGuide_Ed06_1924](LongTrailGuide_Ed06_1924.md)
+* **Update**: Processed [LongTrailGuide_Ed07_1928](LongTrailGuide_Ed07_1928.md)
+* **Update**: Processed [LongTrailGuide_Ed08_1930](LongTrailGuide_Ed08_1930.md)
+* **Update**: Processed [LongTrailGuide_Ed09_1932](LongTrailGuide_Ed09_1932.md)
+* **Update**: Processed [LongTrailGuide_Ed10_1935](LongTrailGuide_Ed10_1935.md)
+* **Update**: Processed [LongTrailGuide_Ed11_1937](LongTrailGuide_Ed11_1937.md)
+* **Update**: Processed [LongTrailGuide_Ed12_1940](LongTrailGuide_Ed12_1940.md)
+
 ## 2026-07-07
 * **Update**: Processed [LongTrailGuide_Ed01_1917](LongTrailGuide_Ed01_1917.md)
 

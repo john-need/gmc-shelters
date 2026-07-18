@@ -24,6 +24,18 @@ function getDb() {
   return db;
 }
 
+/** Full page text for a wiki-sourced citation, keyed by its PDF resource path + page number. */
+export function getWikiPageBody(resource: string, page: number): string | null {
+  const conn = getDb();
+  if (!conn) return null;
+  const row = conn
+    .prepare<unknown[], { body: string }>(
+      `SELECT body FROM wiki_fts WHERE resource = ? AND kind = 'page' AND CAST(page AS INTEGER) = ? LIMIT 1`,
+    )
+    .get(resource, page) as { body: string } | undefined;
+  return row?.body ?? null;
+}
+
 const FRONTMATTER_RE = /^(---\n[\s\S]*?\n---\n)/;
 const FRONTMATTER_BLOCK_RE = /^---\n([\s\S]*?)\n---\n/;
 const FRONTMATTER_LINE_RE = /^([A-Za-z_]+):\s*"((?:[^"\\]|\\.)*)"\s*$/;
