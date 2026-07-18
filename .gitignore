@@ -191,6 +191,9 @@ collections/.conversion_cache/
 # wiki search index (derived, rebuildable, exceeds GitHub's 100MB limit)
 wiki/search.db
 
+# wiki page images (derived from source PDFs, too large for git)
+wiki/**/*.png
+
 # Anthropic API key saved by the app (Settings > AI Integration) — never commit
 .anthropic_api_key
 

@@ -297,29 +297,40 @@ describe('writePhotoXmp', () => {
         Description: 'A caption',
       })
     );
+    expect(mockExifToolInstance.write).toHaveBeenCalledWith(
+      '/abs/shelters/test.jpg',
+      expect.not.objectContaining({
+        Headline: expect.anything(),
+      })
+    );
   });
 
-  it('omits CreateDate when date_taken is year-only', async () => {
+  it('saves year-only date to fallback field and reads it back', async () => {
     const photo: Partial<Photo> = {
-      id: 6007,
-      title: 'My Title',
-      photographer: 'Author Name',
+      id: 6008,
+      file_name: 'year-only.jpg',
       date_taken: '1984',
-      caption: 'A caption',
-      alt_text: 'Accessibility text',
-      description: 'Long description',
-      notes: 'Some notes',
-      file_name: 'test.jpg',
     };
 
     await writePhotoXmp(photo as Photo, '/abs/shelters', 'my-shelter');
 
+    // Should NOT be in CreateDate (as per existing logic), but SHOULD be in something else
+    // We'll decide the field name in implementation, but let's assume 'Date' or 'IntellectualGenre' or a custom one.
+    // XMP-dc:Date is a good candidate for imprecise dates.
     expect(mockExifToolInstance.write).toHaveBeenCalledWith(
-      '/abs/shelters/test.jpg',
+      '/abs/shelters/year-only.jpg',
       expect.objectContaining({
         CreateDate: undefined,
+        Date: '1984',
       })
     );
+
+    mockExifToolInstance.read.mockResolvedValue({
+      Date: '1984',
+    });
+
+    const result = await readPhotoXmp('my-shelter', 'year-only.jpg', '/abs/shelters');
+    expect(result.date_taken).toBe('1984');
   });
 });
 
@@ -342,7 +353,6 @@ describe('readPhotoXmp', () => {
       photographer: 'Author 1, Author 2',
       date_taken: '2023:05:19 12:00:00',
       caption: 'Read Caption',
-      alt_text: 'Read Alt',
       description: 'Tag1, Tag2',
       notes: 'Read Notes',
     });
@@ -364,6 +374,19 @@ describe('readPhotoFileMetadata', () => {
     mockExifToolInstance.read.mockResolvedValue({ Title: 'Hall', Make: 'Canon' });
     await readPhotoFileMetadata('my-shelter', 'shot.jpg', '/abs/shelters');
     expect(mockExifToolInstance.read).toHaveBeenCalledWith('/abs/shelters/shot.jpg');
+  });
+
+  it('does NOT include alt_text even if Headline is present (metadata import should not overwrite alt text)', async () => {
+    mockExifToolInstance.read.mockResolvedValue({
+      Title: 'Read Title',
+      Headline: 'Read Alt',
+    });
+
+    const result = await readPhotoXmp('my-shelter', 'shot.jpg', '/abs/shelters');
+
+    expect(result.alt_text).toBeUndefined();
+    // Verify other fields still map
+    expect(result.title).toBe('Read Title');
   });
 
   it('returns FileMetadataTag[] with group, key, label, value, writable', async () => {

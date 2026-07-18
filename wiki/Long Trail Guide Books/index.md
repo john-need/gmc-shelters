@@ -1,17 +1,17 @@
 # Long Trail Guide Books
 
 * [Long Trail Guide Book](LongTrailGuide_Ed01_1917.md) - Long Trail Guide Book, 1917
-* [The Long Trail Guide Book](LongTrailGuide_Ed02_1920.md) - Long Trail Guide Book, 1920
-* [Long Trail Guide Book](LongTrailGuide_Ed03_1921.md) - Long Trail Guide Books, 1921
-* [Long Trail Guide Book](LongTrailGuide_Ed04_1922.md) - Long Trail Guide Books, 1922
-* [Long Trail Guide Book](LongTrailGuide_Ed05_1924.md) - Long Trail Guide Books, 1924
-* [Long Trail Guide Book](LongTrailGuide_Ed06_1924.md) - Long Trail Guide Books, 1924
-* [Long Trail Guide Book](LongTrailGuide_Ed07_1928.md) - Long Trail Guide Books, 1928
-* [Long Trail Guide Book](LongTrailGuide_Ed08_1930.md) - Long Trail Guide Books, 1930
-* [Long Trail Guide Book](LongTrailGuide_Ed09_1932.md) - Long Trail Guide Books, 1932
-* [Long Trail Guide Book](LongTrailGuide_Ed10_1935.md) - Long Trail Guide Books, 1935
-* [Long Trail Guide Book](LongTrailGuide_Ed11_1937.md) - Long Trail Guide Books, 1937
-* [Long Trail Guide Book](LongTrailGuide_Ed12_1940.md) - Long Trail Guide Books, 1940
+* [Long Trail Guide Book](LongTrailGuide_Ed02_1920.md) - Long Trail Guide Book, 1920
+* [Long Trail Guide Book](LongTrailGuide_Ed03_1921.md) - Long Trail Guide Book, 1921
+* [Long Trail Guide Book](LongTrailGuide_Ed04_1922.md) - Long Trail Guide Book, 1922
+* [Long Trail Guide Book](LongTrailGuide_Ed05_1924.md) - Long Trail Guide Book, 1924
+* [Long Trail Guide Book](LongTrailGuide_Ed06_1924.md) - Long Trail Guide Book, 1924
+* [Long Trail Guide Book](LongTrailGuide_Ed07_1928.md) - Long Trail Guide Book, 1928
+* [Long Trail Guide Book](LongTrailGuide_Ed08_1930.md) - Long Trail Guide Book, 1930
+* [Long Trail Guide Book](LongTrailGuide_Ed09_1932.md) - Long Trail Guide Book, 1932
+* [Long Trail Guide Book](LongTrailGuide_Ed10_1935.md) - Long Trail Guide Book, 1935
+* [Long Trail Guide Book](LongTrailGuide_Ed11_1937.md) - Long Trail Guide Book, 1937
+* [Long Trail Guide Book](LongTrailGuide_Ed12_1940.md) - Long Trail Guide Book, 1940
 * [Long Trail Guide Book](LongTrailGuide_Ed13_1947.md) - Long Trail Guide Books, 1947
 * [Long Trail Guide Book](LongTrailGuide_Ed14_1951.md) - Long Trail Guide Books, 1951
 * [Long Trail Guide Book](LongTrailGuide_Ed15_1956.md) - Long Trail Guide Books, 1956

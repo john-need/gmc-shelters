@@ -96,6 +96,12 @@ describe('ipc/wiki-search', () => {
     return call[1] as (...args: unknown[]) => unknown;
   }
 
+  function getWikiPageBodyFn() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getWikiPageBody } = require('./wiki-search');
+    return getWikiPageBody as (resource: string, page: number) => string | null;
+  }
+
   it('search results carry page number and publication metadata', async () => {
     buildFixtureDb(tmpDir);
     register();
@@ -210,6 +216,26 @@ describe('ipc/wiki-search', () => {
     register();
     const handler = getHandler(CHANNELS.WIKI_SEARCH);
     expect(await handler(null, 'Monroe Lodge', [])).toEqual([]);
+  });
+
+  it('getWikiPageBody returns the page body text for a matching resource+page', () => {
+    buildFixtureDb(tmpDir);
+    const getWikiPageBody = getWikiPageBodyFn();
+    expect(getWikiPageBody('collections/long-trail-news/1923_04_Apr.pdf', 3)).toContain(
+      'Killington Peak drew a record crowd of hikers this season.',
+    );
+  });
+
+  it('getWikiPageBody returns null for an unknown resource or page', () => {
+    buildFixtureDb(tmpDir);
+    const getWikiPageBody = getWikiPageBodyFn();
+    expect(getWikiPageBody('collections/long-trail-news/1923_04_Apr.pdf', 99)).toBeNull();
+    expect(getWikiPageBody('collections/nope.pdf', 1)).toBeNull();
+  });
+
+  it('getWikiPageBody returns null when the wiki index is missing', () => {
+    const getWikiPageBody = getWikiPageBodyFn(); // no buildFixtureDb this time
+    expect(getWikiPageBody('collections/long-trail-news/1923_04_Apr.pdf', 3)).toBeNull();
   });
 
   it('WIKI_OPEN_PDF opens the PDF in the OS default viewer', async () => {
