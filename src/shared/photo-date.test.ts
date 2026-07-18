@@ -13,4 +13,10 @@ describe('photo-date', () => {
     expect(getPhotoExifDateValue('1984-09-15')).toBe('1984-09-15');
     expect(getPhotoExifDateValue('1984')).toBeUndefined();
   });
+
+  it('returns any date value for fallback fields', () => {
+    expect(getPhotoAnyDateValue('1984-09-15')).toBe('1984-09-15');
+    expect(getPhotoAnyDateValue('1984')).toBe('1984');
+    expect(getPhotoAnyDateValue(null)).toBeUndefined();
+  });
 });
