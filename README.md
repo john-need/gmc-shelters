@@ -186,12 +186,6 @@ If the cached token is revoked or scopes change:
 
 ---
 
-## Scripts
-
-See [`scripts/README.md`](scripts/README.md) for maintenance scripts (photo bulk upload, file size audit, export).
-
----
-
 ## Release Notes
 
 ### v1.0.0 — 2026-05-28
