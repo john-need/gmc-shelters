@@ -2,14 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setHistoryContent, saveHistory, setShelterHistoryThunk, loadHistory } from '../../../store/sheltersSlice';
+import { createSource, deleteSource } from '../../../store/sourcesSlice';
 import { showToast } from '../../../store/uiSlice';
 import { loadApiKey, selectHasValidApiKey } from '../../../store/aiSettingsSlice';
 import { buildHistoryFileDisplayPath, loadStoredPaths } from '../../../pathSettings';
 import { loadHistoryViewMode, saveHistoryViewMode, type HistoryViewMode } from '../../../historyViewSettings';
 import { stripSourcesSection, assembleAcceptedHistory } from '../../../../shared/generate-history';
-import type { GenerateHistoryError, GenerateHistoryRequest } from '../../../../shared/ipc-types';
+import { parseHistorySourcesSection } from '../../../../shared/history-sources';
+import type { CollectionStatus, GenerateHistoryError, GenerateHistoryEvent, GenerateHistoryRequest, SourceInput } from '../../../../shared/ipc-types';
 import { renderMarkdown } from '../../../markdown';
+import { BLANK_SOURCE } from './sourceTypes';
 import GenerateHistoryModal from './GenerateHistoryModal';
+
+type PendingPermission = { requestId: string; tool: 'search_collections' | 'download_document'; input: unknown };
 
 export default function HistoryTab() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,8 +29,13 @@ export default function HistoryTab() {
   const [browsingPath, setBrowsingPath] = useState(false);
   const [viewMode, setViewMode] = useState<HistoryViewMode>(loadHistoryViewMode);
   const [generating, setGenerating] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [draftNarrative, setDraftNarrative] = useState<string | null>(null);
+  const [generateEvents, setGenerateEvents] = useState<GenerateHistoryEvent[]>([]);
+  const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
+  const [collections, setCollections] = useState<CollectionStatus[]>([]);
+  const cancelledRef = useRef(false);
   const selectedIdRef = useRef(selectedId);
 
   useEffect(() => {
@@ -36,22 +46,40 @@ export default function HistoryTab() {
     dispatch(loadApiKey());
   }, [dispatch]);
 
+  useEffect(() => {
+    window.api.collections.status().then(setCollections).catch(() => {});
+  }, []);
+
   const changeViewMode = (mode: HistoryViewMode) => {
     setViewMode(mode);
     saveHistoryViewMode(mode);
   };
 
-  const generateErrorMessage = (error: GenerateHistoryError): string => (
-    error === 'no_api_key'
-      ? 'No Anthropic API key configured — add one in Settings → AI Settings.'
-      : 'Generate History failed — try again.'
-  );
+  const generateErrorMessage = (error: GenerateHistoryError): string => {
+    if (error === 'no_api_key') return 'No Anthropic API key configured — add one in Settings → AI Settings.';
+    if (error === 'max_turns') return 'Generate History took too many steps and gave up — try again.';
+    return 'Generate History failed — try again.';
+  };
 
   const handleGenerateHistory = async () => {
     if (!s || generating) return;
     const targetShelterId = s.id;
+    cancelledRef.current = false;
     setGenerating(true);
     setGenerateError(null);
+    setDraftNarrative(null);
+    setGenerateEvents([]);
+    setPendingPermission(null);
+    setModalOpen(true);
+
+    const unsubscribe = window.api.history.onGenerateProgress((evt) => {
+      if (selectedIdRef.current !== targetShelterId || cancelledRef.current) return;
+      setGenerateEvents((prev) => [...prev, evt]);
+      if (evt.type === 'permission_request') {
+        setPendingPermission({ requestId: evt.requestId, tool: evt.tool, input: evt.input });
+      }
+    });
+
     const request: GenerateHistoryRequest = {
       shelter: {
         name: s.name,
@@ -70,7 +98,7 @@ export default function HistoryTab() {
     };
     try {
       const result = await window.api.history.generate(request);
-      if (selectedIdRef.current === targetShelterId) {
+      if (selectedIdRef.current === targetShelterId && !cancelledRef.current) {
         if (result.ok) {
           setDraftNarrative(result.narrative);
         } else {
@@ -78,13 +106,32 @@ export default function HistoryTab() {
         }
       }
     } finally {
+      unsubscribe();
       setGenerating(false);
+      setPendingPermission(null);
     }
+  };
+
+  const handleRespondPermission = (requestId: string, approved: boolean) => {
+    setPendingPermission(null);
+    void window.api.history.respondToPermission(requestId, approved);
+  };
+
+  const closeGenerateModal = () => {
+    if (generating) {
+      cancelledRef.current = true;
+      if (pendingPermission) void window.api.history.respondToPermission(pendingPermission.requestId, false);
+    }
+    setModalOpen(false);
+    setDraftNarrative(null);
+    setGenerateError(null);
+    setPendingPermission(null);
   };
 
   if (!s) return null;
 
   const historyRelPath = s.history ?? `${s.slug}/${s.slug}.md`;
+  const parsedHistorySources = parseHistorySourcesSection(value, collections);
   const wordCount = (value.match(/\S+/g) || []).length;
   const charCount = value.length;
   const lineCount = value.split('\n').length;
@@ -128,6 +175,56 @@ export default function HistoryTab() {
     if (saveHistory.fulfilled.match(result)) {
       dispatch(showToast({ id: Date.now().toString(), message: `Created · ${filePath}` }));
     }
+  };
+
+  const handleReplaceSources = async () => {
+    if (!parsedHistorySources.length) return;
+    const ok = confirm(
+      `Replace ${sourcesForShelter.length} current source${sourcesForShelter.length === 1 ? '' : 's'} `
+      + `with ${parsedHistorySources.length} parsed from the history file? This cannot be undone.`,
+    );
+    if (!ok) return;
+
+    for (const src of sourcesForShelter) {
+      try {
+        await dispatch(deleteSource({ id: src.id, shelterId: s.id })).unwrap();
+      } catch {
+        // best-effort, matches the other bulk flows: one failure shouldn't block the rest
+      }
+    }
+    let linked = 0;
+    for (const src of parsedHistorySources) {
+      // Best-effort link to the primary-source document in collections — makes the
+      // Sources tab's View PDF button work for the recreated citation.
+      let resource: string | null = null;
+      const citedName = src.container_title || src.title || '';
+      if (citedName) {
+        try {
+          resource = await window.api.wiki.findResource({
+            title: citedName,
+            date: src.date || undefined,
+            year: src.year ?? undefined,
+            edition: src.edition || undefined,
+            volume: src.volume || undefined,
+          });
+        } catch {
+          // linking is optional — a lookup failure shouldn't block the source itself
+        }
+      }
+      if (resource) linked += 1;
+
+      try {
+        await dispatch(createSource({
+          ...BLANK_SOURCE, ...src, archive_location: resource ?? '', include_in_history: true, shelter_id: s.id,
+        } as SourceInput)).unwrap();
+      } catch {
+        // best-effort
+      }
+    }
+    dispatch(showToast({
+      id: 'replace-sources',
+      message: `Sources replaced — ${parsedHistorySources.length} added, ${linked} linked`,
+    }));
   };
 
   const handleBrowsePath = async () => {
@@ -231,6 +328,15 @@ export default function HistoryTab() {
           {generating ? 'Generating…' : 'Generate History'}
         </button>
 
+        <button
+          className="btn sm"
+          title="Replace Sources"
+          disabled={!parsedHistorySources.length}
+          onClick={handleReplaceSources}
+        >
+          Replace Sources
+        </button>
+
         <span className="md-tool-label">
           {dirty ? (
             <>
@@ -247,12 +353,6 @@ export default function HistoryTab() {
           )}
         </span>
       </div>
-
-      {generateError && (
-        <div role="alert" style={{ padding: '4px 12px', color: 'var(--rust)', fontSize: 12 }}>
-          {generateError}
-        </div>
-      )}
 
       <div className={`md-split mode-${viewMode}`}>
         <div className="md-pane md-pane--source" aria-hidden={viewMode === 'preview'}>
@@ -311,21 +411,25 @@ export default function HistoryTab() {
         </button>
       </div>
 
-      {draftNarrative !== null && (
+      {modalOpen && (
         <GenerateHistoryModal
           shelterName={s.name}
-          narrative={draftNarrative}
           citations={sourcesForShelter.filter((src) => src.include_in_history)}
+          events={generateEvents}
+          pendingPermission={pendingPermission}
+          onRespondPermission={handleRespondPermission}
+          status={generateError ? 'error' : draftNarrative !== null ? 'done' : 'running'}
+          narrative={draftNarrative}
+          errorMessage={generateError}
           onAccept={() => {
+            if (draftNarrative === null) return;
             dispatch(setHistoryContent(
               assembleAcceptedHistory(s.name, draftNarrative, sourcesForShelter.filter((src) => src.include_in_history)),
             ));
+            setModalOpen(false);
             setDraftNarrative(null);
           }}
-          onReject={() => {
-            setDraftNarrative(null);
-            setGenerateError(null);
-          }}
+          onReject={closeGenerateModal}
         />
       )}
     </div>

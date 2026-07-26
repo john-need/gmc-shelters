@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse, GenerateHistoryRequest, GenerateHistoryResponse } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse, GenerateHistoryRequest, GenerateHistoryResponse, GenerateHistoryEvent, McpConnectionInfo, GenerateDescriptionRequest, GenerateDescriptionResponse } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -27,6 +27,8 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.SHELTERS_DELETE, { id, slug, sheltersRoot }),
     setHistory: (id: number, history: string) =>
       ipcRenderer.invoke(CHANNELS.SHELTERS_SET_HISTORY, { id, history }),
+    generateDescription: (request: GenerateDescriptionRequest): Promise<GenerateDescriptionResponse> =>
+      ipcRenderer.invoke(CHANNELS.SHELTER_GENERATE_DESCRIPTION, request),
   },
   photos: {
     getByShelter: (shelterId: number) =>
@@ -65,6 +67,13 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.HISTORY_WRITE, { historyRelPath, content, sheltersRoot }),
     generate: (request: GenerateHistoryRequest): Promise<GenerateHistoryResponse> =>
       ipcRenderer.invoke(CHANNELS.HISTORY_GENERATE, request),
+    onGenerateProgress: (callback: (event: GenerateHistoryEvent) => void) => {
+      const handler = (_e: Electron.IpcRendererEvent, evt: GenerateHistoryEvent) => callback(evt);
+      ipcRenderer.on(CHANNELS.HISTORY_GENERATE_PROGRESS, handler);
+      return () => ipcRenderer.removeListener(CHANNELS.HISTORY_GENERATE_PROGRESS, handler);
+    },
+    respondToPermission: (requestId: string, approved: boolean): Promise<void> =>
+      ipcRenderer.invoke(CHANNELS.HISTORY_GENERATE_RESPOND, { requestId, approved }),
   },
   sources: {
     getByShelter: (shelterId: number) =>
@@ -112,12 +121,19 @@ const api: ElectronAPI = {
       ipcRenderer.invoke(CHANNELS.WIKI_GET_HEADER, { resource }),
     saveHeader: (resource: string, payload: { citationType: string; fields: Record<string, string> }): Promise<WikiSaveHeaderResult> =>
       ipcRenderer.invoke(CHANNELS.WIKI_SAVE_HEADER, { resource, ...payload }),
+    findResource: (criteria: import('../shared/wiki-resource-match').WikiResourceCriteria): Promise<string | null> =>
+      ipcRenderer.invoke(CHANNELS.WIKI_FIND_RESOURCE, criteria),
   },
   ai: {
     getApiKey: (): Promise<string> => ipcRenderer.invoke(CHANNELS.AI_GET_API_KEY),
     setApiKey: (key: string): Promise<void> => ipcRenderer.invoke(CHANNELS.AI_SET_API_KEY, { key }),
     getModel: (): Promise<AiModelTier> => ipcRenderer.invoke(CHANNELS.AI_GET_MODEL),
     setModel: (tier: AiModelTier): Promise<void> => ipcRenderer.invoke(CHANNELS.AI_SET_MODEL, { tier }),
+  },
+  mcp: {
+    getEnabled: (): Promise<boolean> => ipcRenderer.invoke(CHANNELS.MCP_GET_ENABLED),
+    setEnabled: (enabled: boolean): Promise<void> => ipcRenderer.invoke(CHANNELS.MCP_SET_ENABLED, { enabled }),
+    getConnectionInfo: (): Promise<McpConnectionInfo> => ipcRenderer.invoke(CHANNELS.MCP_GET_CONNECTION_INFO),
   },
   collections: {
     status: (): Promise<CollectionStatus[]> => ipcRenderer.invoke(CHANNELS.COLLECTIONS_STATUS),

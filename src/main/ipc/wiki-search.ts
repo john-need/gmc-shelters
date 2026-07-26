@@ -4,9 +4,16 @@ import path from 'path';
 import type { WikiHeaderPayload, WikiIndexReport, WikiSaveHeaderResult, WikiSearchResult } from '../../shared/ipc-types';
 import { CHANNELS } from '../../shared/ipc-types';
 import { HEADER_PROPERTIES, validateHeader } from '../../shared/wiki-header-schema';
+import { pickWikiResource, type WikiResourceCriteria } from '../../shared/wiki-resource-match';
+import { rebuildWikiIndex } from './wikiIndexRebuild';
 
 // ponytail: lazy-open, never close — app lifetime matches DB lifetime
 let db: ReturnType<typeof openDb> | null = null;
+
+/** Forces the next search to reopen wiki/search.db — call after rebuilding it on disk. */
+export function resetWikiSearchDb(): void {
+  db = null;
+}
 
 function openDb() {
   const dbPath = path.resolve(app.getAppPath(), 'wiki', 'search.db');
@@ -136,37 +143,58 @@ export function paragraphSnippet(highlightedBody: string): string {
     .join('\n\n');
 }
 
+/** Full-text search over wiki/search.db — shared by the WIKI_SEARCH IPC handler and the MCP server. */
+export function searchWiki(query: string, collections?: string[]): WikiSearchResult[] {
+  if (!query?.trim()) return [];
+  if (collections && collections.length === 0) return []; // every collection deselected
+  const conn = getDb();
+  if (!conn) return [];
+  try {
+    // `path` is `<collectionName>/<stem>.md` (see scripts/build_wiki_index.py) — its
+    // first segment is the collection, so a prefix match filters by collection.
+    const collectionFilter = collections?.length
+      ? `AND (${collections.map(() => `path LIKE ? || '/%'`).join(' OR ')})`
+      : '';
+    const rows = conn
+      .prepare<unknown[], WikiSearchResult>(`
+        SELECT path, okf_type, title, publisher, volume, edition,
+               printed_volume, printed_issue, author, publication_date,
+               resource, citation_type, kind,
+               CAST(page AS INTEGER) AS page, image,
+               highlight(wiki_fts, 15, '<mark>', '</mark>') AS snippet
+        FROM wiki_fts
+        WHERE wiki_fts MATCH ?
+        ${collectionFilter}
+        ORDER BY rank
+        LIMIT 50
+      `)
+      .all(query, ...(collections ?? [])) as WikiSearchResult[];
+    return rows.map((r) => ({ ...r, snippet: paragraphSnippet(r.snippet) }));
+  } catch {
+    return [];
+  }
+}
+
+/** Best-effort link from a parsed citation to its primary-source document — see pickWikiResource. */
+export function findWikiResource(criteria: WikiResourceCriteria): string | null {
+  const conn = getDb();
+  if (!conn) return null;
+  const docs = conn
+    .prepare<unknown[], { title: string; publication_date: string; volume: string; printed_volume: string; edition: string; resource: string }>(
+      'SELECT DISTINCT title, publication_date, volume, printed_volume, edition, resource FROM wiki_fts',
+    )
+    .all();
+  return pickWikiResource(docs, criteria);
+}
+
 export function registerWikiSearchHandlers(): void {
-  ipcMain.handle(CHANNELS.WIKI_SEARCH, (_e, query: string, collections?: string[]): WikiSearchResult[] => {
-    if (!query?.trim()) return [];
-    if (collections && collections.length === 0) return []; // every collection deselected
-    const conn = getDb();
-    if (!conn) return [];
-    try {
-      // `path` is `<collectionName>/<stem>.md` (see scripts/build_wiki_index.py) — its
-      // first segment is the collection, so a prefix match filters by collection.
-      const collectionFilter = collections?.length
-        ? `AND (${collections.map(() => `path LIKE ? || '/%'`).join(' OR ')})`
-        : '';
-      const rows = conn
-        .prepare<unknown[], WikiSearchResult>(`
-          SELECT path, okf_type, title, publisher, volume, edition,
-                 printed_volume, printed_issue, author, publication_date,
-                 resource, citation_type, kind,
-                 CAST(page AS INTEGER) AS page, image,
-                 highlight(wiki_fts, 15, '<mark>', '</mark>') AS snippet
-          FROM wiki_fts
-          WHERE wiki_fts MATCH ?
-          ${collectionFilter}
-          ORDER BY rank
-          LIMIT 50
-        `)
-        .all(query, ...(collections ?? [])) as WikiSearchResult[];
-      return rows.map((r) => ({ ...r, snippet: paragraphSnippet(r.snippet) }));
-    } catch {
-      return [];
-    }
-  });
+  ipcMain.handle(CHANNELS.WIKI_FIND_RESOURCE, (_e, criteria: WikiResourceCriteria): string | null =>
+    findWikiResource(criteria),
+  );
+
+  ipcMain.handle(CHANNELS.WIKI_SEARCH, (_e, query: string, collections?: string[]): WikiSearchResult[] =>
+    searchWiki(query, collections),
+  );
 
   ipcMain.handle(
     CHANNELS.WIKI_OPEN_PDF,
@@ -200,10 +228,10 @@ export function registerWikiSearchHandlers(): void {
 
   ipcMain.handle(
     CHANNELS.WIKI_SAVE_HEADER,
-    (
+    async (
       _e,
       { resource, citationType, fields }: { resource: string; citationType: string; fields: Record<string, string> },
-    ): WikiSaveHeaderResult => {
+    ): Promise<WikiSaveHeaderResult> => {
       const mdPath = wikiMdPath(app.getAppPath(), resource);
       if (!fs.existsSync(mdPath)) {
         return { ok: false, error: 'This file has not been added to the wiki yet.' };
@@ -212,6 +240,10 @@ export function registerWikiSearchHandlers(): void {
       if (!validated.ok) return { ok: false, errors: validated.errors };
 
       writeWikiHeader(mdPath, citationType, validated.fields);
+      // Keep the search index (and sort-by-year in the Research tab) in sync with
+      // the edited header, rather than going stale until the next full reindex.
+      await rebuildWikiIndex();
+      resetWikiSearchDb();
       return { ok: true };
     },
   );

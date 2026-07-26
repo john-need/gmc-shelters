@@ -28,10 +28,14 @@ function source(overrides: Partial<Source> = {}): Source {
   };
 }
 
-function getHandler() {
-  const call = (ipcMain.handle as jest.Mock).mock.calls.find(([ch]) => ch === CHANNELS.HISTORY_GENERATE);
-  if (!call) throw new Error('No handler registered for HISTORY_GENERATE');
-  return call[1] as (event: unknown, request: GenerateHistoryRequest) => Promise<unknown>;
+function getHandler(channel: string) {
+  const call = (ipcMain.handle as jest.Mock).mock.calls.find(([ch]) => ch === channel);
+  if (!call) throw new Error(`No handler registered for ${channel}`);
+  return call[1] as (event: unknown, arg: unknown) => Promise<unknown> | unknown;
+}
+
+function fakeEvent() {
+  return { sender: { send: jest.fn() } };
 }
 
 function request(): GenerateHistoryRequest {
@@ -63,9 +67,9 @@ describe('ipc/generate-history', () => {
 
   it('returns no_api_key with zero network calls when no key is stored', async () => {
     (readStoredApiKey as jest.Mock).mockReturnValue('');
-    const handler = getHandler();
+    const handler = getHandler(CHANNELS.HISTORY_GENERATE);
 
-    const result = await handler(null, request());
+    const result = await handler(fakeEvent(), request());
 
     expect(result).toEqual({ ok: false, error: 'no_api_key' });
     expect(runGenerateHistory).not.toHaveBeenCalled();
@@ -74,13 +78,16 @@ describe('ipc/generate-history', () => {
   it('resolves the model and calls runGenerateHistory when a key is stored, returning its outcome unchanged', async () => {
     (readStoredApiKey as jest.Mock).mockReturnValue('sk-ant-test');
     (runGenerateHistory as jest.Mock).mockResolvedValue({ ok: true, narrative: 'A narrative.' });
-    const handler = getHandler();
+    const handler = getHandler(CHANNELS.HISTORY_GENERATE);
     const req = request();
 
-    const result = await handler(null, req);
+    const result = await handler(fakeEvent(), req);
 
     expect(resolvePrimaryModel).toHaveBeenCalledWith('default');
-    expect(runGenerateHistory).toHaveBeenCalledWith('sk-ant-test', 'claude-haiku-4-5-20251001', req, { wikiExcerpts: {} });
+    expect(runGenerateHistory).toHaveBeenCalledWith(
+      'sk-ant-test', 'claude-haiku-4-5-20251001', req,
+      expect.objectContaining({ wikiExcerpts: {}, onEvent: expect.any(Function), requestPermission: expect.any(Function) }),
+    );
     expect(result).toEqual({ ok: true, narrative: 'A narrative.' });
   });
 
@@ -89,7 +96,7 @@ describe('ipc/generate-history', () => {
     (runGenerateHistory as jest.Mock).mockResolvedValue({ ok: true, narrative: 'A narrative.' });
     (getWikiPageBody as jest.Mock).mockImplementation((resource: string, page: number) =>
       (resource === 'collections/long-trail-news/x.pdf' && page === 3 ? 'Killington Peak drew a crowd.' : null));
-    const handler = getHandler();
+    const handler = getHandler(CHANNELS.HISTORY_GENERATE);
     const req = request();
     req.citations = [
       source({ id: 5, archive_location: 'collections/long-trail-news/x.pdf', pages: '3' }),
@@ -97,22 +104,59 @@ describe('ipc/generate-history', () => {
       source({ id: 7, archive_location: 'collections/long-trail-news/x.pdf', pages: '' }), // no page, skipped
     ];
 
-    await handler(null, req);
+    await handler(fakeEvent(), req);
 
     expect(getWikiPageBody).toHaveBeenCalledWith('collections/long-trail-news/x.pdf', 3);
     expect(getWikiPageBody).toHaveBeenCalledTimes(1);
-    expect(runGenerateHistory).toHaveBeenCalledWith('sk-ant-test', 'claude-haiku-4-5-20251001', req, {
-      wikiExcerpts: { 5: 'Killington Peak drew a crowd.' },
-    });
+    expect(runGenerateHistory).toHaveBeenCalledWith(
+      'sk-ant-test', 'claude-haiku-4-5-20251001', req,
+      expect.objectContaining({ wikiExcerpts: { 5: 'Killington Peak drew a crowd.' } }),
+    );
   });
 
   it('passes through a runGenerateHistory error response unchanged', async () => {
     (readStoredApiKey as jest.Mock).mockReturnValue('sk-ant-test');
     (runGenerateHistory as jest.Mock).mockResolvedValue({ ok: false, error: 'timeout' });
-    const handler = getHandler();
+    const handler = getHandler(CHANNELS.HISTORY_GENERATE);
 
-    const result = await handler(null, request());
+    const result = await handler(fakeEvent(), request());
 
     expect(result).toEqual({ ok: false, error: 'timeout' });
+  });
+
+  it('forwards onEvent calls from runGenerateHistory to event.sender.send on the progress channel', async () => {
+    (readStoredApiKey as jest.Mock).mockReturnValue('sk-ant-test');
+    (runGenerateHistory as jest.Mock).mockImplementation(async (_key, _model, _req, opts) => {
+      opts.onEvent({ type: 'text', text: 'hello' });
+      return { ok: true, narrative: 'hello' };
+    });
+    const handler = getHandler(CHANNELS.HISTORY_GENERATE);
+    const event = fakeEvent();
+
+    await handler(event, request());
+
+    expect(event.sender.send).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE_PROGRESS, { type: 'text', text: 'hello' });
+  });
+
+  it('resolves a pending requestPermission call when HISTORY_GENERATE_RESPOND fires with the matching requestId', async () => {
+    (readStoredApiKey as jest.Mock).mockReturnValue('sk-ant-test');
+    let capturedApproval: boolean | undefined;
+    (runGenerateHistory as jest.Mock).mockImplementation(async (_key, _model, _req, opts) => {
+      capturedApproval = await opts.requestPermission('search_collections', { query: 'x' }, 'tool_1');
+      return { ok: true, narrative: '' };
+    });
+    const generateHandler = getHandler(CHANNELS.HISTORY_GENERATE);
+    const respondHandler = getHandler(CHANNELS.HISTORY_GENERATE_RESPOND);
+
+    const generatePromise = generateHandler(fakeEvent(), request());
+    await respondHandler(fakeEvent(), { requestId: 'tool_1', approved: true });
+    await generatePromise;
+
+    expect(capturedApproval).toBe(true);
+  });
+
+  it('ignores a respond call for an unknown or already-resolved requestId', () => {
+    const respondHandler = getHandler(CHANNELS.HISTORY_GENERATE_RESPOND);
+    expect(() => respondHandler(fakeEvent(), { requestId: 'nope', approved: true })).not.toThrow();
   });
 });

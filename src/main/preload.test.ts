@@ -17,7 +17,7 @@ describe('preload contextBridge', () => {
     await import('./preload');
     const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as [string, Record<string, unknown>];
     const keys = Object.keys(api).sort();
-    expect(keys).toEqual(['ai', 'app', 'architectures', 'categories', 'collections', 'export', 'history', 'mapMarkers', 'photos', 'publish', 'research', 'shell', 'shelters', 'sources', 'wiki']);
+    expect(keys).toEqual(['ai', 'app', 'architectures', 'categories', 'collections', 'export', 'history', 'mapMarkers', 'mcp', 'photos', 'publish', 'research', 'shell', 'shelters', 'sources', 'wiki']);
   });
 
   it('shelters.getAll is a function', async () => {
@@ -106,5 +106,81 @@ describe('preload contextBridge', () => {
     const req = { shelter: { name: 'Aeolus View Camp' }, citations: [], currentHistory: '' };
     await api.history.generate(req);
     expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE, req);
+  });
+
+  it('history.onGenerateProgress subscribes/unsubscribes on CHANNELS.HISTORY_GENERATE_PROGRESS', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { history: { onGenerateProgress: (cb: (evt: unknown) => void) => () => void } }];
+
+    const callback = jest.fn();
+    const unsubscribe = api.history.onGenerateProgress(callback);
+    expect(ipcRenderer.on).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE_PROGRESS, expect.any(Function));
+
+    const handler = (ipcRenderer.on as jest.Mock).mock.calls[0][1];
+    handler(null, { type: 'text', text: 'hi' });
+    expect(callback).toHaveBeenCalledWith({ type: 'text', text: 'hi' });
+
+    unsubscribe();
+    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE_PROGRESS, handler);
+  });
+
+  it('shelters.generateDescription is exposed as a function that invokes CHANNELS.SHELTER_GENERATE_DESCRIPTION with the request', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { shelters: { generateDescription: (request: unknown) => Promise<unknown> } }];
+
+    expect(typeof api.shelters.generateDescription).toBe('function');
+    const req = { shelter: { name: 'Aeolus View Camp' }, historyContent: '' };
+    await api.shelters.generateDescription(req);
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.SHELTER_GENERATE_DESCRIPTION, req);
+  });
+
+  it('wiki.findResource forwards the criteria to CHANNELS.WIKI_FIND_RESOURCE', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { wiki: { findResource: (criteria: unknown) => Promise<string | null> } }];
+
+    const criteria = { title: 'Long Trail News', date: '1963-08', year: 1963 };
+    await api.wiki.findResource(criteria);
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.WIKI_FIND_RESOURCE, criteria);
+  });
+
+  it('mcp.getEnabled/setEnabled/getConnectionInfo forward to their channels', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { mcp: {
+        getEnabled: () => Promise<boolean>;
+        setEnabled: (enabled: boolean) => Promise<void>;
+        getConnectionInfo: () => Promise<unknown>;
+      } }];
+
+    await api.mcp.getEnabled();
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.MCP_GET_ENABLED);
+
+    await api.mcp.setEnabled(true);
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.MCP_SET_ENABLED, { enabled: true });
+
+    await api.mcp.getConnectionInfo();
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.MCP_GET_CONNECTION_INFO);
+  });
+
+  it('history.respondToPermission forwards to CHANNELS.HISTORY_GENERATE_RESPOND with the requestId and approval', async () => {
+    const { contextBridge, ipcRenderer } = await import('electron');
+    const { CHANNELS } = await import('@shared/ipc-types');
+    await import('./preload');
+    const [, api] = (contextBridge.exposeInMainWorld as jest.Mock).mock.calls[0] as
+      [string, { history: { respondToPermission: (requestId: string, approved: boolean) => Promise<void> } }];
+
+    await api.history.respondToPermission('tool_1', true);
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith(CHANNELS.HISTORY_GENERATE_RESPOND, { requestId: 'tool_1', approved: true });
   });
 });

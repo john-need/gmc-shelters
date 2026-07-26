@@ -109,4 +109,59 @@ describe('AiSettingsPage', () => {
       expect(window.api.ai.setModel).toHaveBeenCalledWith('escalation');
     });
   });
+
+  describe('MCP server card', () => {
+    it('loads the current enabled state on mount and reflects it in the toggle', async () => {
+      (window.api.mcp.getEnabled as jest.Mock).mockResolvedValue(true);
+      renderWithStore();
+      const toggle = await screen.findByLabelText(/enable mcp server/i);
+      expect(toggle).toBeChecked();
+    });
+
+    it('shows the toggle unchecked when the server is disabled', async () => {
+      (window.api.mcp.getEnabled as jest.Mock).mockResolvedValue(false);
+      renderWithStore();
+      const toggle = await screen.findByLabelText(/enable mcp server/i);
+      expect(toggle).not.toBeChecked();
+    });
+
+    it('calls setEnabled and flips the toggle when clicked', async () => {
+      (window.api.mcp.getEnabled as jest.Mock).mockResolvedValue(false);
+      renderWithStore();
+      const toggle = await screen.findByLabelText(/enable mcp server/i);
+      fireEvent.click(toggle);
+      await waitFor(() => {
+        expect(window.api.mcp.setEnabled).toHaveBeenCalledWith(true);
+      });
+      expect(toggle).toBeChecked();
+    });
+
+    it('shows the connection URL and a Claude Desktop config snippet when enabled', async () => {
+      (window.api.mcp.getEnabled as jest.Mock).mockResolvedValue(true);
+      (window.api.mcp.getConnectionInfo as jest.Mock).mockResolvedValue({
+        serverName: 'gmc-shelters',
+        url: 'http://127.0.0.1:5972/mcp',
+      });
+      renderWithStore();
+      expect(await screen.findByText('http://127.0.0.1:5972/mcp')).toBeInTheDocument();
+      const snippet = await screen.findByTestId('mcp-config-snippet');
+      // Claude Desktop's mcpServers schema only accepts {command, args, env, extensionId} —
+      // no "url" field exists, so a remote HTTP server needs the mcp-remote stdio bridge.
+      expect(JSON.parse(snippet.textContent ?? '')).toEqual({
+        mcpServers: {
+          'gmc-shelters': {
+            command: 'npx',
+            args: ['-y', 'mcp-remote', 'http://127.0.0.1:5972/mcp'],
+          },
+        },
+      });
+    });
+
+    it('hides the connection details when disabled', async () => {
+      (window.api.mcp.getEnabled as jest.Mock).mockResolvedValue(false);
+      renderWithStore();
+      await screen.findByLabelText(/enable mcp server/i);
+      expect(screen.queryByTestId('mcp-config-snippet')).toBeNull();
+    });
+  });
 });

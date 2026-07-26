@@ -160,6 +160,106 @@ describe('ResearchTab', () => {
     expect(screen.getByText('Green Mountain Club, Pp. 5')).toBeInTheDocument();
   });
 
+  it('defaults to sorting collection results by collection name, ascending', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT, BOOK_HIT]);
+    const { container } = render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+
+    const cards = container.querySelectorAll('.research-result');
+    // 'books' (BOOK_HIT) sorts before 'long-trail-news' (PAGE_HIT).
+    expect(cards[0].textContent).toContain('Long Trail System Shelter History');
+    expect(cards[1].textContent).toContain('ed. December');
+  });
+
+  it('cycling the sort field to year reorders results by year, ascending', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT, BOOK_HIT]);
+    const { container } = render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /sort: collection/i }));
+
+    const cards = container.querySelectorAll('.research-result');
+    // PAGE_HIT (1922) sorts before BOOK_HIT (1999).
+    expect(cards[0].textContent).toContain('ed. December');
+    expect(cards[1].textContent).toContain('Long Trail System Shelter History');
+  });
+
+  it('toggling sort direction reverses the order', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT, BOOK_HIT]);
+    const { container } = render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /sort: collection/i })); // -> year, asc
+    fireEvent.click(screen.getByRole('button', { name: /asc/i })); // -> desc
+
+    const cards = container.querySelectorAll('.research-result');
+    // Descending by year: BOOK_HIT (1999) before PAGE_HIT (1922).
+    expect(cards[0].textContent).toContain('Long Trail System Shelter History');
+    expect(cards[1].textContent).toContain('ed. December');
+  });
+
+  it('sorting by year falls back to the volume-derived year when publication_date is blank', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([BOOK_HIT, AUGUST_1946_HIT]);
+    const { container } = render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/kandahar lodge/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /sort: collection/i })); // -> year, asc
+
+    const cards = container.querySelectorAll('.research-result');
+    // AUGUST_1946_HIT has no publication_date but volume '1946' (< BOOK_HIT's 1999).
+    expect(cards[0].textContent).toContain('Kandahar Lodge');
+    expect(cards[1].textContent).toContain('Long Trail System Shelter History');
+  });
+
+  it('clicking "Add All Citations" saves every visible collection result via createSource, with no review modal', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT, BOOK_HIT]);
+    (window.api.sources.create as jest.Mock).mockResolvedValue({ id: 1 });
+    render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /add all citations/i }));
+
+    await waitFor(() => expect(window.api.sources.create).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText(/add a new source/i)).toBeNull();
+    expect(window.api.sources.create).toHaveBeenCalledWith(
+      expect.objectContaining({ shelter_id: SHELTER.id, container_title: 'Long Trail News' }),
+    );
+    expect(window.api.sources.create).toHaveBeenCalledWith(
+      expect.objectContaining({ shelter_id: SHELTER.id, title: 'Long Trail System Shelter History' }),
+    );
+  });
+
+  it('shows a summary toast with the count after adding all collection citations', async () => {
+    (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT, BOOK_HIT]);
+    (window.api.sources.create as jest.Mock).mockResolvedValue({ id: 1 });
+    const store = makeStore();
+    render(<Provider store={store}><ResearchTab /></Provider>);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Monroe' } });
+    await waitFor(() => expect(window.api.wiki.search).toHaveBeenCalledWith('Monroe'));
+    await screen.findByText(/monroe lodge/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /add all citations/i }));
+
+    await waitFor(() => {
+      expect(store.getState().ui.toast?.message).toBe('2 citations added to Sources tab');
+    });
+  });
+
+  it('does not show "Add All Citations" when there are no collection results', () => {
+    render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+    expect(screen.queryByRole('button', { name: /add all citations/i })).toBeNull();
+  });
+
   it('persists the search query and results across unmount/remount (tab switch)', async () => {
     (window.api.wiki.search as jest.Mock).mockResolvedValue([PAGE_HIT]);
     const store = makeStore();
@@ -471,6 +571,44 @@ describe('ResearchTab', () => {
           }),
         );
       });
+    });
+
+    it('clicking "Add All Citations" saves every web result via createSource, with no review modal', async () => {
+      (window.api.wiki.search as jest.Mock).mockResolvedValue([]);
+      (window.api.research.webSearch as jest.Mock).mockResolvedValue({
+        ok: true,
+        results: [
+          { title: 'NOAA Weather Almanac', url: 'https://example.com/almanac', snippet: 'a great primary source', localImagePath: null },
+          { title: 'Second Source', url: 'https://example.com/second', snippet: 'another one', localImagePath: null },
+        ],
+      });
+      (window.api.sources.create as jest.Mock).mockResolvedValue({ id: 1 });
+
+      render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+      checkAndType('Monroe');
+      clickSearchWeb();
+      await screen.findByText('NOAA Weather Almanac');
+
+      fireEvent.click(screen.getByRole('button', { name: /add all citations/i }));
+
+      await waitFor(() => expect(window.api.sources.create).toHaveBeenCalledTimes(2));
+      expect(screen.queryByText(/add a new source/i)).toBeNull();
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ shelter_id: SHELTER.id, container_title: 'NOAA Weather Almanac' }),
+      );
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ shelter_id: SHELTER.id, container_title: 'Second Source' }),
+      );
+    });
+
+    it('does not show "Add All Citations" on the Web tab when there are no web results', async () => {
+      (window.api.wiki.search as jest.Mock).mockResolvedValue([]);
+      (window.api.research.webSearch as jest.Mock).mockResolvedValue({ ok: true, results: [] });
+      render(<Provider store={makeStore()}><ResearchTab /></Provider>);
+      checkAndType('Monroe');
+      clickSearchWeb();
+      await screen.findByText(/no web sources found/i);
+      expect(screen.queryByRole('button', { name: /add all citations/i })).toBeNull();
     });
 
     it('renders a thumbnail (via a shelter:// URL) for a result with a localImagePath, and none for a result without one', async () => {

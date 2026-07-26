@@ -9,7 +9,7 @@ import sourcesReducer from '../../../store/sourcesSlice';
 import aiSettingsReducer from '../../../store/aiSettingsSlice';
 import uiReducer, { type UiState } from '../../../store/uiSlice';
 import HistoryTab from './HistoryTab';
-import type { GenerateHistoryResponse, Shelter, Source } from '../../../../shared/ipc-types';
+import type { GenerateHistoryEvent, GenerateHistoryResponse, Shelter, Source } from '../../../../shared/ipc-types';
 
 function makeSource(overrides: Partial<Source> = {}): Source {
   return {
@@ -479,11 +479,75 @@ describe('HistoryTab', () => {
       );
     });
 
+    it('opens the modal immediately in a running state, before the response resolves', async () => {
+      localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+      const store = makeStore(makeShelter());
+      window.api.history.generate = jest.fn().mockReturnValue(new Promise(() => {}));
+
+      render(
+        <Provider store={store}>
+          <HistoryTab />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /generate history/i }));
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /generating history/i })).toBeInTheDocument();
+    });
+
+    it('shows live progress text and tool activity as onGenerateProgress events arrive', async () => {
+      localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+      const store = makeStore(makeShelter());
+      window.api.history.generate = jest.fn().mockReturnValue(new Promise(() => {}));
+      let emit: (evt: GenerateHistoryEvent) => void = () => {};
+      window.api.history.onGenerateProgress = jest.fn((cb) => { emit = cb; return jest.fn(); });
+
+      render(
+        <Provider store={store}>
+          <HistoryTab />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /generate history/i }));
+      act(() => {
+        emit({ type: 'text', text: 'Drafting the opening paragraph.' });
+        emit({ type: 'tool_call', tool: 'web_search', input: { query: 'Aeolus View Camp' } });
+      });
+
+      expect(screen.getByText('Drafting the opening paragraph.')).toBeInTheDocument();
+      expect(screen.getByText(/Web search/)).toBeInTheDocument();
+    });
+
+    it('shows an Allow/Deny prompt on a permission_request event and forwards the decision via respondToPermission', async () => {
+      localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+      const store = makeStore(makeShelter());
+      window.api.history.generate = jest.fn().mockReturnValue(new Promise(() => {}));
+      let emit: (evt: GenerateHistoryEvent) => void = () => {};
+      window.api.history.onGenerateProgress = jest.fn((cb) => { emit = cb; return jest.fn(); });
+
+      render(
+        <Provider store={store}>
+          <HistoryTab />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /generate history/i }));
+      act(() => {
+        emit({ type: 'permission_request', requestId: 'tool_1', tool: 'search_collections', input: { query: 'Aeolus' } });
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /allow/i }));
+
+      expect(window.api.history.respondToPermission).toHaveBeenCalledWith('tool_1', true);
+    });
+
     it.each([
       ['no_api_key' as const],
       ['network' as const],
       ['timeout' as const],
-    ])('renders an inline error and leaves content unchanged on a %s response', async (error) => {
+      ['max_turns' as const],
+    ])('opens the modal and shows an error, leaving content unchanged, on a %s response', async (error) => {
       localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
       const store = makeStore(makeShelter());
       window.api.history.generate = jest.fn().mockResolvedValue({ ok: false, error });
@@ -499,8 +563,11 @@ describe('HistoryTab', () => {
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(store.getState().shelters.historyContent).toBe('# Camp history');
       expect(store.getState().shelters.historyDirty).toBe(false);
+
+      fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
@@ -606,6 +673,160 @@ describe('HistoryTab', () => {
         expect(screen.queryByText(/A narrative for the wrong shelter/i)).not.toBeInTheDocument();
       });
       expect(store.getState().shelters.historyContent).toBe('# Camp history');
+    });
+  });
+
+  describe('Replace Sources', () => {
+    beforeEach(() => {
+      // A preceding test in this file ("does not disrupt an in-progress save...") reassigns
+      // window.api.history.write to a promise that only resolves via a locally-captured
+      // resolver, and never restores it — these tests dispatch createSource/deleteSource,
+      // which write through history sync, so they'd hang forever on that leaked mock.
+      window.api.history.write = jest.fn().mockResolvedValue(undefined);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '', missing: false });
+      // This file has no global clearAllMocks, so a prior test's calls to these would
+      // otherwise still be on the mock's call history for the next test's assertions.
+      (window.api.sources.create as jest.Mock).mockClear();
+      (window.api.sources.delete as jest.Mock).mockClear();
+      window.api.collections.status = jest.fn().mockResolvedValue([]);
+    });
+
+    function makeStoreWithHistory(shelter: Shelter, sources: Source[], historyContent: string) {
+      return configureStore({
+        reducer: {
+          shelters: sheltersReducer,
+          photos: photosReducer,
+          architectures: architecturesReducer,
+          categories: categoriesReducer,
+          sources: sourcesReducer,
+          aiSettings: aiSettingsReducer,
+          ui: uiReducer,
+        },
+        preloadedState: {
+          ...makeStore(shelter, sources).getState(),
+          shelters: {
+            ...makeStore(shelter, sources).getState().shelters,
+            historyContent,
+            historyOriginal: historyContent,
+          },
+        },
+      });
+    }
+
+    const HISTORY_WITH_SOURCES = '# Aeolus View Camp\n\n### Sources\n\n'
+      + '- Doe, Jane. *Shelter Notes*.\n'
+      + '- Smith, John. *Trail Log*.\n';
+
+    it('is disabled when the history has no ### Sources section', () => {
+      const store = makeStoreWithHistory(makeShelter(), [], '# Aeolus View Camp\n\nNo sources here.\n');
+      render(<Provider store={store}><HistoryTab /></Provider>);
+      expect(screen.getByRole('button', { name: /replace sources/i })).toBeDisabled();
+    });
+
+    it('is enabled when the history has a parseable ### Sources section', () => {
+      const store = makeStoreWithHistory(makeShelter(), [], HISTORY_WITH_SOURCES);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+      expect(screen.getByRole('button', { name: /replace sources/i })).not.toBeDisabled();
+    });
+
+    it('fetches window.api.collections.status() and uses it to recognize a plain pasted citation naming a known collection', async () => {
+      window.confirm = jest.fn().mockReturnValue(true);
+      window.api.collections.status = jest.fn().mockResolvedValue([
+        { name: 'Long Trail News', total: 1, added: 1, cleaned: 1, files: [], citationType: 'magazine', defaults: {} },
+      ]);
+      window.api.sources.create = jest.fn().mockImplementation((input) => Promise.resolve({ ...input, id: 99 }));
+      const historyWithPastedCitation = '# Aeolus View Camp\n\n### Sources\n\n'
+        + 'Long Trail News, August 1963, p. 4–5. "Little Rock Pond Shelter Dedicated to Lula M. Tye." Green Mountain Club.\n';
+      const store = makeStoreWithHistory(makeShelter(), [], historyWithPastedCitation);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+
+      await waitFor(() => expect(window.api.collections.status).toHaveBeenCalled());
+      fireEvent.click(screen.getByRole('button', { name: /replace sources/i }));
+
+      await waitFor(() => expect(window.api.sources.create).toHaveBeenCalledTimes(1));
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'magazine',
+          container_title: 'Long Trail News',
+          title: 'Little Rock Pond Shelter Dedicated to Lula M. Tye',
+          publisher: 'Green Mountain Club',
+          pages: '4-5',
+          date: '1963-08',
+          year: 1963,
+        }),
+      );
+    });
+
+    it('links each parsed citation to a collection document via wiki.findResource and reports the linked count', async () => {
+      window.confirm = jest.fn().mockReturnValue(true);
+      window.api.sources.create = jest.fn().mockImplementation((input) => Promise.resolve({ ...input, id: Math.random() }));
+      window.api.wiki.findResource = jest.fn()
+        .mockResolvedValueOnce('collections/Long Trail News/1963_08_Aug.pdf')
+        .mockResolvedValueOnce(null);
+      const store = makeStoreWithHistory(makeShelter(), [], HISTORY_WITH_SOURCES);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /replace sources/i }));
+
+      await waitFor(() => expect(window.api.sources.create).toHaveBeenCalledTimes(2));
+      expect(window.api.wiki.findResource).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Shelter Notes' }),
+      );
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Shelter Notes', archive_location: 'collections/Long Trail News/1963_08_Aug.pdf' }),
+      );
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Trail Log', archive_location: '' }),
+      );
+      await waitFor(() => {
+        expect(store.getState().ui.toast?.message).toBe('Sources replaced — 2 added, 1 linked');
+      });
+    });
+
+    it('does nothing when the confirmation is declined', () => {
+      window.confirm = jest.fn().mockReturnValue(false);
+      const existing = makeSource({ id: 5 });
+      const store = makeStoreWithHistory(makeShelter(), [existing], HISTORY_WITH_SOURCES);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /replace sources/i }));
+
+      expect(window.api.sources.delete).not.toHaveBeenCalled();
+      expect(window.api.sources.create).not.toHaveBeenCalled();
+    });
+
+    it('asks for confirmation naming the current and incoming counts', () => {
+      window.confirm = jest.fn().mockReturnValue(false);
+      const existing = [makeSource({ id: 5 }), makeSource({ id: 6 })];
+      const store = makeStoreWithHistory(makeShelter(), existing, HISTORY_WITH_SOURCES);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /replace sources/i }));
+
+      expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('2'));
+    });
+
+    it('deletes every current source and creates one per parsed history citation, on confirm', async () => {
+      window.confirm = jest.fn().mockReturnValue(true);
+      window.api.sources.delete = jest.fn().mockResolvedValue(undefined);
+      window.api.sources.create = jest.fn().mockImplementation((input) => Promise.resolve({ ...input, id: Math.random() }));
+      const existing = makeSource({ id: 5 });
+      const store = makeStoreWithHistory(makeShelter(), [existing], HISTORY_WITH_SOURCES);
+      render(<Provider store={store}><HistoryTab /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /replace sources/i }));
+
+      await waitFor(() => expect(window.api.sources.delete).toHaveBeenCalledWith(5));
+      await waitFor(() => expect(window.api.sources.create).toHaveBeenCalledTimes(2));
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ shelter_id: 7, title: 'Shelter Notes', author: 'Doe, Jane', include_in_history: true }),
+      );
+      expect(window.api.sources.create).toHaveBeenCalledWith(
+        expect.objectContaining({ shelter_id: 7, title: 'Trail Log', author: 'Smith, John', include_in_history: true }),
+      );
+      await waitFor(() => {
+        expect(store.getState().ui.toast?.message).toMatch(/2/);
+      });
     });
   });
 });

@@ -670,14 +670,30 @@ describe('include_in_post quick-toggle checkbox', () => {
       });
     });
 
-    it('grid: Shift+Tab does not advance (left for native reverse-tabbing)', async () => {
+    it('grid: Shift+Tab selects the previous photo', async () => {
+      const store = makeStore(makeShelter(), threePhotos());
+      const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
+
+      const second = await screen.findByTestId('photo-card-2');
+      fireEvent.keyDown(second, { key: 'Tab', shiftKey: true });
+
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('First');
+      });
+      expect(mockReorderPhotos).not.toHaveBeenCalled();
+    });
+
+    it('grid: Shift+Tab on the first photo wraps around to select the last photo', async () => {
       const store = makeStore(makeShelter(), threePhotos());
       const { container } = render(<Provider store={store}><PhotosTab /></Provider>);
 
       const first = await screen.findByTestId('photo-card-1');
       fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
 
-      expect(container.querySelector('.photo-detail-title')).toHaveTextContent('First');
+      await waitFor(() => {
+        expect(container.querySelector('.photo-detail-title')).toHaveTextContent('Third');
+      });
+      expect(mockReorderPhotos).not.toHaveBeenCalled();
     });
 
     it('grid: ArrowDown on the last photo is a no-op (clamps, does not wrap)', async () => {

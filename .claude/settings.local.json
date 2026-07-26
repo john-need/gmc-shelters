@@ -129,7 +129,30 @@
       "Bash(grep -l \"Settings\\\\|Sidebar\\\\|nav-item\\\\|Shelter\" *.js)",
       "Bash(npm ls *)",
       "Bash(pkill -f \"http.server 8934\")",
-      "Bash(awk '{print length, NR}' index.html)"
+      "Bash(awk '{print length, NR}' index.html)",
+      "Bash(git -C /Users/johnneed/Projects/gmc-shelters status)",
+      "Bash(git -C /Users/johnneed/Projects/gmc-shelters log -1 --stat)",
+      "Bash(git ls-tree *)",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -I{} basename {})",
+      "Bash(npm view *)",
+      "Bash(osascript -e 'tell application \"System Events\" to get name of every window of every process whose name contains \"Electron\"')",
+      "Bash(kill 7526 7528 7530)",
+      "Bash(lsof -nP -iTCP:5972 -sTCP:LISTEN)",
+      "Bash(pkill -f \"gmc-shelters/node_modules/electron\")",
+      "Bash(pkill -f \"electron-forge start\")",
+      "Bash(kill 7801 7846 7845)",
+      "Read(//Users/johnneed/.agents/skills/grill-with-docs/**)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(curl -s http://127.0.0.1:5972/mcp -X POST -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -H 'MCP-Protocol-Version: 2025-06-18' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"curl-test\",\"version\":\"1.0\"}}}')",
+      "Bash(curl -s http://127.0.0.1:5972/mcp -X POST -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -H 'MCP-Protocol-Version: 2025-06-18' -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}')",
+      "WebSearch",
+      "Read(//Applications/**)",
+      "Read(//Users/johnneed/Applications/**)",
+      "Bash(timeout 25 npx -y mcp-remote http://127.0.0.1:5972/mcp)",
+      "Read(//tmp/**)",
+      "Bash(brctl status *)",
+      "Bash(npx ts-node -e ' *)"
     ]
   }
 }

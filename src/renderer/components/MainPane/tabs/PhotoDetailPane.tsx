@@ -59,11 +59,11 @@ export default function PhotoDetailPane({
         <div className="photo-detail-head">
           <div>
             <div className="photo-detail-title">{selected.title || 'Untitled'}</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.06em', marginTop: 2 }}>
-              {selected.file_name}
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', marginTop: 2 }}>
+              #{selected.id}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, auto)', gap: 4 }}>
             <button className="btn icon sm" title="Set as default photo" onClick={onSetDefault}>
               {isDefault ? (
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--forest)" stroke="var(--forest)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -121,6 +121,9 @@ export default function PhotoDetailPane({
               padding: '3px 8px', borderRadius: 2,
             }}>★ Default</div>
           )}
+        </div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.06em', marginTop: 6 }}>
+          {selected.file_name}
         </div>
 
         <div className="photo-fields" ref={fieldsRef}>

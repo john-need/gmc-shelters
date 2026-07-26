@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { CHANNELS } from '../../shared/ipc-types';
-import type { GenerateHistoryRequest, GenerateHistoryResponse, Source } from '../../shared/ipc-types';
+import type { GenerateHistoryEvent, GenerateHistoryRequest, GenerateHistoryResponse, Source } from '../../shared/ipc-types';
 import { readStoredApiKey, readStoredModelTier } from './ai-settings';
 import { resolvePrimaryModel } from '../ai/models';
 import { runGenerateHistory } from '../ai/generate-history';
@@ -21,13 +21,31 @@ function collectWikiExcerpts(citations: Source[]): Record<number, string> {
   return excerpts;
 }
 
+// Keyed by the Anthropic tool_use id, so the permission_request event sent to the
+// renderer and the eventual respondToPermission call always agree on one id.
+const pendingPermissions = new Map<string, (approved: boolean) => void>();
+
 export function registerGenerateHistoryHandlers(): void {
-  ipcMain.handle(CHANNELS.HISTORY_GENERATE, async (_e, request: GenerateHistoryRequest): Promise<GenerateHistoryResponse> => {
+  ipcMain.handle(CHANNELS.HISTORY_GENERATE, async (event, request: GenerateHistoryRequest): Promise<GenerateHistoryResponse> => {
     const apiKey = readStoredApiKey();
     if (!apiKey) return { ok: false, error: 'no_api_key' };
 
     const model = resolvePrimaryModel(readStoredModelTier());
     const wikiExcerpts = collectWikiExcerpts(request.citations);
-    return runGenerateHistory(apiKey, model, request, { wikiExcerpts });
+
+    return runGenerateHistory(apiKey, model, request, {
+      wikiExcerpts,
+      onEvent: (evt: GenerateHistoryEvent) => event.sender.send(CHANNELS.HISTORY_GENERATE_PROGRESS, evt),
+      requestPermission: (_tool, _input, requestId) => new Promise<boolean>((resolve) => {
+        pendingPermissions.set(requestId, resolve);
+      }),
+    });
+  });
+
+  ipcMain.handle(CHANNELS.HISTORY_GENERATE_RESPOND, (_e, { requestId, approved }: { requestId: string; approved: boolean }) => {
+    const resolve = pendingPermissions.get(requestId);
+    if (!resolve) return;
+    pendingPermissions.delete(requestId);
+    resolve(approved);
   });
 }

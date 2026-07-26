@@ -10,6 +10,7 @@ edition: "19"
 author: "Green Mountain Club"
 pages: "75"
 language: "en"
+publication_date: "1968"
 ---
 
 <!-- page: 1 -->

@@ -17,7 +17,10 @@ import { registerAiSettingsHandlers } from './ipc/ai-settings';
 import { registerCollectionsHandlers } from './ipc/collections';
 import { registerResearchWebSearchHandlers } from './ipc/research-web-search';
 import { registerGenerateHistoryHandlers } from './ipc/generate-history';
+import { registerGenerateDescriptionHandlers } from './ipc/generate-description';
+import { registerMcpSettingsHandlers, readStoredMcpEnabled } from './ipc/mcp-settings';
 import { getThumbnailPath, type ThumbnailSizeClass } from './fs/thumbnails';
+import { setMcpServerRunning, isMcpServerRunning } from './mcp/manager';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'shelter', privileges: { secure: true, standard: true, supportFetchAPI: true } },
@@ -109,7 +112,7 @@ if (!app.requestSingleInstanceLock()) {
     }
   });
 
-  app.on('ready', () => {
+  app.on('ready', async () => {
     const MIME: Record<string, string> = {
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
@@ -169,12 +172,25 @@ if (!app.requestSingleInstanceLock()) {
     registerAiSettingsHandlers();
     registerResearchWebSearchHandlers();
     registerGenerateHistoryHandlers();
+    registerGenerateDescriptionHandlers();
     registerCollectionsHandlers();
+    registerMcpSettingsHandlers();
+    await setMcpServerRunning(readStoredMcpEnabled());
     createWindow();
   });
 
+  app.on('before-quit', async (event) => {
+    if (!isMcpServerRunning()) return;
+    event.preventDefault();
+    await setMcpServerRunning(false);
+    app.quit();
+  });
+
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
+    // In dev, always quit: a windowless instance left running keeps the
+    // single-instance lock, so the next `npm run start` silently quits and the
+    // zombie opens a window against its long-dead Vite dev-server URL — blank.
+    if (process.platform !== 'darwin' || !app.isPackaged) app.quit();
   });
 
   app.on('activate', () => {

@@ -181,6 +181,36 @@ describe('SourcesTab', () => {
     });
   });
 
+  it('cite all adds every source to the history, not just the last one toggled', async () => {
+    localStorage.setItem('gmc.paths', JSON.stringify({ SHELTERS_ROOT: '/custom/shelters' }));
+
+    const shelter = makeShelter();
+    const sourceA = makeSource({ id: 21, author: 'Doe, Jane', title: 'Shelter Notes', include_in_history: false });
+    const sourceB = makeSource({ id: 22, author: 'Roe, Sam', title: 'Trail Records', include_in_history: false });
+    const store = makeStore(shelter, [sourceA, sourceB]);
+
+    window.api.sources.update = jest.fn().mockImplementation((s: Source) => Promise.resolve(s));
+    window.api.history.write = jest.fn().mockResolvedValue(undefined);
+
+    render(
+      <Provider store={store}>
+        <SourcesTab />
+      </Provider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /cite all/i }));
+
+    await waitFor(() => {
+      expect(window.api.sources.update).toHaveBeenCalledTimes(2);
+    });
+
+    await waitFor(() => {
+      const lastWrite = (window.api.history.write as jest.Mock).mock.calls.at(-1);
+      expect(lastWrite[1]).toContain('Doe, Jane');
+      expect(lastWrite[1]).toContain('Roe, Sam');
+    });
+  });
+
   it('gates the clean-up button on selectHasValidApiKey, reflecting store changes without remounting', async () => {
     const shelter = makeShelter();
     const existingSource = makeSource({ id: 21, quote: 'a messy quote' });

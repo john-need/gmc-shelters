@@ -216,10 +216,46 @@ describe('ipc/collections', () => {
         defaults: { title: 'Long Trail News', description: '', language: '', author: '', publisher: '' },
       });
       children[0].emit('close', 0);
+      await Promise.resolve(); // cascade changed a document, so a search-index rebuild follows
+      children[1].emit('close', 0);
       const result = (await promise) as CollectionDefaultsResult;
       expect(result.ok).toBe(true);
       expect(result.updated).toBe(1);
       expect(readWikiDoc('long-trail-news', 'a.pdf')).toContain('title: "Long Trail News"');
+    });
+
+    it('rebuilds the search index after a cascade that changes at least one document', async () => {
+      writeCollectionPdf('long-trail-news', 'a.pdf');
+      writeWikiDoc('long-trail-news', 'a.pdf', '---\ncitation_type: "magazine"\ntitle: ""\n---');
+      const handler = getHandler(CHANNELS.COLLECTIONS_SET_DEFAULTS);
+      const promise = handler(makeEvent(), {
+        name: 'long-trail-news',
+        oldCitationType: 'magazine',
+        citationType: 'magazine',
+        oldDefaults: { title: '', description: '', language: '', author: '', publisher: '' },
+        defaults: { title: 'Long Trail News', description: '', language: '', author: '', publisher: '' },
+      });
+      children[0].emit('close', 0);
+      await Promise.resolve();
+      children[1].emit('close', 0);
+      await promise;
+      expect((spawn as jest.Mock).mock.calls[1][1]).toContain(path.join(tmpDir, 'scripts', 'build_wiki_index.py'));
+    });
+
+    it('does not rebuild the search index when the cascade changes nothing', async () => {
+      writeCollectionPdf('long-trail-news', 'never-added.pdf');
+      const handler = getHandler(CHANNELS.COLLECTIONS_SET_DEFAULTS);
+      const promise = handler(makeEvent(), {
+        name: 'long-trail-news',
+        oldCitationType: '',
+        citationType: 'magazine',
+        oldDefaults: { title: '', description: '', language: '', author: '', publisher: '' },
+        defaults: { title: 'New Title', description: '', language: '', author: '', publisher: '' },
+      });
+      children[0].emit('close', 0);
+      const result = (await promise) as CollectionDefaultsResult;
+      expect(result.updated).toBe(0);
+      expect(spawn as jest.Mock).toHaveBeenCalledTimes(1); // only the defaults-setter script, no rebuild
     });
 
     it('cascades a changed default onto a document whose field equals the old default', async () => {
@@ -234,6 +270,8 @@ describe('ipc/collections', () => {
         defaults: { title: 'New Title', description: '', language: '', author: '', publisher: '' },
       });
       children[0].emit('close', 0);
+      await Promise.resolve();
+      children[1].emit('close', 0);
       await promise;
       expect(readWikiDoc('long-trail-news', 'a.pdf')).toContain('title: "New Title"');
     });
@@ -283,6 +321,8 @@ describe('ipc/collections', () => {
         defaults: { title: '', description: '', language: '', author: '', publisher: '' },
       });
       children[0].emit('close', 0);
+      await Promise.resolve();
+      children[1].emit('close', 0);
       await promise;
       const doc = readWikiDoc('long-trail-news', 'a.pdf');
       expect(doc).toContain('citation_type: "newspaper"');

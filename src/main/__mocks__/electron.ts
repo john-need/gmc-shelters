@@ -46,6 +46,7 @@ const ipcMain = {
 const ipcRenderer = {
   invoke: jest.fn().mockResolvedValue(undefined),
   on: jest.fn(),
+  removeListener: jest.fn(),
   send: jest.fn(),
 };
 

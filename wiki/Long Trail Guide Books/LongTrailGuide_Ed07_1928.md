@@ -1,14 +1,16 @@
 ---
 type: "Guidebook"
-citation_type: "magazine"
+citation_type: "book"
 title: "Long Trail Guide Book"
 description: "Long Trail Guide Book, 1928."
 resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed07_1928.pdf"
 timestamp: "2026-07-15T12:41:20Z"
 publisher: "Green Mountain Club"
-volume: "1928"
+edition: "7"
+author: "Green Mountain Club"
 pages: "57"
 language: "en"
+publication_date: "1928"
 ---
 
 <!-- page: 1 -->

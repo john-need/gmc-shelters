@@ -1,14 +1,16 @@
 ---
 type: "Guidebook"
-citation_type: "magazine"
+citation_type: "book"
 title: "Long Trail Guide Book"
 description: "Long Trail Guide Book, 1917."
 resource: "collections/Long Trail Guide Books/LongTrailGuide_Ed01_1917.pdf"
 timestamp: "2026-07-07T13:08:55Z"
 publisher: "Green Mountain Club"
-volume: "1917"
+edition: "1"
+author: "Green Mouintain Club"
 pages: "18"
 language: "en"
+publication_date: "1917"
 ---
 
 <!-- page: 1 -->

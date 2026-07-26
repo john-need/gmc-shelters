@@ -4,7 +4,7 @@ okf_version: "0.1"
 
 # GMC Collections
 
-* [Articles](Articles/index.md) - 6 documents
+* [Articles](Articles/index.md) - 7 documents
 * [Footnotes (Upper Valley Ottauquechee)](Footnotes (Upper Valley Ottauquechee)/index.md) - 53 documents
 * [GMC Annual Reports](GMC Annual Reports/index.md) - 8 documents
 * [Long Trail Guide Books](Long Trail Guide Books/index.md) - 23 documents

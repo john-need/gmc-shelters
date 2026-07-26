@@ -320,20 +320,24 @@ export default function PhotosTab() {
   // Up/Down/Left/Right all move to the adjacent photo in current display order (no
   // 2D grid-column awareness — the grid's column count is responsive/unmeasurable,
   // and sequential nav matches how photo review actually works). Tab advances the
-  // same way; Shift+Tab is left alone so reverse-tabbing out of the grid still works.
-  // Always reads the live `photos` array, so a completed drag-reorder is reflected
-  // on the very next keypress.
+  // same way; Shift+Tab goes to the previous photo and wraps from the first photo
+  // to the last. Always reads the live `photos` array, so a completed drag-reorder
+  // is reflected on the very next keypress.
   const handleNavigate = (e: React.KeyboardEvent, id: number) => {
     if (activeDragId !== null) return;
     let direction: 'next' | 'prev' | null = null;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') direction = 'next';
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') direction = 'prev';
     else if (e.key === 'Tab' && !e.shiftKey) direction = 'next';
+    else if (e.key === 'Tab' && e.shiftKey) direction = 'prev';
     if (!direction) return;
     e.preventDefault();
     const idx = photos.findIndex((p) => p.id === id);
     if (idx === -1) return;
-    const nextIdx = direction === 'next' ? Math.min(photos.length - 1, idx + 1) : Math.max(0, idx - 1);
+    const wrap = e.key === 'Tab' && e.shiftKey;
+    const nextIdx = direction === 'next'
+      ? Math.min(photos.length - 1, idx + 1)
+      : wrap ? (idx - 1 + photos.length) % photos.length : Math.max(0, idx - 1);
     const nextId = photos[nextIdx].id;
     setSelectedId(nextId);
     const container = (e.currentTarget as HTMLElement).parentElement;

@@ -3,10 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import { setEditBuffer, revertEditBuffer, saveShelter, deleteShelterThunk } from '../../../store/sheltersSlice';
 import { showToast } from '../../../store/uiSlice';
+import { loadApiKey, selectHasValidApiKey } from '../../../store/aiSettingsSlice';
 import { loadStoredPaths } from '../../../pathSettings';
 import { slugify } from '../../../../shared/slug';
 import { buildPhotoUrl } from '../../../utils/paths';
-import type { Shelter } from '../../../../shared/ipc-types';
+import type { Shelter, GenerateDescriptionError } from '../../../../shared/ipc-types';
+import ExtractDescriptionModal, { type ExtractDescriptionStatus } from './ExtractDescriptionModal';
 
 const EMPTY: never[] = [];
 
@@ -285,9 +287,14 @@ interface ShelterFormSectionsProps {
   defaultPhotoUrl: string;
   onOpenDpp: () => void;
   onToggleFlag: (key: 'is_extant' | 'is_gmc' | 'show_on_web') => void;
+  hasValidApiKey: boolean;
+  onExtractDescription: () => void;
 }
 
-function ShelterFormSections({ s, f, archList, catList, photoCount, photoSummary, defaultPhoto, defaultPhotoUrl, onOpenDpp, onToggleFlag }: ShelterFormSectionsProps) {
+function ShelterFormSections({
+  s, f, archList, catList, photoCount, photoSummary, defaultPhoto, defaultPhotoUrl, onOpenDpp, onToggleFlag,
+  hasValidApiKey, onExtractDescription,
+}: ShelterFormSectionsProps) {
   return (
     <div className="form-wrap shelter-tab">
       <div className="section-head">
@@ -330,6 +337,16 @@ function ShelterFormSections({ s, f, archList, catList, photoCount, photoSummary
           <div className="field col-span-2">
             <label className="label">Description</label>
             <textarea className="textarea" rows={4} value={s.description || ''} onChange={f('description')} />
+            <button
+              type="button"
+              className="btn sm"
+              style={{ marginTop: 6 }}
+              title={hasValidApiKey ? 'Extract From History' : 'Extract From History (requires AI API key)'}
+              disabled={!hasValidApiKey}
+              onClick={onExtractDescription}
+            >
+              Extract From History
+            </button>
           </div>
         </div>
 
@@ -462,6 +479,7 @@ export default function ShelterTab() {
 
   const archList = useSelector((state: RootState) => state.architectures.list);
   const catList = useSelector((state: RootState) => state.categories.list);
+  const hasValidApiKey = useSelector(selectHasValidApiKey);
 
   const [repoRoot, setRepoRoot] = useState('');
   const [isPhotoModalOpen, setPhotoModalOpen] = useState(false);
@@ -470,6 +488,14 @@ export default function ShelterTab() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dppIndex, setDppIndex] = useState(0);
   const [dppImgError, setDppImgError] = useState(false);
+  const [extractOpen, setExtractOpen] = useState(false);
+  const [extractStatus, setExtractStatus] = useState<ExtractDescriptionStatus>('running');
+  const [extractedDescription, setExtractedDescription] = useState<string | null>(null);
+  const [extractError, setExtractError] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(loadApiKey());
+  }, [dispatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -499,11 +525,13 @@ export default function ShelterTab() {
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setPhotoModalOpen(false);
+      else if (event.key === 'ArrowLeft') setDppIndex((i) => (i - 1 + photos.length) % photos.length);
+      else if (event.key === 'ArrowRight') setDppIndex((i) => (i + 1) % photos.length);
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isPhotoModalOpen]);
+  }, [isPhotoModalOpen, photos.length]);
 
   if (!s) return null;
 
@@ -530,6 +558,54 @@ export default function ShelterTab() {
       dispatch(showToast({ id: Date.now().toString(), message: result.error.message ?? 'Could not save shelter.' }));
     }
   };
+
+  const extractDescriptionErrorMessage = (error: GenerateDescriptionError): string => {
+    if (error === 'no_api_key') return 'No Anthropic API key configured — add one in Settings → AI Settings.';
+    if (error === 'timeout') return 'Extract From History timed out — try again.';
+    return 'Extract From History failed — try again.';
+  };
+
+  const handleExtractDescription = async () => {
+    setExtractOpen(true);
+    setExtractStatus('running');
+    setExtractError(null);
+    setExtractedDescription(null);
+
+    const historyRelPath = s.history ?? `${s.slug}/${s.slug}.md`;
+    const sheltersRoot = loadStoredPaths().SHELTERS_ROOT;
+    const history = await window.api.history.read(historyRelPath, sheltersRoot);
+
+    const result = await window.api.shelters.generateDescription({
+      shelter: {
+        name: s.name,
+        architecture: s.architecture,
+        built_by: s.built_by,
+        description: s.description,
+        notes: s.notes,
+        start_year: s.start_year,
+        end_year: s.end_year,
+        is_extant: s.is_extant,
+        is_gmc: s.is_gmc,
+        category: s.category,
+      },
+      historyContent: history.missing ? '' : history.content,
+    });
+
+    if (result.ok) {
+      setExtractedDescription(result.description);
+      setExtractStatus('done');
+    } else {
+      setExtractError(extractDescriptionErrorMessage(result.error));
+      setExtractStatus('error');
+    }
+  };
+
+  const handleAcceptDescription = () => {
+    if (extractedDescription !== null) dispatch(setEditBuffer({ ...s, description: extractedDescription }));
+    setExtractOpen(false);
+  };
+
+  const handleRejectDescription = () => setExtractOpen(false);
 
   const handleDeleteConfirm = async () => {
     if (deleteSlug !== s.slug) return;
@@ -601,7 +677,18 @@ export default function ShelterTab() {
         defaultPhotoUrl={defaultPhotoUrl}
         onOpenDpp={handleOpenDpp}
         onToggleFlag={(key) => dispatch(setEditBuffer({ ...s, [key]: !s[key] }))}
+        hasValidApiKey={hasValidApiKey}
+        onExtractDescription={handleExtractDescription}
       />
+      {extractOpen && (
+        <ExtractDescriptionModal
+          status={extractStatus}
+          description={extractedDescription}
+          errorMessage={extractError}
+          onAccept={handleAcceptDescription}
+          onReject={handleRejectDescription}
+        />
+      )}
       <ShelterSaveBar
         s={s}
         dirty={dirty}

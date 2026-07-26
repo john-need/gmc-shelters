@@ -12,7 +12,8 @@ import type {
   CollectionStatus,
 } from '../../shared/ipc-types';
 import { COLLECTION_DEFAULT_PROPERTIES } from '../../shared/wiki-header-schema';
-import { readWikiHeader, wikiMdPath, writeWikiHeader } from './wiki-search';
+import { readWikiHeader, resetWikiSearchDb, wikiMdPath, writeWikiHeader } from './wiki-search';
+import { rebuildWikiIndex } from './wikiIndexRebuild';
 
 // One conversion at a time — the cache makes cancel/retry safe.
 let activeChild: ChildProcess | null = null;
@@ -98,6 +99,7 @@ export function registerCollectionsHandlers(): void {
       if (index.code !== 0) {
         return { ok: false, error: `index rebuild failed: ${index.stderr.slice(-300)}`, ...counts };
       }
+      resetWikiSearchDb();
       return { ok: true, ...counts };
     },
   );
@@ -157,6 +159,13 @@ export function registerCollectionsHandlers(): void {
           writeWikiHeader(mdPath, nextCitationType, nextFields);
           updated += 1;
         }
+      }
+
+      if (updated > 0) {
+        // Keep the search index in sync with the cascaded headers, rather than
+        // going stale until the next Add/Clean-up run.
+        await rebuildWikiIndex();
+        resetWikiSearchDb();
       }
 
       return { ok: true, updated };

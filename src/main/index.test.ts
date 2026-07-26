@@ -4,6 +4,10 @@ jest.mock('fs');
 jest.mock('./fs/thumbnails', () => ({
   getThumbnailPath: jest.fn(),
 }));
+jest.mock('./mcp/manager', () => ({
+  setMcpServerRunning: jest.fn().mockResolvedValue(undefined),
+  isMcpServerRunning: jest.fn(() => true),
+}));
 
 describe('main process index', () => {
   beforeEach(() => {
@@ -85,6 +89,71 @@ describe('main process index', () => {
       expect(opts.webPreferences.nodeIntegration).toBe(false);
       expect(String(opts.webPreferences.preload)).toMatch(/preload/);
     }
+  });
+
+  it('quits on window-all-closed in dev even on macOS, so a zombie instance never holds the single-instance lock', async () => {
+    const electron = await import('electron');
+    (electron.app as unknown as { isPackaged: boolean }).isPackaged = false;
+    await import('./index');
+    const calls = (electron.app.on as jest.Mock).mock.calls as Array<[string, () => void]>;
+    const handler = calls.find(([event]) => event === 'window-all-closed');
+    expect(handler).toBeDefined();
+    handler![1]();
+    expect(electron.app.quit).toHaveBeenCalled();
+  });
+
+  it('does not quit on window-all-closed on macOS when packaged (native dock behavior)', async () => {
+    const electron = await import('electron');
+    (electron.app as unknown as { isPackaged: boolean }).isPackaged = true;
+    await import('./index');
+    const calls = (electron.app.on as jest.Mock).mock.calls as Array<[string, () => void]>;
+    const handler = calls.find(([event]) => event === 'window-all-closed');
+    handler![1]();
+    expect(electron.app.quit).not.toHaveBeenCalled();
+    (electron.app as unknown as { isPackaged: boolean }).isPackaged = false;
+  });
+
+  it('starts the MCP server according to the persisted enabled setting on ready', async () => {
+    const electron = await import('electron');
+    const { setMcpServerRunning } = await import('./mcp/manager');
+    await import('./index');
+    const readyCalls = (electron.app.on as jest.Mock).mock.calls as Array<[string, () => void]>;
+    const readyCall = readyCalls.find(([event]) => event === 'ready');
+    if (readyCall) await readyCall[1]();
+    // fs is auto-mocked (readFileSync throws), so readStoredMcpEnabled() falls back to its true default.
+    expect(setMcpServerRunning).toHaveBeenCalledWith(true);
+  });
+
+  it('defers quit until the MCP server is stopped, when it was running', async () => {
+    const electron = await import('electron');
+    const { setMcpServerRunning, isMcpServerRunning } = await import('./mcp/manager');
+    (isMcpServerRunning as jest.Mock).mockReturnValue(true);
+    await import('./index');
+
+    const quitCalls = (electron.app.on as jest.Mock).mock.calls as Array<[string, (e: { preventDefault: jest.Mock }) => Promise<void>]>;
+    const quitCall = quitCalls.find(([event]) => event === 'before-quit');
+    expect(quitCall).toBeDefined();
+
+    const event = { preventDefault: jest.fn() };
+    await quitCall![1](event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(setMcpServerRunning).toHaveBeenCalledWith(false);
+    expect(electron.app.quit).toHaveBeenCalled();
+  });
+
+  it('does not intercept quit when the MCP server was never running', async () => {
+    const electron = await import('electron');
+    const { isMcpServerRunning } = await import('./mcp/manager');
+    (isMcpServerRunning as jest.Mock).mockReturnValue(false);
+    await import('./index');
+
+    const quitCalls = (electron.app.on as jest.Mock).mock.calls as Array<[string, (e: { preventDefault: jest.Mock }) => Promise<void>]>;
+    const quitCall = quitCalls.find(([event]) => event === 'before-quit');
+    const event = { preventDefault: jest.fn() };
+    await quitCall![1](event);
+
+    expect(event.preventDefault).not.toHaveBeenCalled();
   });
 });
 

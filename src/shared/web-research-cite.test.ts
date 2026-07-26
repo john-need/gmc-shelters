@@ -26,8 +26,18 @@ describe('webResultToSource', () => {
 
   it('leaves every other Source field at its BLANK_SOURCE default once merged the way the UI merges it', () => {
     const merged = { ...BLANK_SOURCE, ...webResultToSource(RESULT) };
-    const { type: _, container_title: __, url: ___, access_date: ____, quote: _____, ...rest } = merged;
-    const { type: ______, container_title: _______, url: ________, access_date: _________, quote: __________, ...blankRest } = BLANK_SOURCE;
+    const keysToIgnore = ['type', 'container_title', 'url', 'access_date', 'quote'];
+
+    const rest = { ...merged };
+    const blankRest = { ...BLANK_SOURCE };
+
+    for (const key of keysToIgnore) {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      delete (rest as any)[key];
+      delete (blankRest as any)[key];
+      /* eslint-enable @typescript-eslint/no-explicit-any */
+    }
+
     expect(rest).toEqual(blankRest);
   });
 });

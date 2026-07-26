@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AI_MODEL_OPTIONS } from '@shared/ipc-types';
-import type { AiModelTier } from '@shared/ipc-types';
+import type { AiModelTier, McpConnectionInfo } from '@shared/ipc-types';
 import { isValidAnthropicKey } from '@shared/anthropic-key';
 import { apiKeyChanged } from '../../store/aiSettingsSlice';
 
@@ -21,6 +21,7 @@ export default function AiSettingsPage() {
             <div className="settings-body">
                 <ApiKeyCard/>
                 <ModelCard/>
+                <McpSettingsCard/>
             </div>
         </>
     );
@@ -164,6 +165,93 @@ function ApiKeyCard() {
                     <span style={{alignSelf: 'center', fontSize: 12, color: 'var(--ink-3)'}}>{toast}</span>
                 )}
             </div>
+        </div>
+    );
+}
+
+function McpSettingsCard() {
+    const [enabled, setEnabled] = useState(false);
+    const [info, setInfo] = useState<McpConnectionInfo | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        window.api.mcp.getEnabled().then(setEnabled);
+        window.api.mcp.getConnectionInfo().then(setInfo);
+    }, []);
+
+    const toggle = async (next: boolean) => {
+        setEnabled(next);
+        await window.api.mcp.setEnabled(next);
+    };
+
+    // Claude Desktop's mcpServers config only launches local stdio commands (no "url" field
+    // in its schema) — mcp-remote is the standard community bridge: a stdio process Desktop
+    // spawns via npx that connects out to a remote/HTTP MCP server on the process's behalf.
+    const configSnippet = info ? JSON.stringify({
+        mcpServers: {
+            [info.serverName]: {
+                command: 'npx',
+                args: ['-y', 'mcp-remote', info.url],
+            },
+        },
+    }, null, 2) : '';
+
+    const copyConfig = () => {
+        navigator.clipboard.writeText(configSnippet).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        }).catch(() => {});
+    };
+
+    return (
+        <div className="settings-card">
+            <h3>MCP server <em>· connect AI clients like Claude Desktop</em></h3>
+            <div className="desc">
+                Exposes read-only search and download over this app&apos;s wiki collections to any
+                MCP-compatible client, over a local-only HTTP server (127.0.0.1) — never reachable
+                from the network.
+            </div>
+
+            <div style={{display: 'flex', gap: 8, alignItems: 'center', marginTop: 12}}>
+                <label className="toggle-switch" title="Enable MCP server">
+                    <input
+                        type="checkbox"
+                        checked={enabled}
+                        aria-label="Enable MCP server"
+                        onChange={(e) => toggle(e.target.checked)}
+                    />
+                    <span className="toggle-track"/>
+                </label>
+                <span className="label">{enabled ? 'Enabled' : 'Disabled'}</span>
+            </div>
+
+            {enabled && info && (
+                <>
+                    <div style={{display: 'flex', gap: 8, alignItems: 'center', marginTop: 14}}>
+                        <span className="label" style={{minWidth: 130}}>Server URL</span>
+                        <code style={{fontFamily: 'var(--font-mono)'}}>{info.url}</code>
+                    </div>
+
+                    <div style={{marginTop: 14}}>
+                        <div className="desc" style={{marginBottom: 6}}>
+                            Add to Claude Desktop&apos;s config (Settings → Developer → Edit Config).
+                            Desktop only launches local commands, so this runs the{' '}
+                            <code style={{fontFamily: 'var(--font-mono)'}}>mcp-remote</code> bridge via npx
+                            (requires Node.js) to reach the server above:
+                        </div>
+                        <pre
+                            data-testid="mcp-config-snippet"
+                            style={{
+                                fontFamily: 'var(--font-mono)', fontSize: 12, background: 'var(--surface-2)',
+                                padding: 12, borderRadius: 6, overflowX: 'auto',
+                            }}
+                        >{configSnippet}</pre>
+                        <button className="btn" type="button" onClick={copyConfig} style={{marginTop: 6}}>
+                            {copied ? 'Copied' : 'Copy config'}
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

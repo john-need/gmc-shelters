@@ -94,6 +94,18 @@ export default function SourcesTab() {
     await dispatch(deleteSource({ id, shelterId: s.id }));
   };
 
+  const allCited = sources.length > 0 && sources.every((src) => src.include_in_history);
+  const toggleAllCitations = async () => {
+    const include = !allCited;
+    for (const src of sources.filter((s) => s.include_in_history !== include)) {
+      try {
+        await dispatch(updateSource({ ...src, include_in_history: include })).unwrap();
+      } catch {
+        // best-effort, matches per-source toggle: one failure shouldn't block the rest
+      }
+    }
+  };
+
   return (
     <div className="sources-wrap">
       <div className="sources-list-wrap">
@@ -135,6 +147,15 @@ export default function SourcesTab() {
           </button>
 
           <div style={{ flex: 1 }} />
+
+          <button
+            className="sort-button"
+            onClick={toggleAllCitations}
+            disabled={sources.length === 0}
+            title={allCited ? 'Exclude all sources from history' : 'Cite all sources in history'}
+          >
+            {allCited ? 'Cite none' : 'Cite all'}
+          </button>
 
           <button className="btn primary" onClick={startCreate}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

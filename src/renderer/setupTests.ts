@@ -1,7 +1,10 @@
 import '@testing-library/jest-dom';
 import type { AppPathValidation, ElectronAPI, HistoryReadResult } from '../shared/ipc-types';
 
-const noop = jest.fn().mockResolvedValue(undefined);
+// A fresh jest.fn() per call — a single shared instance here would merge the call
+// history (and any per-test mockResolvedValue override) of every unrelated API
+// method that used it, since they'd all be the same underlying mock function.
+const noop = () => jest.fn().mockResolvedValue(undefined);
 const defaultPathValidation: AppPathValidation = {
   input: '',
   resolvedPath: '/tmp',
@@ -17,61 +20,64 @@ const defaultHistoryRead: HistoryReadResult = {
 const mockApi: ElectronAPI = {
   categories: {
     getAll: jest.fn().mockResolvedValue([]),
-    create: noop,
-    update: noop,
-    delete: noop,
+    create: noop(),
+    update: noop(),
+    delete: noop(),
   },
   architectures: {
     getAll: jest.fn().mockResolvedValue([]),
-    create: noop,
-    update: noop,
-    delete: noop,
+    create: noop(),
+    update: noop(),
+    delete: noop(),
   },
   shelters: {
     getAll: jest.fn().mockResolvedValue([]),
-    getById: noop,
-    create: noop,
-    update: noop,
-    delete: noop,
-    setHistory: noop,
+    getById: noop(),
+    create: noop(),
+    update: noop(),
+    delete: noop(),
+    setHistory: noop(),
+    generateDescription: jest.fn().mockResolvedValue({ ok: false, error: 'no_api_key' }),
   },
   photos: {
     getByShelter: jest.fn().mockResolvedValue([]),
-    update: noop,
-    delete: noop,
-    move: noop,
-    moveToUnidentified: noop,
-    setDefault: noop,
-    reorder: noop,
-    upload: noop,
+    update: noop(),
+    delete: noop(),
+    move: noop(),
+    moveToUnidentified: noop(),
+    setDefault: noop(),
+    reorder: noop(),
+    upload: noop(),
     readMetadata: jest.fn().mockResolvedValue({}),
     export: jest.fn().mockResolvedValue(null),
     readFileMetadata: jest.fn().mockResolvedValue([]),
-    writeFileMetadata: noop,
+    writeFileMetadata: noop(),
     reconcileScan: jest.fn().mockResolvedValue({ untrackedFiles: [], orphanedRecords: [] }),
     reconcileApply: jest.fn().mockResolvedValue({ added: 0, deleted: 0, failed: 0, failures: [] }),
     openFolder: jest.fn().mockResolvedValue({ ok: true }),
   },
   history: {
     read: jest.fn().mockResolvedValue(defaultHistoryRead),
-    write: noop,
+    write: noop(),
     generate: jest.fn().mockResolvedValue({ ok: false, error: 'no_api_key' }),
+    onGenerateProgress: jest.fn().mockReturnValue(jest.fn()),
+    respondToPermission: jest.fn().mockResolvedValue(undefined),
   },
   sources: {
     getByShelter: jest.fn().mockResolvedValue([]),
     getAll: jest.fn().mockResolvedValue([]),
-    create: noop,
-    update: noop,
-    delete: noop,
-    cleanUpQuote: noop,
+    create: noop(),
+    update: noop(),
+    delete: noop(),
+    cleanUpQuote: noop(),
   },
   mapMarkers: {
     getByShelter: jest.fn().mockResolvedValue([]),
-    create: noop,
-    update: noop,
-    delete: noop,
+    create: noop(),
+    update: noop(),
+    delete: noop(),
   },
-  export: { build: noop },
+  export: { build: noop() },
   publish: {
     preflight: jest.fn().mockResolvedValue({ toUpload: [], toUpdate: [], toDelete: [], skipCount: 0, historyToUploadCount: 0, historyUnchangedCount: 0 }),
     toWeb: jest.fn().mockResolvedValue(null),
@@ -87,12 +93,21 @@ const mockApi: ElectronAPI = {
     indexReport: jest.fn().mockResolvedValue(null),
     getHeader: jest.fn().mockResolvedValue(null),
     saveHeader: jest.fn().mockResolvedValue({ ok: true }),
+    findResource: jest.fn().mockResolvedValue(null),
   },
   ai: {
     getApiKey: jest.fn().mockResolvedValue(''),
     setApiKey: jest.fn().mockResolvedValue(undefined),
     getModel: jest.fn().mockResolvedValue('default'),
     setModel: jest.fn().mockResolvedValue(undefined),
+  },
+  mcp: {
+    getEnabled: jest.fn().mockResolvedValue(true),
+    setEnabled: jest.fn().mockResolvedValue(undefined),
+    getConnectionInfo: jest.fn().mockResolvedValue({
+      serverName: 'gmc-shelters',
+      url: 'http://127.0.0.1:5972/mcp',
+    }),
   },
   collections: {
     status: jest.fn().mockResolvedValue([]),
@@ -107,7 +122,7 @@ const mockApi: ElectronAPI = {
   research: {
     webSearch: jest.fn().mockResolvedValue({ ok: true, results: [] }),
   },
-  shell: { openExternal: noop },
+  shell: { openExternal: noop() },
   app: {
     getVersion: jest.fn().mockResolvedValue('0.1.0'),
     getRepoRoot: jest.fn().mockResolvedValue('/tmp'),
@@ -115,9 +130,9 @@ const mockApi: ElectronAPI = {
     browseForDirectoryPath: jest.fn().mockResolvedValue(null),
     browseForHistoryFile: jest.fn().mockResolvedValue(null),
     validatePath: jest.fn().mockResolvedValue(defaultPathValidation),
-    closeWindow: noop,
-    minimizeWindow: noop,
-    toggleFullscreen: noop,
+    closeWindow: noop(),
+    minimizeWindow: noop(),
+    toggleFullscreen: noop(),
     isFullscreen: jest.fn().mockResolvedValue(false),
     getFilePath: jest.fn().mockReturnValue('/tmp/mock-file.jpg'),
   },

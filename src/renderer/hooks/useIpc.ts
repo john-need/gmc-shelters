@@ -17,9 +17,18 @@ const noopPathValidation = () => Promise.resolve({
 const noopApi: ElectronAPI = {
   categories: { getAll: noop, create: noop, update: noop, delete: noop },
   architectures: { getAll: noop, create: noop, update: noop, delete: noop },
-  shelters: { getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop },
+  shelters: {
+    getAll: noop, getById: noop, create: noop, update: noop, delete: noop, setHistory: noop,
+    generateDescription: () => Promise.resolve({ ok: false, error: 'no_api_key' }),
+  },
   photos: { getByShelter: noop, update: noop, delete: noop, move: noop, moveToUnidentified: noop, setDefault: noop, reorder: noop, upload: noop, readMetadata: noop, export: noop, readFileMetadata: noop, writeFileMetadata: noop, reconcileScan: noop, reconcileApply: noop, openFolder: () => Promise.resolve({ ok: false }) },
-  history: { read: noopHistoryRead, write: noop, generate: () => Promise.resolve({ ok: false, error: 'no_api_key' }) },
+  history: {
+    read: noopHistoryRead,
+    write: noop,
+    generate: () => Promise.resolve({ ok: false, error: 'no_api_key' }),
+    onGenerateProgress: () => () => {},
+    respondToPermission: noop,
+  },
   sources: { getByShelter: noop, getAll: noop, create: noop, update: noop, delete: noop, cleanUpQuote: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
   export: { build: noop },
@@ -30,8 +39,14 @@ const noopApi: ElectronAPI = {
     indexReport: () => Promise.resolve(null),
     getHeader: () => Promise.resolve(null),
     saveHeader: () => Promise.resolve({ ok: true }),
+    findResource: () => Promise.resolve(null),
   },
   ai: { getApiKey: () => Promise.resolve(''), setApiKey: noop, getModel: () => Promise.resolve('default'), setModel: noop },
+  mcp: {
+    getEnabled: () => Promise.resolve(false),
+    setEnabled: noop,
+    getConnectionInfo: () => Promise.resolve({ serverName: 'gmc-shelters', url: 'http://127.0.0.1:5972/mcp' }),
+  },
   collections: {
     status: () => Promise.resolve([]),
     run: noop,

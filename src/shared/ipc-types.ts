@@ -73,10 +73,14 @@ export const CHANNELS = {
   WIKI_INDEX_REPORT: 'wiki:indexReport',
   WIKI_GET_HEADER: 'wiki:getHeader',
   WIKI_SAVE_HEADER: 'wiki:saveHeader',
+  WIKI_FIND_RESOURCE: 'wiki:findResource',
   AI_GET_API_KEY: 'ai:getApiKey',
   AI_SET_API_KEY: 'ai:setApiKey',
   AI_GET_MODEL: 'ai:getModel',
   AI_SET_MODEL: 'ai:setModel',
+  MCP_GET_ENABLED: 'mcp:getEnabled',
+  MCP_SET_ENABLED: 'mcp:setEnabled',
+  MCP_GET_CONNECTION_INFO: 'mcp:getConnectionInfo',
   COLLECTIONS_STATUS: 'collections:status',
   COLLECTIONS_RUN: 'collections:run',
   COLLECTIONS_CANCEL: 'collections:cancel',
@@ -87,6 +91,9 @@ export const CHANNELS = {
   COLLECTIONS_DELETE: 'collections:delete',
   RESEARCH_WEB_SEARCH: 'research:webSearch',
   HISTORY_GENERATE: 'history:generate',
+  HISTORY_GENERATE_PROGRESS: 'history:generateProgress',
+  HISTORY_GENERATE_RESPOND: 'history:generateRespond',
+  SHELTER_GENERATE_DESCRIPTION: 'shelter:generateDescription',
 } as const;
 
 export interface CollectionFileStatus {
@@ -537,6 +544,11 @@ export const AI_MODEL_OPTIONS: { id: AiModelTier; label: string }[] = [
   { id: 'escalation', label: 'Capable (escalation)' },
 ];
 
+export interface McpConnectionInfo {
+  serverName: string;
+  url: string;
+}
+
 export interface WebResearchResult {
   title: string;
   url: string;
@@ -572,11 +584,33 @@ export interface GenerateHistoryRequest {
   currentHistory: string;
 }
 
-export type GenerateHistoryError = 'no_api_key' | 'network' | 'timeout';
+export type GenerateHistoryError = 'no_api_key' | 'network' | 'timeout' | 'max_turns';
 
 export type GenerateHistoryResponse =
   | { ok: true; narrative: string }
   | { ok: false; error: GenerateHistoryError };
+
+export interface GenerateDescriptionRequest {
+  shelter: GenerateHistoryShelterFacts;
+  /** The shelter's history markdown file content, if any — '' when missing. */
+  historyContent: string;
+}
+
+export type GenerateDescriptionError = 'no_api_key' | 'network' | 'timeout';
+
+export type GenerateDescriptionResponse =
+  | { ok: true; description: string }
+  | { ok: false; error: GenerateDescriptionError };
+
+/** Server-executed tools run inside Anthropic's own infrastructure; client tools run locally and can be gated by permission. */
+export type GenerateHistoryToolName = 'web_search' | 'web_fetch' | 'search_collections' | 'download_document';
+
+/** Live progress emitted while a Generate History agent run is in flight (see history.onGenerateProgress). */
+export type GenerateHistoryEvent =
+  | { type: 'text'; text: string }
+  | { type: 'tool_call'; tool: GenerateHistoryToolName; input: unknown }
+  | { type: 'tool_result'; tool: GenerateHistoryToolName; ok: boolean; summary: string }
+  | { type: 'permission_request'; requestId: string; tool: 'search_collections' | 'download_document'; input: unknown };
 
 export interface ElectronAPI {
   architectures: {
@@ -598,6 +632,7 @@ export interface ElectronAPI {
     update: (shelter: Shelter, sheltersRoot: string) => Promise<Shelter>;
     delete: (id: number, slug: string, sheltersRoot: string) => Promise<void>;
     setHistory: (id: number, history: string) => Promise<void>;
+    generateDescription: (request: GenerateDescriptionRequest) => Promise<GenerateDescriptionResponse>;
   };
   photos: {
     getByShelter: (shelterId: number) => Promise<Photo[]>;
@@ -620,6 +655,8 @@ export interface ElectronAPI {
     read: (historyRelPath: string, sheltersRoot: string) => Promise<HistoryReadResult>;
     write: (historyRelPath: string, content: string, sheltersRoot: string) => Promise<void>;
     generate: (request: GenerateHistoryRequest) => Promise<GenerateHistoryResponse>;
+    onGenerateProgress: (callback: (event: GenerateHistoryEvent) => void) => () => void;
+    respondToPermission: (requestId: string, approved: boolean) => Promise<void>;
   };
   sources: {
     getByShelter: (shelterId: number) => Promise<Source[]>;
@@ -656,12 +693,18 @@ export interface ElectronAPI {
       resource: string,
       payload: { citationType: string; fields: Record<string, string> },
     ) => Promise<WikiSaveHeaderResult>;
+    findResource: (criteria: import('./wiki-resource-match').WikiResourceCriteria) => Promise<string | null>;
   };
   ai: {
     getApiKey: () => Promise<string>;
     setApiKey: (key: string) => Promise<void>;
     getModel: () => Promise<AiModelTier>;
     setModel: (tier: AiModelTier) => Promise<void>;
+  };
+  mcp: {
+    getEnabled: () => Promise<boolean>;
+    setEnabled: (enabled: boolean) => Promise<void>;
+    getConnectionInfo: () => Promise<McpConnectionInfo>;
   };
   collections: {
     status: () => Promise<CollectionStatus[]>;

@@ -18,7 +18,7 @@ const VALID_SOURCE_TYPES = new Set<string>([
 // citeChicago's fmtBook (shared by these three types) cites the document's own
 // title/author directly and never reads container_title — unlike periodical
 // types, where container_title is the (correct) periodical/collection name.
-const DOCUMENT_TITLED_TYPES = new Set<SourceType>(['book', 'chapter', 'report']);
+export const DOCUMENT_TITLED_TYPES = new Set<SourceType>(['book', 'chapter', 'report']);
 
 function citationType(r: WikiSearchResult): SourceType {
   // citation_type is authored per-collection in the OKF header (single source

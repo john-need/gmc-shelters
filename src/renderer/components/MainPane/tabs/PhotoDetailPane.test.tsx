@@ -75,9 +75,27 @@ describe('PhotoDetailPane', () => {
     expect(screen.getByText('Untitled')).toBeInTheDocument();
   });
 
-  it('renders the file_name below the title', () => {
+  it('renders the photo id just below the title', () => {
+    render(<PhotoDetailPane {...makeProps({ selected: makePhoto({ id: 42 }) })} />);
+    const title = screen.getByText('Trailside Hut');
+    const idText = screen.getByText('#42');
+    // eslint-disable-next-line no-bitwise
+    expect(title.compareDocumentPosition(idText) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('arranges the four icon buttons in a 2x2 grid to the right of the title', () => {
     render(<PhotoDetailPane {...makeProps()} />);
-    expect(screen.getByText('hut.jpg')).toBeInTheDocument();
+    const group = screen.getByTitle('Set as default photo').parentElement;
+    expect(group).toHaveStyle({ display: 'grid', gridTemplateColumns: 'repeat(2, auto)' });
+    expect(group?.children).toHaveLength(4);
+  });
+
+  it('renders the file_name just below the photo image', () => {
+    render(<PhotoDetailPane {...makeProps()} />);
+    const preview = screen.getByTestId('photo-preview');
+    const fileName = screen.getByText('hut.jpg');
+    // eslint-disable-next-line no-bitwise
+    expect(preview.compareDocumentPosition(fileName) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('Save button is disabled when not dirty', () => {

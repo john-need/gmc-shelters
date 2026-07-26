@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store';
 import type { Source, SourceInput, WikiSearchResult, WebResearchResult, Shelter } from '@shared/ipc-types';
@@ -10,6 +10,10 @@ import { setQuery, setResults, setExcludedCollections, setWebPhase, setWebResult
 import { BLANK_SOURCE, SOURCE_TYPES, SOURCE_GLYPH } from './sourceTypes';
 import SourceModal from './SourceModal';
 import QuoteBlock from './QuoteBlock';
+
+function collectionOf(r: WikiSearchResult): string {
+  return r.path.split('/')[0].toLowerCase();
+}
 
 // ponytail: caps at 5 local hits so the prompt stays small — Claude only needs
 // enough of what we already have to avoid duplicating it, not the full set.
@@ -55,6 +59,25 @@ export default function ResearchTab() {
   const [collectionsLoading, setCollectionsLoading] = useState(true);
   const [resultTab, setResultTab] = useState<'collections' | 'web'>('collections');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sort, setSort] = useState<'collection' | 'year'>('collection');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const sortedResults = useMemo(() => {
+    const xs = [...results];
+    xs.sort((a, b) => {
+      const av = sort === 'year' ? (wikiResultToSource(a).year ?? 0) : collectionOf(a);
+      const bv = sort === 'year' ? (wikiResultToSource(b).year ?? 0) : collectionOf(b);
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return xs;
+  }, [results, sort, sortDir]);
+
+  const cycleSortField = () => {
+    const order: typeof sort[] = ['collection', 'year'];
+    setSort(order[(order.indexOf(sort) + 1) % order.length]);
+  };
 
   useEffect(() => {
     window.api.collections.status()
@@ -133,6 +156,29 @@ export default function ResearchTab() {
     dispatch(showToast({ id: 'wiki-cite', message: 'Citation added to Sources tab' }));
     setEditing(null);
     setCreating(false);
+  }
+
+  async function addAllCitations(toAdd: Array<Partial<Source> & { shelter_id: number }>) {
+    let count = 0;
+    for (const src of toAdd) {
+      try {
+        await dispatch(createSource(src as SourceInput)).unwrap();
+        count += 1;
+      } catch {
+        // best-effort, matches the single Add citation flow: one failure shouldn't block the rest
+      }
+    }
+    dispatch(showToast({ id: 'wiki-cite-all', message: `${count} citation${count === 1 ? '' : 's'} added to Sources tab` }));
+  }
+
+  function handleAddAllCollectionCitations() {
+    if (!s) return;
+    void addAllCitations(sortedResults.map((r) => ({ ...BLANK_SOURCE, ...wikiResultToSource(r), shelter_id: s.id })));
+  }
+
+  function handleAddAllWebCitations() {
+    if (!s) return;
+    void addAllCitations(webResults.map((r) => ({ ...BLANK_SOURCE, ...webResultToSource(r), shelter_id: s.id })));
   }
 
   return (
@@ -257,7 +303,22 @@ export default function ResearchTab() {
             </div>
           )}
 
-          {results.map((r, i) => (
+          {results.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, padding: '8px 0' }}>
+              <button className="sort-button" onClick={cycleSortField} title="Cycle sort field">
+                Sort: <strong style={{ color: 'var(--ink-1)' }}>{sort}</strong>
+              </button>
+              <button className="sort-button" onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}>
+                {sortDir === 'asc' ? '↑ Asc' : '↓ Desc'}
+              </button>
+              <div style={{ flex: 1 }} />
+              <button className="sort-button" onClick={handleAddAllCollectionCitations}>
+                Add All Citations
+              </button>
+            </div>
+          )}
+
+          {sortedResults.map((r, i) => (
             <ResultCard key={`${r.path}:${r.kind}:${r.page}:${i}`} result={r} onAdd={() => openCitation(r)} />
           ))}
         </div>
@@ -286,6 +347,14 @@ export default function ResearchTab() {
           {webPhase === 'empty' && (
             <div style={{ padding: '12px 0', color: 'var(--ink-3)', fontSize: 13 }}>
               No web sources found for <em>{query}</em>
+            </div>
+          )}
+          {webPhase === 'success' && webResults.length > 0 && (
+            <div style={{ display: 'flex', padding: '8px 0' }}>
+              <div style={{ flex: 1 }} />
+              <button className="sort-button" onClick={handleAddAllWebCitations}>
+                Add All Citations
+              </button>
             </div>
           )}
           {webPhase === 'success' && webResults.map((r, i) => (

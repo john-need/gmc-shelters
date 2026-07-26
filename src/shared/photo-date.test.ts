@@ -1,4 +1,4 @@
-import { getPhotoExifDateValue, normalizePhotoDateTaken } from './photo-date';
+import { getPhotoAnyDateValue, getPhotoExifDateValue, normalizePhotoDateTaken } from './photo-date';
 
 describe('photo-date', () => {
   it('normalizes EXIF-style dates to YYYY-MM-DD', () => {

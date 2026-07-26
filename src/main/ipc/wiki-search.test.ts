@@ -1,12 +1,20 @@
 // electron resolves to src/main/__mocks__/electron.ts via jest moduleNameMapper;
 // no jest.mock() here — automocking would strip the mock's instance fields.
+jest.mock('child_process');
+
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { EventEmitter } from 'events';
 import Database from 'better-sqlite3';
 import { CHANNELS } from '@shared/ipc-types';
 import type { WikiSearchResult, WikiHeaderPayload } from '@shared/ipc-types';
 import { parseFrontmatter, serializeFrontmatter, paragraphSnippet } from './wiki-search';
+
+class FakeChild extends EventEmitter {
+  stdout = new EventEmitter();
+  stderr = new EventEmitter();
+}
 
 type ElectronMock = {
   ipcMain: { handle: jest.Mock };
@@ -68,6 +76,7 @@ function buildFixtureDb(dir: string) {
 describe('ipc/wiki-search', () => {
   let tmpDir: string;
   let electron: ElectronMock;
+  let spawnedChildren: FakeChild[];
 
   beforeEach(() => {
     // resetModules gives wiki-search.ts fresh module state (its cached db handle)
@@ -78,6 +87,15 @@ describe('ipc/wiki-search', () => {
     electron.app.getAppPath.mockReturnValue(tmpDir);
     electron.BrowserWindow.instances.length = 0;
     electron.shell.openPath.mockReset().mockResolvedValue('');
+
+    spawnedChildren = [];
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const cp = require('child_process') as { spawn: jest.Mock };
+    cp.spawn.mockImplementation(() => {
+      const child = new FakeChild();
+      spawnedChildren.push(child);
+      return child;
+    });
   });
 
   afterEach(() => {
@@ -422,7 +440,7 @@ describe('ipc/wiki-search', () => {
     writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
     register();
     const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
-    const result = await handler(null, {
+    const promise = handler(null, {
       resource: 'collections/Long Trail News/1923_04_Apr.pdf',
       citationType: 'magazine',
       fields: {
@@ -432,6 +450,8 @@ describe('ipc/wiki-search', () => {
         publisher: 'Green Mountain Club',
       },
     });
+    spawnedChildren[0].emit('close', 0); // successful save triggers a search-index rebuild
+    const result = await promise;
     expect(result).toEqual({ ok: true });
     const saved = fs.readFileSync(
       path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
@@ -449,7 +469,7 @@ describe('ipc/wiki-search', () => {
     writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
     register();
     const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
-    const result = await handler(null, {
+    const promise = handler(null, {
       resource: 'collections/Long Trail News/1923_04_Apr.pdf',
       citationType: 'magazine',
       fields: {
@@ -460,6 +480,8 @@ describe('ipc/wiki-search', () => {
         publication_date: '1923-04',
       },
     });
+    spawnedChildren[0].emit('close', 0);
+    const result = await promise;
     expect(result).toEqual({ ok: true });
     const saved = fs.readFileSync(
       path.join(tmpDir, 'wiki', 'Long Trail News', '1923_04_Apr.md'), 'utf-8',
@@ -470,6 +492,75 @@ describe('ipc/wiki-search', () => {
       resource: 'collections/Long Trail News/1923_04_Apr.pdf',
     })) as WikiHeaderPayload;
     expect(payload.fields.publication_date).toBe('1923-04');
+  });
+
+  it('WIKI_SAVE_HEADER rebuilds the search index after a successful save', async () => {
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
+    register();
+    const handler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
+    const promise = handler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+      citationType: 'magazine',
+      fields: {
+        title: 'Long Trail News', description: 'Long Trail News, April 1923.',
+        language: 'en', publisher: 'Green Mountain Club', publication_date: '1923-04',
+      },
+    });
+    expect(spawnedChildren).toHaveLength(1);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const cp = require('child_process') as { spawn: jest.Mock };
+    expect(cp.spawn.mock.calls[0][1]).toContain(path.join(tmpDir, 'scripts', 'build_wiki_index.py'));
+    spawnedChildren[0].emit('close', 0);
+    await promise;
+  });
+
+  it('a search made after WIKI_SAVE_HEADER reflects a freshly rebuilt index, not a stale cached connection', async () => {
+    buildFixtureDb(tmpDir);
+    writeWikiDoc('collections/Long Trail News/1923_04_Apr.pdf', FULL_HEADER);
+    register();
+
+    // Warm the module's cached read-only db handle.
+    const searchHandler = getHandler(CHANNELS.WIKI_SEARCH);
+    await searchHandler(null, 'wildflowers');
+
+    const saveHandler = getHandler(CHANNELS.WIKI_SAVE_HEADER);
+    const promise = saveHandler(null, {
+      resource: 'collections/Long Trail News/1923_04_Apr.pdf',
+      citationType: 'magazine',
+      fields: {
+        title: 'Long Trail News', description: 'Long Trail News, April 1923.',
+        language: 'en', publisher: 'Green Mountain Club',
+      },
+    });
+    spawnedChildren[0].emit('close', 0);
+    await promise;
+
+    // Stand in for what the real build_wiki_index.py run (mocked above) would have
+    // produced: a rebuilt search.db with different content.
+    fs.rmSync(path.join(tmpDir, 'wiki', 'search.db'));
+    const db = new Database(path.join(tmpDir, 'wiki', 'search.db'));
+    db.exec(`
+      CREATE VIRTUAL TABLE wiki_fts USING fts5(
+        path UNINDEXED, okf_type UNINDEXED, title, publisher UNINDEXED,
+        volume UNINDEXED, edition UNINDEXED, printed_volume UNINDEXED,
+        printed_issue UNINDEXED, author UNINDEXED, publication_date UNINDEXED,
+        resource UNINDEXED, citation_type UNINDEXED,
+        kind UNINDEXED, page UNINDEXED, image UNINDEXED, body,
+        tokenize = "porter unicode61"
+      )
+    `);
+    db.prepare('INSERT INTO wiki_fts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
+      'long-trail-news/newly-indexed.md', 'Newsletter', 'Long Trail News',
+      'Green Mountain Club', '1950', 'January', '', '',
+      'Green Mountain Club', '1950-01',
+      'collections/long-trail-news/newly-indexed.pdf', 'magazine', 'page', '1', '',
+      'A freshly rebuilt entry only present after reindexing.',
+    );
+    db.close();
+
+    const results = (await searchHandler(null, 'freshly rebuilt')) as WikiSearchResult[];
+    expect(results).toHaveLength(1);
+    expect(results[0].path).toBe('long-trail-news/newly-indexed.md');
   });
 
   it('WIKI_SAVE_HEADER rejects a payload missing a required property and does not modify the file', async () => {

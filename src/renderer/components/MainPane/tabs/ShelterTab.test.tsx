@@ -5,6 +5,7 @@ import sheltersReducer from '../../../store/sheltersSlice';
 import photosReducer from '../../../store/photosSlice';
 import architecturesReducer from '../../../store/architecturesSlice';
 import categoriesReducer from '../../../store/categoriesSlice';
+import aiSettingsReducer from '../../../store/aiSettingsSlice';
 import uiReducer, { type UiState } from '../../../store/uiSlice';
 import ShelterTab from './ShelterTab';
 import type { Architecture, Photo, Shelter } from '../../../../shared/ipc-types';
@@ -58,16 +59,18 @@ function makeArchitecture(overrides: Partial<Architecture> = {}): Architecture {
   };
 }
 
-function makeStore(shelter: Shelter, photos: Photo[] = [], architectures: Architecture[] = []) {
+function makeStore(shelter: Shelter, photos: Photo[] = [], architectures: Architecture[] = [], apiKey = 'sk-ant-valid') {
   return configureStore({
     reducer: {
       shelters: sheltersReducer,
       photos: photosReducer,
       architectures: architecturesReducer,
       categories: categoriesReducer,
+      aiSettings: aiSettingsReducer,
       ui: uiReducer,
     },
     preloadedState: {
+      aiSettings: { apiKey },
       shelters: {
         list: [shelter],
         selectedId: shelter.id,
@@ -151,6 +154,37 @@ describe('ShelterTab', () => {
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: /choose default photo/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('ArrowRight and ArrowLeft keys navigate photos in the default-photo modal', async () => {
+    const shelter = makeShelter();
+    const photoA = makePhoto({ id: 11, title: 'A', alt_text: 'Photo A' });
+    const photoB = makePhoto({ id: 12, title: 'B', alt_text: 'Photo B', file_name: 'b.jpg' });
+    const store = makeStore(shelter, [photoA, photoB]);
+
+    render(
+      <Provider store={store}>
+        <ShelterTab />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(window.api.app.getRepoRoot).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /choose default photo/i }));
+    expect(screen.getByRole('dialog', { name: /choose default photo/i })).toBeInTheDocument();
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    await waitFor(() => {
+      expect(screen.getByText('2 / 2')).toBeInTheDocument();
+    });
+
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    await waitFor(() => {
+      expect(screen.getByText('1 / 2')).toBeInTheDocument();
     });
   });
 
@@ -302,6 +336,117 @@ describe('ShelterTab', () => {
 
     await waitFor(() => {
       expect(store.getState().ui.toast?.message).toBe('Slug "other-slug" is already in use');
+    });
+  });
+
+  describe('Extract From History', () => {
+    beforeEach(() => {
+      // ShelterTab's own loadApiKey() effect re-fetches the key on mount, which
+      // would otherwise overwrite the store's preloaded apiKey with this mock's
+      // default ('') shortly after render — match it to what each test needs.
+      window.api.ai.getApiKey = jest.fn().mockResolvedValue('sk-ant-valid');
+      // This file has no global clearAllMocks, so an earlier test's call to
+      // shelters.update would otherwise still be on this mock's call history.
+      (window.api.shelters.update as jest.Mock).mockClear();
+    });
+
+    it('is disabled with a "requires AI API key" title when no valid key is configured', async () => {
+      const shelter = makeShelter();
+      const store = makeStore(shelter, [], [], '');
+      window.api.ai.getApiKey = jest.fn().mockResolvedValue('');
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      const button = screen.getByRole('button', { name: /extract from history/i });
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('title', expect.stringContaining('requires AI API key'));
+    });
+
+    it('reads the history file, calls generateDescription with the shelter facts, and shows the result in a review modal', async () => {
+      const shelter = makeShelter();
+      const store = makeStore(shelter);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '# Birch Glen Lodge\n\nBuilt in 1932.', missing: false });
+      window.api.shelters.generateDescription = jest.fn().mockResolvedValue({ ok: true, description: 'A cozy Adirondack lean-to built in 1932.' });
+
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole('button', { name: /extract from history/i }));
+
+      await waitFor(() => expect(window.api.shelters.generateDescription).toHaveBeenCalledTimes(1));
+      const req = (window.api.shelters.generateDescription as jest.Mock).mock.calls[0][0];
+      expect(req.shelter.name).toBe('Birch Glen Lodge');
+      expect(req.historyContent).toBe('# Birch Glen Lodge\n\nBuilt in 1932.');
+
+      expect(await screen.findByRole('dialog', { name: /extract.*description/i })).toBeInTheDocument();
+      expect(screen.getByText('A cozy Adirondack lean-to built in 1932.')).toBeInTheDocument();
+    });
+
+    it('treats a missing history file as blank history content, not an error', async () => {
+      const shelter = makeShelter();
+      const store = makeStore(shelter);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '', missing: true });
+      window.api.shelters.generateDescription = jest.fn().mockResolvedValue({ ok: true, description: 'A description from facts alone.' });
+
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole('button', { name: /extract from history/i }));
+
+      await waitFor(() => expect(window.api.shelters.generateDescription).toHaveBeenCalledTimes(1));
+      const req = (window.api.shelters.generateDescription as jest.Mock).mock.calls[0][0];
+      expect(req.historyContent).toBe('');
+    });
+
+    it('Accept replaces the description field and closes the modal, without saving', async () => {
+      const shelter = makeShelter({ description: 'Old description.' });
+      const store = makeStore(shelter);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '', missing: true });
+      window.api.shelters.generateDescription = jest.fn().mockResolvedValue({ ok: true, description: 'New extracted description.' });
+
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole('button', { name: /extract from history/i }));
+      await screen.findByText('New extracted description.');
+      fireEvent.click(screen.getByRole('button', { name: /^accept$/i }));
+
+      expect(screen.queryByRole('dialog', { name: /extract.*description/i })).not.toBeInTheDocument();
+      expect(store.getState().shelters.editBuffer?.description).toBe('New extracted description.');
+      expect(window.api.shelters.update).not.toHaveBeenCalled();
+    });
+
+    it('Reject leaves the description field unchanged and closes the modal', async () => {
+      const shelter = makeShelter({ description: 'Old description.' });
+      const store = makeStore(shelter);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '', missing: true });
+      window.api.shelters.generateDescription = jest.fn().mockResolvedValue({ ok: true, description: 'New extracted description.' });
+
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole('button', { name: /extract from history/i }));
+      await screen.findByText('New extracted description.');
+      fireEvent.click(screen.getByRole('button', { name: /^reject$/i }));
+
+      expect(screen.queryByRole('dialog', { name: /extract.*description/i })).not.toBeInTheDocument();
+      expect(store.getState().shelters.editBuffer?.description).toBe('Old description.');
+    });
+
+    it('shows an inline error and a Dismiss button when generation fails', async () => {
+      const shelter = makeShelter();
+      const store = makeStore(shelter);
+      window.api.history.read = jest.fn().mockResolvedValue({ content: '', missing: true });
+      window.api.shelters.generateDescription = jest.fn().mockResolvedValue({ ok: false, error: 'network' });
+
+      render(<Provider store={store}><ShelterTab /></Provider>);
+      await waitFor(() => expect(window.api.app.getRepoRoot).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole('button', { name: /extract from history/i }));
+
+      await screen.findByRole('alert');
+      fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
+      expect(screen.queryByRole('dialog', { name: /extract.*description/i })).not.toBeInTheDocument();
     });
   });
 });
