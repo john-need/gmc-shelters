@@ -401,6 +401,20 @@ describe('MapMarkersTab', () => {
       expect((screen.getByLabelText(/latitude/i) as HTMLInputElement).value).toBe('44.1');
     });
 
+    it('shows the actual error message text when the update rejects, not "[object Object]"', async () => {
+      const store = makeStore([marker]);
+      window.api.mapMarkers.update = jest.fn().mockRejectedValue(new Error('UNIQUE constraint failed: map_markers.name'));
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      });
+
+      expect(await screen.findByText('UNIQUE constraint failed: map_markers.name')).toBeInTheDocument();
+      expect(screen.queryByText('[object Object]')).not.toBeInTheDocument();
+    });
+
     it('returns to list on Cancel without saving', () => {
       const store = makeStore([marker]);
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);

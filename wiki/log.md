@@ -1,5 +1,14 @@
 # Collections Update Log
 
+## 2026-07-28
+* **Update**: Re-indexed [Books](Books/index.md) — 1 document(s)
+
+## 2026-07-28
+* **Update**: Re-indexed [Books](Books/index.md) — 1 document(s)
+
+## 2026-07-28
+* **Update**: Re-indexed [Books](Books/index.md) — 1 document(s)
+
 ## 2026-07-24
 * **Update**: Re-indexed [Long Trail News](Long Trail News/index.md) — 38 document(s)
 
