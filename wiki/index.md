@@ -19,4 +19,4 @@ okf_version: "0.1"
 * [The Trail Talk (Connecticut)](The Trail Talk (Connecticut)/index.md) - 96 documents
 * [Trail Talk (Montpelier)](Trail Talk (Montpelier)/index.md) - 248 documents
 * [Worcester Newsletter (Worcester)](Worcester Newsletter (Worcester)/index.md) - 16 documents
-* [Books](books/index.md) - 4 documents
+* [Books](books/index.md) - 6 documents

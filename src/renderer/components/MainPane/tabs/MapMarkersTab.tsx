@@ -15,6 +15,18 @@ import MarkerMapPane from './MarkerMapPane';
 
 const EMPTY_MARKERS: MapMarker[] = [];
 
+// A rejected createAsyncThunk's .unwrap() throws action.error, RTK's serialized plain
+// object ({name, message, stack, ...}) — never the original Error instance — so
+// `err instanceof Error` is always false here and falls through to `String(err)`,
+// which stringifies a plain object to the useless "[object Object]".
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'object' && err !== null && typeof (err as { message?: unknown }).message === 'string') {
+    return (err as { message: string }).message;
+  }
+  return String(err);
+}
+
 interface Props {
   shelterId: number;
   shelter: Shelter;
@@ -200,7 +212,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
       }
       cancelForm();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : String(err));
+      setErrorMsg(errorMessage(err));
     } finally {
       setSaving(false);
     }
