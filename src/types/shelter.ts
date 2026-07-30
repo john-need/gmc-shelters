@@ -1,20 +1,28 @@
 /** Raw row shape of the `shelters` table (`SELECT * FROM shelters`). */
+import { Photo } from "./photo";
+import { Source } from "./source";
+import {MapMarker} from "./map-marker";
+import {Builder} from "./builder";
+import {Architecture} from "@shared/ipc-types";
+import {ShelterCategory} from "./shelter-category";
 export interface Shelter {
   id: number;
   name: string;
-  start_year: number;
-  end_year: number | null;
+  startYear: number;
+  endYear: number | null;
   description: string | null;
   slug: string;
-  default_photo_id: number | null;
-  is_gmc: number;
-  architecture_id: number | null;
-  builder_id: number | null;
+  defaultPhotoId: number | null;
+  isGMC: boolean;
+  architecture: Architecture;
+  builder: Builder;
   notes: string | null;
   created: string;
   updated: string;
-  is_extant: number;
-  category_id: number | null;
-  show_on_web: number;
+  category: ShelterCategory;
+  showOnWeb: Boolean;
   history: string | null;
+  photos: Photo[];
+  sources: Source[];
+  mapMarkers: MapMarker[];
 }

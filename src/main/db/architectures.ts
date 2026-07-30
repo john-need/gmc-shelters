@@ -1,13 +1,6 @@
 import { getDb } from './connection';
 import type { Architecture, ArchitectureInput } from '../../shared/ipc-types';
-
-interface ArchRow {
-  id: number;
-  name: string;
-  description: string | null;
-  created: string;
-  updated: string;
-}
+import type { Architecture as ArchRow } from '../../types/architecture';
 
 function rowToArch(row: ArchRow): Architecture {
   return {

@@ -8,8 +8,8 @@ export interface Source {
   type: string;
   author: string;
   title: string;
-  container_title: string;
-  container_author: string;
+  containerTitle: string;
+  containerAuthor: string;
   editor: string;
   edition: string;
   volume: string;
@@ -20,9 +20,9 @@ export interface Source {
   year: number | null;
   date: string;
   url: string;
-  access_date: string;
+  accessDate: string;
   archive: string;
-  archive_location: string;
+  archiveLocation: string;
   created: string;
   updated: string;
 }
