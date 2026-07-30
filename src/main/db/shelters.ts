@@ -1,32 +1,17 @@
 import { getDb } from './connection';
 import { slugify } from '../../shared/slug';
 import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
+import type { Shelter as ShelterTableRow } from '../../types/shelter';
 
-interface ShelterRow {
-  id: number;
-  name: string;
-  start_year: number;
-  end_year: number | null;
-  description: string | null;
-  slug: string;
-  default_photo_id: number | null;
-  is_gmc: number;
-  architecture_id: number | null;
-  builder_id: number | null;
-  notes: string | null;
-  created: string;
-  updated: string;
-  is_extant: number;
-  category_id: number | null;
-  show_on_web: number;
-  history: string | null;
+// SELECT_SHELTERS joins in resolved lookup names and an aggregate photo count
+// on top of the raw `shelters` row — those aren't shelters-table columns.
+type ShelterRow = ShelterTableRow & {
   photo_count: number;
-  // JOINed resolved names
   architecture: string | null;
   category: string | null;
   built_by: string | null;
   default_photo_file_name: string | null;
-}
+};
 
 const SELECT_SHELTERS = `
   SELECT s.*,

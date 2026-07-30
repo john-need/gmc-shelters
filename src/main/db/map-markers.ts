@@ -1,22 +1,7 @@
 import type Database from 'better-sqlite3';
 import { getDb } from './connection';
 import type { MapMarker, MapMarkerCreateInput } from '../../shared/ipc-types';
-
-interface MapMarkerRow {
-  id: number;
-  shelter_id: number;
-  latitude: number;
-  longitude: number;
-  name: string;
-  start_year: number;
-  end_year: number | null;
-  change_type: string;
-  notes: string;
-  is_extant: number;
-  photo_id: number | null;
-  created: string;
-  updated: string;
-}
+import type { MapMarker as MapMarkerRow } from '../../types/map-marker';
 
 function rowToMapMarker(row: MapMarkerRow): MapMarker {
   return {
