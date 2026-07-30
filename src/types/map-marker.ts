@@ -7,7 +7,7 @@ export interface MapMarker {
   name: string;
   start_year: number;
   endYear: number | null;
-  change_type: string;
+  changeType: string;
   notes: string;
   isExtant: boolean;
   photoId: number | null;
