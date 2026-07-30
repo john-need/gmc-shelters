@@ -5,7 +5,7 @@ export interface MapMarker {
   latitude: number;
   longitude: number;
   name: string;
-  start_year: number;
+  startYear: number;
   endYear: number | null;
   changeType: string;
   notes: string;
