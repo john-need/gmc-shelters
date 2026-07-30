@@ -3,7 +3,7 @@ import { Photo } from "./photo";
 import { Source } from "./source";
 import {MapMarker} from "./map-marker";
 import {Builder} from "./builder";
-import {Architecture} from "@shared/ipc-types";
+import {Architecture} from "./architecture";
 import {ShelterCategory} from "./shelter-category";
 export interface Shelter {
   id: number;
@@ -14,12 +14,12 @@ export interface Shelter {
   slug: string;
   defaultPhotoId: number | null;
   isGMC: boolean;
-  architecture: Architecture;
-  builder: Builder;
+  architecture: Architecture | null;
+  builder: Builder | null;
   notes: string | null;
   created: string;
   updated: string;
-  category: ShelterCategory;
+  category: ShelterCategory | null;
   showOnWeb: Boolean;
   history: string | null;
   photos: Photo[];

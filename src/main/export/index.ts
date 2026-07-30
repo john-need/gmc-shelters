@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { dialog, BrowserWindow } from 'electron';
-import { buildManifest } from './builder';
+import { buildSheltersJson } from './builder';
 import { createZip } from './zipper';
 import type { ExportResult } from '@shared/ipc-types';
 
@@ -21,7 +21,7 @@ export async function runExport(repoRoot: string, senderWindow: BrowserWindow): 
   await fs.promises.mkdir(tmpDir, { recursive: true });
 
   try {
-    const buildResult = await buildManifest(repoRoot, tmpDir);
+    const buildResult = await buildSheltersJson(repoRoot, tmpDir);
     await createZip(tmpDir, zipTmpPath);
 
     const { canceled, filePaths } = await dialog.showOpenDialog(senderWindow, {

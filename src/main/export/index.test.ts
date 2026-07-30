@@ -20,12 +20,12 @@ jest.mock('fs', () => {
 });
 
 import { runExport } from './index';
-import { buildManifest } from './builder';
+import { buildSheltersJson } from './builder';
 import { createZip } from './zipper';
 import { dialog, BrowserWindow } from 'electron';
 import fsMock from 'fs';
 
-const mockBuildManifest = buildManifest as jest.Mock;
+const mockBuildSheltersJson = buildSheltersJson as jest.Mock;
 const mockCreateZip = createZip as jest.Mock;
 const mockDialog = dialog as jest.Mocked<typeof dialog>;
 const mockCopyFile = (fsMock.promises as jest.Mocked<typeof fsMock.promises>).copyFile as jest.Mock;
@@ -39,7 +39,7 @@ describe('runExport', () => {
     repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-test-'));
     senderWindow = new BrowserWindow();
 
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: new Date().toISOString(), shelters: [] },
       shelterCount: 5,
       photoCount: 12,
@@ -58,7 +58,7 @@ describe('runExport', () => {
 
   it('calls builder, zipper, dialog in sequence on success path', async () => {
     await runExport(repoRoot, senderWindow);
-    expect(mockBuildManifest).toHaveBeenCalledTimes(1);
+    expect(mockBuildSheltersJson).toHaveBeenCalledTimes(1);
     expect(mockCreateZip).toHaveBeenCalledTimes(1);
     expect(mockDialog.showOpenDialog).toHaveBeenCalledTimes(1);
   });
@@ -115,13 +115,13 @@ describe('runExport — error paths', () => {
   });
 
   it('rejects and cleans up when builder throws', async () => {
-    mockBuildManifest.mockRejectedValue(new Error('DB error'));
+    mockBuildSheltersJson.mockRejectedValue(new Error('DB error'));
     await expect(runExport(repoRoot, senderWindow)).rejects.toThrow('DB error');
     expect(mockRm).toHaveBeenCalled();
   });
 
   it('rejects and cleans up when zipper throws', async () => {
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: '', shelters: [] }, shelterCount: 0, photoCount: 0, skippedPhotos: 0,
     });
     mockCreateZip.mockRejectedValue(new Error('Zip error'));
@@ -130,7 +130,7 @@ describe('runExport — error paths', () => {
   });
 
   it('rejects and cleans up when copyFile throws (read-only dest)', async () => {
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: '', shelters: [] }, shelterCount: 0, photoCount: 0, skippedPhotos: 0,
     });
     mockCreateZip.mockResolvedValue(undefined);

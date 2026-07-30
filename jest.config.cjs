@@ -5,7 +5,7 @@ module.exports = {
     {
       displayName: 'main',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/src/main/**/*.test.ts'],
+      testMatch: ['<rootDir>/src/main/**/*.test.ts', '<rootDir>/src/factories/**/*.test.ts'],
       transform: {
         '^.+\\.ts$': ['ts-jest', { diagnostics: false }],
       },
