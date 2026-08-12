@@ -77,14 +77,9 @@ const mockApi: ElectronAPI = {
     update: noop(),
     delete: noop(),
   },
-  export: { build: noop() },
-  publish: {
-    preflight: jest.fn().mockResolvedValue({ toUpload: [], toUpdate: [], toDelete: [], skipCount: 0, historyToUploadCount: 0, historyUnchangedCount: 0 }),
-    toWeb: jest.fn().mockResolvedValue(null),
+  export: {
+    build: noop(),
     cancel: jest.fn().mockResolvedValue(undefined),
-    testConnection: jest.fn().mockResolvedValue(null),
-    checkCredentials: jest.fn().mockResolvedValue({ exists: false, path: '/tmp/credentials.json' }),
-    importCredentials: jest.fn().mockResolvedValue(null),
     onProgress: jest.fn().mockReturnValue(jest.fn()),
   },
   wiki: {

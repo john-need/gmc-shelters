@@ -20,12 +20,12 @@ jest.mock('fs', () => {
 });
 
 import { runExport } from './index';
-import { buildManifest } from './builder';
+import { buildSheltersJson } from './builder';
 import { createZip } from './zipper';
 import { dialog, BrowserWindow } from 'electron';
 import fsMock from 'fs';
 
-const mockBuildManifest = buildManifest as jest.Mock;
+const mockBuildSheltersJson = buildSheltersJson as jest.Mock;
 const mockCreateZip = createZip as jest.Mock;
 const mockDialog = dialog as jest.Mocked<typeof dialog>;
 const mockCopyFile = (fsMock.promises as jest.Mocked<typeof fsMock.promises>).copyFile as jest.Mock;
@@ -39,14 +39,14 @@ describe('runExport', () => {
     repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-test-'));
     senderWindow = new BrowserWindow();
 
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: new Date().toISOString(), shelters: [] },
       shelterCount: 5,
       photoCount: 12,
       skippedPhotos: 1,
     });
     mockCreateZip.mockResolvedValue(undefined);
-    mockDialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/Users/test/Downloads'] });
+    mockDialog.showSaveDialog.mockResolvedValue({ canceled: false, filePath: '/Users/test/Downloads/my-export.zip' });
     mockCopyFile.mockResolvedValue(undefined);
     mockRm.mockResolvedValue(undefined);
   });
@@ -58,9 +58,9 @@ describe('runExport', () => {
 
   it('calls builder, zipper, dialog in sequence on success path', async () => {
     await runExport(repoRoot, senderWindow);
-    expect(mockBuildManifest).toHaveBeenCalledTimes(1);
+    expect(mockBuildSheltersJson).toHaveBeenCalledTimes(1);
     expect(mockCreateZip).toHaveBeenCalledTimes(1);
-    expect(mockDialog.showOpenDialog).toHaveBeenCalledTimes(1);
+    expect(mockDialog.showSaveDialog).toHaveBeenCalledTimes(1);
   });
 
   it('returns ExportResult with cancelled=false and savedTo set on success', async () => {
@@ -72,28 +72,54 @@ describe('runExport', () => {
     expect(result.skippedPhotos).toBe(1);
   });
 
-  it('copies zip to destFolder/filename on success', async () => {
+  it('saves to the exact file path the operator chose', async () => {
     const result = await runExport(repoRoot, senderWindow);
     expect(mockCopyFile).toHaveBeenCalledTimes(1);
-    expect(result.savedTo).toContain('/Users/test/Downloads');
+    expect(result.savedTo).toBe('/Users/test/Downloads/my-export.zip');
   });
 
   it('returns cancelled=true and savedTo=null when dialog is cancelled', async () => {
-    mockDialog.showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] });
+    mockDialog.showSaveDialog.mockResolvedValue({ canceled: true, filePath: '' });
     const result = await runExport(repoRoot, senderWindow);
     expect(result.cancelled).toBe(true);
     expect(result.savedTo).toBeNull();
     expect(mockCopyFile).not.toHaveBeenCalled();
   });
 
-  it('filename includes today UTC date in YYYYMMDD format', async () => {
-    const result = await runExport(repoRoot, senderWindow);
+  it('suggests a filename with today\'s UTC date in YYYYMMDD format as the default', async () => {
+    await runExport(repoRoot, senderWindow);
     const today = new Date();
     const y = today.getUTCFullYear();
     const m = String(today.getUTCMonth() + 1).padStart(2, '0');
     const d = String(today.getUTCDate()).padStart(2, '0');
     const expectedDate = `${y}${m}${d}`;
-    expect(result.savedTo).toContain(`gmc-shelters-export-${expectedDate}.zip`);
+    expect(mockDialog.showSaveDialog).toHaveBeenCalledWith(
+      senderWindow,
+      expect.objectContaining({ defaultPath: `gmc-shelters-export-${expectedDate}.zip` }),
+    );
+  });
+
+  it('passes the onProgress callback through to buildSheltersJson', async () => {
+    const onProgress = jest.fn();
+    await runExport(repoRoot, senderWindow, onProgress);
+    expect(mockBuildSheltersJson).toHaveBeenCalledWith(repoRoot, expect.any(String), undefined, onProgress, expect.any(Function));
+  });
+
+  it('emits zipping and saving progress stages around their respective steps', async () => {
+    const events: { stage: string }[] = [];
+    await runExport(repoRoot, senderWindow, (p) => events.push(p));
+    const stages = events.map((e) => e.stage);
+    expect(stages).toContain('zipping');
+    expect(stages).toContain('saving');
+    expect(stages.indexOf('zipping')).toBeLessThan(stages.indexOf('saving'));
+  });
+
+  it('skips zipping and the save dialog when isCancelled is already true', async () => {
+    const result = await runExport(repoRoot, senderWindow, undefined, () => true);
+    expect(mockCreateZip).not.toHaveBeenCalled();
+    expect(mockDialog.showSaveDialog).not.toHaveBeenCalled();
+    expect(result.cancelled).toBe(true);
+    expect(result.savedTo).toBeNull();
   });
 });
 
@@ -104,7 +130,7 @@ describe('runExport — error paths', () => {
   beforeEach(() => {
     repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-err-test-'));
     senderWindow = new BrowserWindow();
-    mockDialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/tmp/dest'] });
+    mockDialog.showSaveDialog.mockResolvedValue({ canceled: false, filePath: '/tmp/dest/export.zip' });
     mockCopyFile.mockResolvedValue(undefined);
     mockRm.mockResolvedValue(undefined);
   });
@@ -115,13 +141,13 @@ describe('runExport — error paths', () => {
   });
 
   it('rejects and cleans up when builder throws', async () => {
-    mockBuildManifest.mockRejectedValue(new Error('DB error'));
+    mockBuildSheltersJson.mockRejectedValue(new Error('DB error'));
     await expect(runExport(repoRoot, senderWindow)).rejects.toThrow('DB error');
     expect(mockRm).toHaveBeenCalled();
   });
 
   it('rejects and cleans up when zipper throws', async () => {
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: '', shelters: [] }, shelterCount: 0, photoCount: 0, skippedPhotos: 0,
     });
     mockCreateZip.mockRejectedValue(new Error('Zip error'));
@@ -130,7 +156,7 @@ describe('runExport — error paths', () => {
   });
 
   it('rejects and cleans up when copyFile throws (read-only dest)', async () => {
-    mockBuildManifest.mockResolvedValue({
+    mockBuildSheltersJson.mockResolvedValue({
       manifest: { created: '', shelters: [] }, shelterCount: 0, photoCount: 0, skippedPhotos: 0,
     });
     mockCreateZip.mockResolvedValue(undefined);

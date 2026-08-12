@@ -1,22 +1,7 @@
 import { getDb } from './connection';
 import type { Photo, PhotoUpdateInput } from '../../shared/ipc-types';
+import type { PhotoRow } from '../../factories/photo';
 import { normalizePhotoDateTaken } from '@shared/photo-date';
-
-interface PhotoRow {
-  id: number;
-  photographer: string | null;
-  file_name: string;
-  caption: string | null;
-  date_taken: string | null;
-  notes: string | null;
-  created: string;
-  updated: string;
-  shelter_id: number;
-  alt_text: string | null;
-  title: string | null;
-  description: string | null;
-  include_in_post: number;
-}
 
 function rowToPhoto(row: PhotoRow): Photo {
   return {

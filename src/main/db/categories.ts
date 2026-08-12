@@ -1,13 +1,6 @@
 import { getDb } from './connection';
 import type { Category, CategoryInput } from '../../shared/ipc-types';
-
-interface CategoryRow {
-  id: number;
-  category_name: string;
-  description: string | null;
-  created: string;
-  updated: string;
-}
+import type { CategoryRow } from '../../factories/shelter-category';
 
 function rowToCategory(row: CategoryRow): Category {
   return {

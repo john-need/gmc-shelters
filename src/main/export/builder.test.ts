@@ -1,4 +1,4 @@
-import { stripMarkdown, buildManifest } from './builder';
+import { stripMarkdown, buildManifest, buildSheltersJson } from './builder';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
@@ -31,15 +31,56 @@ const SCHEMA = `
   );
   CREATE TABLE IF NOT EXISTS architectures (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    description TEXT,
+    created TEXT DEFAULT '',
+    updated TEXT DEFAULT ''
   );
   CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY,
-    category_name TEXT NOT NULL
+    category_name TEXT NOT NULL,
+    description TEXT,
+    created TEXT DEFAULT '',
+    updated TEXT DEFAULT ''
   );
   CREATE TABLE IF NOT EXISTS builders (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    type TEXT DEFAULT 'organization',
+    notes TEXT DEFAULT '',
+    created TEXT DEFAULT '',
+    updated TEXT DEFAULT ''
+  );
+  CREATE TABLE IF NOT EXISTS sources (
+    id INTEGER PRIMARY KEY,
+    type TEXT DEFAULT 'other',
+    author TEXT DEFAULT '',
+    title TEXT DEFAULT '',
+    container_title TEXT DEFAULT '',
+    container_author TEXT DEFAULT '',
+    editor TEXT DEFAULT '',
+    edition TEXT DEFAULT '',
+    volume TEXT DEFAULT '',
+    issue TEXT DEFAULT '',
+    pages TEXT DEFAULT '',
+    publisher TEXT DEFAULT '',
+    place TEXT DEFAULT '',
+    year INTEGER,
+    date TEXT DEFAULT '',
+    url TEXT DEFAULT '',
+    access_date TEXT DEFAULT '',
+    archive TEXT DEFAULT '',
+    archive_location TEXT DEFAULT '',
+    created TEXT DEFAULT '',
+    updated TEXT DEFAULT ''
+  );
+  CREATE TABLE IF NOT EXISTS shelter_sources (
+    shelter_id INTEGER NOT NULL,
+    source_id INTEGER NOT NULL,
+    annotation TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    quote TEXT DEFAULT '',
+    include_in_history INTEGER DEFAULT 0
   );
   CREATE TABLE IF NOT EXISTS photos (
     id INTEGER PRIMARY KEY,
@@ -67,7 +108,10 @@ const SCHEMA = `
     end_year INTEGER,
     change_type TEXT DEFAULT 'Original',
     is_extant INTEGER DEFAULT 1,
-    notes TEXT DEFAULT ''
+    notes TEXT DEFAULT '',
+    photo_id INTEGER,
+    created TEXT DEFAULT '',
+    updated TEXT DEFAULT ''
   );
 `;
 
@@ -266,6 +310,19 @@ describe('buildManifest', () => {
     expect(result.manifest.shelters[0].photos).toHaveLength(0);
   });
 
+  it('copies a photo whose file_name has a nested subfolder (e.g. slug/photos/x.jpg)', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photos/nested.jpg', include_in_post: 1 });
+
+    const nestedDir = path.join(repoRoot, 'shelters', 'test-shelter', 'photos');
+    fs.mkdirSync(nestedDir, { recursive: true });
+    fs.writeFileSync(path.join(nestedDir, 'nested.jpg'), 'fake');
+
+    const result = await buildManifest(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(fs.existsSync(path.join(tmpDir, 'test-shelter', 'photos', 'nested.jpg'))).toBe(true);
+  });
+
   it('skips photo with include_in_post=1 but absent from disk', async () => {
     const shelterId = insertShelter({ slug: 'test-shelter' });
     insertPhoto(shelterId, { file_name: 'missing.jpg', include_in_post: 1 });
@@ -357,5 +414,276 @@ describe('buildManifest', () => {
     expect(s).toHaveProperty('photos');
     expect(s).toHaveProperty('mapMarkers');
     expect(result.manifest).toHaveProperty('created');
+  });
+});
+
+describe('buildSheltersJson', () => {
+  let db: ReturnType<typeof Database>;
+  let tmpDir: string;
+  let repoRoot: string;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.exec(SCHEMA);
+    getDb.mockReturnValue(db);
+
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'export-shelters-json-test-'));
+    repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-shelters-json-test-'));
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+  });
+
+  function insertShelter(overrides: Record<string, unknown> = {}) {
+    const slug = (overrides.slug as string) ?? 'test-shelter';
+    const defaults = {
+      name: 'Test Shelter', slug, start_year: 1970, end_year: null, description: 'A shelter',
+      default_photo_id: null, is_gmc: 1, notes: '', created: '2024-01-01', updated: '2026-01-01',
+      is_extant: 1, show_on_web: 1, architecture_id: null, category_id: null, builder_id: null,
+      history: `${slug}/${slug}.md`,
+      ...overrides,
+    };
+    db.prepare(`INSERT INTO shelters (name,slug,start_year,end_year,description,default_photo_id,is_gmc,notes,created,updated,is_extant,show_on_web,architecture_id,category_id,builder_id,history)
+      VALUES (@name,@slug,@start_year,@end_year,@description,@default_photo_id,@is_gmc,@notes,@created,@updated,@is_extant,@show_on_web,@architecture_id,@category_id,@builder_id,@history)`).run(defaults);
+    return (db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }).id;
+  }
+
+  function insertPhoto(shelterId: number, overrides: Record<string, unknown> = {}) {
+    const defaults = {
+      photographer: '', file_name: 'photo.jpg', caption: '', date_taken: '', notes: '',
+      created: '2024-01-01', updated: '2026-01-01', shelter_id: shelterId, alt_text: '', title: '',
+      description: '', include_in_post: 1, sort_order: 1,
+      ...overrides,
+    };
+    db.prepare(`INSERT INTO photos (photographer,file_name,caption,date_taken,notes,created,updated,shelter_id,alt_text,title,description,include_in_post,sort_order)
+      VALUES (@photographer,@file_name,@caption,@date_taken,@notes,@created,@updated,@shelter_id,@alt_text,@title,@description,@include_in_post,@sort_order)`).run(defaults);
+  }
+
+  function insertMapMarker(shelterId: number, overrides: Record<string, unknown> = {}) {
+    const defaults = {
+      shelter_id: shelterId, latitude: 43.0, longitude: -72.0, name: 'Test Shelter', start_year: 1970,
+      end_year: null, change_type: 'Original', is_extant: 1, notes: '', photo_id: null,
+      created: '2024-01-01', updated: '2026-01-01',
+      ...overrides,
+    };
+    db.prepare(`INSERT INTO map_markers (shelter_id,latitude,longitude,name,start_year,end_year,change_type,is_extant,notes,photo_id,created,updated)
+      VALUES (@shelter_id,@latitude,@longitude,@name,@start_year,@end_year,@change_type,@is_extant,@notes,@photo_id,@created,@updated)`).run(defaults);
+  }
+
+  function insertArchitecture(overrides: Record<string, unknown> = {}) {
+    const defaults = { name: 'Log Cabin', description: '', created: '2024-01-01', updated: '2026-01-01', ...overrides };
+    db.prepare(`INSERT INTO architectures (name,description,created,updated) VALUES (@name,@description,@created,@updated)`).run(defaults);
+    return (db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }).id;
+  }
+
+  function insertCategory(overrides: Record<string, unknown> = {}) {
+    const defaults = { category_name: 'Lodge', description: '', created: '2024-01-01', updated: '2026-01-01', ...overrides };
+    db.prepare(`INSERT INTO categories (category_name,description,created,updated) VALUES (@category_name,@description,@created,@updated)`).run(defaults);
+    return (db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }).id;
+  }
+
+  function insertBuilder(overrides: Record<string, unknown> = {}) {
+    const defaults = { name: 'GMC', type: 'organization', notes: '', created: '2024-01-01', updated: '2026-01-01', ...overrides };
+    db.prepare(`INSERT INTO builders (name,type,notes,created,updated) VALUES (@name,@type,@notes,@created,@updated)`).run(defaults);
+    return (db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }).id;
+  }
+
+  function insertSource(shelterId: number, overrides: Record<string, unknown> = {}) {
+    const defaults = {
+      type: 'book', author: 'Smith, J.', title: 'A Book', container_title: '', container_author: '',
+      editor: '', edition: '', volume: '', issue: '', pages: '', publisher: '', place: '',
+      year: 1963, date: '', url: '', access_date: '', archive: '', archive_location: '',
+      created: '2024-01-01', updated: '2026-01-01',
+      ...overrides,
+    };
+    db.prepare(`INSERT INTO sources (type,author,title,container_title,container_author,editor,edition,volume,issue,pages,publisher,place,year,date,url,access_date,archive,archive_location,created,updated)
+      VALUES (@type,@author,@title,@container_title,@container_author,@editor,@edition,@volume,@issue,@pages,@publisher,@place,@year,@date,@url,@access_date,@archive,@archive_location,@created,@updated)`).run(defaults);
+    const sourceId = (db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }).id;
+    db.prepare(`INSERT INTO shelter_sources (shelter_id, source_id, annotation, notes, quote, include_in_history) VALUES (?, ?, '', '', '', 0)`)
+      .run(shelterId, sourceId);
+    return sourceId;
+  }
+
+  // FR-001/FR-002: shelters.json with the four top-level arrays, built via makeShelter
+  it('writes shelters.json (not shelter-manifest.json) with the four top-level arrays', async () => {
+    insertShelter();
+    await buildSheltersJson(repoRoot, tmpDir);
+    expect(fs.existsSync(path.join(tmpDir, 'shelters.json'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, 'shelter-manifest.json'))).toBe(false);
+    const written = JSON.parse(fs.readFileSync(path.join(tmpDir, 'shelters.json'), 'utf-8'));
+    expect(written).toHaveProperty('shelters');
+    expect(written).toHaveProperty('architectures');
+    expect(written).toHaveProperty('shelterCategories');
+    expect(written).toHaveProperty('builders');
+  });
+
+  // FR-004: reference arrays list every record, independent of shelter references
+  it('lists every architecture/category/builder even when no shelter references it', async () => {
+    insertArchitecture({ name: 'Unreferenced Style' });
+    insertCategory({ category_name: 'Unreferenced Category' });
+    insertBuilder({ name: 'Unreferenced Builder' });
+    insertShelter();
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.architectures.map((a) => a.name)).toContain('Unreferenced Style');
+    expect(result.manifest.shelterCategories.map((c) => c.categoryName)).toContain('Unreferenced Category');
+    expect(result.manifest.builders.map((b) => b.name)).toContain('Unreferenced Builder');
+  });
+
+  // FR-006: no show_on_web / include_in_post filtering
+  it('includes a shelter with show_on_web=0', async () => {
+    insertShelter({ show_on_web: 0 });
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters).toHaveLength(1);
+  });
+
+  it('includes a photo with include_in_post=0, as long as its file exists on disk', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photo.jpg', include_in_post: 0 });
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'photo.jpg'), 'fake');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(result.manifest.shelters[0].photos[0].includeInPost).toBe(false);
+  });
+
+  // FR-003: nested photos/sources/mapMarkers via the shared factories; FR-005/SC-003: photo
+  // files are physically copied into the shelter's slug-named folder, not just referenced in JSON
+  it('nests photos/sources/mapMarkers per shelter and copies photo files into tmpDir/{slug}/', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photo.jpg' });
+    insertSource(shelterId, { author: 'Doe, J.' });
+    insertMapMarker(shelterId, { latitude: 44.5 });
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'photo.jpg'), 'fake-bytes');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    const shelter = result.manifest.shelters[0];
+
+    expect(shelter.photos).toHaveLength(1);
+    expect(shelter.photos[0].fileName).toBe('test-shelter/photo.jpg');
+    expect(shelter.sources).toHaveLength(1);
+    expect(shelter.sources[0].author).toBe('Doe, J.');
+    expect(shelter.mapMarkers).toHaveLength(1);
+    expect(shelter.mapMarkers[0].latitude).toBe(44.5);
+
+    // the photo FILE itself, not just the JSON reference
+    const copiedPhotoPath = path.join(tmpDir, 'test-shelter', 'photo.jpg');
+    expect(fs.existsSync(copiedPhotoPath)).toBe(true);
+    expect(fs.readFileSync(copiedPhotoPath, 'utf-8')).toBe('fake-bytes');
+  });
+
+  // Regression: some photo file_names have a nested subfolder (slug/photos/x.jpg), not just
+  // slug/x.jpg. copyPhotoFiles must create that full destination directory tree, not just the
+  // top-level shelter folder, or fs.copyFileSync throws ENOENT — this was never exercised by the
+  // old, filtered buildManifest() but surfaces immediately once every shelter/photo is exported.
+  it('copies a photo whose file_name has a nested subfolder (e.g. slug/photos/x.jpg)', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photos/nested.jpg' });
+
+    const nestedDir = path.join(repoRoot, 'shelters', 'test-shelter', 'photos');
+    fs.mkdirSync(nestedDir, { recursive: true });
+    fs.writeFileSync(path.join(nestedDir, 'nested.jpg'), 'fake');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(fs.existsSync(path.join(tmpDir, 'test-shelter', 'photos', 'nested.jpg'))).toBe(true);
+  });
+
+  // FR-011: history .md file still copied into the shelter's folder
+  it('copies the shelter history .md file into tmpDir/{slug}/ and records its path', async () => {
+    insertShelter({ slug: 'test-shelter' });
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'test-shelter.md'), '# History');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].history).toBe('test-shelter/test-shelter.md');
+    expect(fs.existsSync(path.join(tmpDir, 'test-shelter', 'test-shelter.md'))).toBe(true);
+  });
+
+  it('sets history to null when no .md file exists on disk', async () => {
+    insertShelter({ slug: 'test-shelter' });
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].history).toBeNull();
+  });
+
+  // FR-003/SC-002 (User Story 2): every combination of missing relations/empty lists still
+  // produces the same complete field set — null relations, empty-array lists, never omitted
+  it('represents every unassigned relation as null and every empty list as [] — never omitted', async () => {
+    insertShelter({ slug: 'no-relations', architecture_id: null, category_id: null, builder_id: null });
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    const shelter = result.manifest.shelters[0];
+
+    expect(shelter.architecture).toBeNull();
+    expect(shelter.builder).toBeNull();
+    expect(shelter.category).toBeNull();
+    expect(shelter.photos).toEqual([]);
+    expect(shelter.sources).toEqual([]);
+    expect(shelter.mapMarkers).toEqual([]);
+  });
+
+  it('represents assigned architecture/builder/category as nested objects, not just ids', async () => {
+    const architectureId = insertArchitecture({ name: 'Post and Beam' });
+    const categoryId = insertCategory({ category_name: 'Camp' });
+    const builderId = insertBuilder({ name: 'Ansel Guyette' });
+    insertShelter({ architecture_id: architectureId, category_id: categoryId, builder_id: builderId });
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    const shelter = result.manifest.shelters[0];
+
+    expect(shelter.architecture).toEqual(expect.objectContaining({ name: 'Post and Beam' }));
+    expect(shelter.category).toEqual(expect.objectContaining({ categoryName: 'Camp' }));
+    expect(shelter.builder).toEqual(expect.objectContaining({ name: 'Ansel Guyette' }));
+  });
+
+  // FR-007/SC-004: missing photo file is skipped, export continues, count is accurate
+  it('skips a photo whose file is missing from disk and reports the skip count', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/missing.jpg' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/present.jpg' });
+    const shelterDir = path.join(repoRoot, 'shelters', 'test-shelter');
+    fs.mkdirSync(shelterDir, { recursive: true });
+    fs.writeFileSync(path.join(shelterDir, 'present.jpg'), 'fake');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(result.manifest.shelters[0].photos[0].fileName).toBe('test-shelter/present.jpg');
+    expect(result.skippedPhotos).toBe(1);
+    expect(result.photoCount).toBe(1);
+  });
+
+  it('reports building progress once per shelter, with an increasing current out of the total shelter count', async () => {
+    insertShelter({ slug: 'shelter-a', name: 'Shelter A' });
+    insertShelter({ slug: 'shelter-b', name: 'Shelter B' });
+    insertShelter({ slug: 'shelter-c', name: 'Shelter C' });
+
+    const events: { stage: string; current: number; total: number; shelterName?: string }[] = [];
+    await buildSheltersJson(repoRoot, tmpDir, 'shelters/', (p) => events.push(p));
+
+    const buildingEvents = events.filter((e) => e.stage === 'building');
+    expect(buildingEvents).toHaveLength(3);
+    expect(buildingEvents.map((e) => e.current)).toEqual([1, 2, 3]);
+    expect(buildingEvents.every((e) => e.total === 3)).toBe(true);
+    expect(buildingEvents.map((e) => e.shelterName)).toEqual(['Shelter A', 'Shelter B', 'Shelter C']);
+  });
+
+  it('stops processing further shelters once isCancelled returns true', async () => {
+    insertShelter({ slug: 'shelter-a' });
+    insertShelter({ slug: 'shelter-b' });
+    insertShelter({ slug: 'shelter-c' });
+
+    let calls = 0;
+    const isCancelled = () => { calls += 1; return calls > 1; }; // cancel after the 1st shelter starts
+
+    const result = await buildSheltersJson(repoRoot, tmpDir, 'shelters/', undefined, isCancelled);
+    expect(result.manifest.shelters.length).toBeLessThan(3);
   });
 });

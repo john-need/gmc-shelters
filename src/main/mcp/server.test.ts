@@ -154,9 +154,16 @@ describe('mcp/server — shelters database + file tools', () => {
       shelter_id INTEGER, file_name TEXT, title TEXT,
       photographer TEXT, caption TEXT, date_taken TEXT,
       alt_text TEXT, description TEXT, notes TEXT,
-      include_in_post INTEGER DEFAULT 1, created TEXT, updated TEXT
+      include_in_post INTEGER DEFAULT 1, sort_order INTEGER, created TEXT, updated TEXT
     );
-    CREATE TABLE sources (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, author TEXT, title TEXT);
+    CREATE TABLE sources (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT, author TEXT, title TEXT,
+      container_title TEXT, container_author TEXT, editor TEXT, edition TEXT,
+      volume TEXT, issue TEXT, pages TEXT, publisher TEXT, place TEXT,
+      year INTEGER, date TEXT, url TEXT, access_date TEXT,
+      archive TEXT, archive_location TEXT, created TEXT, updated TEXT
+    );
     CREATE TABLE shelter_sources (
       shelter_id INTEGER, source_id INTEGER,
       include_in_history INTEGER DEFAULT 0, annotation TEXT, notes TEXT, quote TEXT
