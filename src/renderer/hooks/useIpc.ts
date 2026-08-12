@@ -31,8 +31,7 @@ const noopApi: ElectronAPI = {
   },
   sources: { getByShelter: noop, getAll: noop, create: noop, update: noop, delete: noop, cleanUpQuote: noop },
   mapMarkers: { getByShelter: noop, create: noop, update: noop, delete: noop },
-  export: { build: noop },
-  publish: { preflight: noop, toWeb: () => Promise.resolve(undefined as never), cancel: noop, testConnection: noop, checkCredentials: noop, importCredentials: noop, onProgress: () => () => {} },
+  export: { build: noop, cancel: noop, onProgress: () => () => {} },
   wiki: {
     search: () => Promise.resolve([]),
     openPdf: () => Promise.resolve({ ok: true }),

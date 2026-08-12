@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CHANNELS } from '@shared/ipc-types';
-import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, PublishPreflightInput, PublishProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse, GenerateHistoryRequest, GenerateHistoryResponse, GenerateHistoryEvent, McpConnectionInfo, GenerateDescriptionRequest, GenerateDescriptionResponse } from '../shared/ipc-types';
+import type { ElectronAPI, Architecture, Category, CategoryInput, Shelter, ShelterCreateInput, PhotoUpdateInput, PhotoUploadInput, PhotoReorderInput, ReconcileApplyInput, Source, SourceInput, MapMarkerCreateInput, MapMarkerUpdateInput, FileMetadataTag, ExportProgress, WikiSearchResult, CollectionStatus, CollectionsRunRequest, CollectionsRunResult, CollectionsProgress, CollectionDefaultsRequest, CollectionDefaultsResult, CollectionsAddFilesRequest, CollectionsAddFilesResult, CollectionsDeleteFileRequest, CollectionsDeleteRequest, WikiIndexReport, WikiHeaderPayload, WikiSaveHeaderResult, AiModelTier, WebSearchResponse, GenerateHistoryRequest, GenerateHistoryResponse, GenerateHistoryEvent, McpConnectionInfo, GenerateDescriptionRequest, GenerateDescriptionResponse } from '../shared/ipc-types';
 
 const api: ElectronAPI = {
   categories: {
@@ -95,19 +95,11 @@ const api: ElectronAPI = {
   },
   export: {
     build: () => ipcRenderer.invoke(CHANNELS.EXPORT_BUILD),
-  },
-  publish: {
-    preflight: (input: PublishPreflightInput) => ipcRenderer.invoke(CHANNELS.PUBLISH_PREFLIGHT, input),
-    toWeb: () => ipcRenderer.invoke(CHANNELS.PUBLISH_TO_WEB),
-    cancel: () => ipcRenderer.invoke(CHANNELS.PUBLISH_CANCEL),
-    testConnection: (input: Pick<PublishPreflightInput, 'rootFolderId' | 'scopes'>) =>
-      ipcRenderer.invoke(CHANNELS.PUBLISH_TEST_CONNECTION, input),
-    checkCredentials: () => ipcRenderer.invoke(CHANNELS.PUBLISH_CHECK_CREDENTIALS),
-    importCredentials: () => ipcRenderer.invoke(CHANNELS.PUBLISH_IMPORT_CREDENTIALS),
-    onProgress: (callback: (progress: PublishProgress) => void) => {
-      const handler = (_e: Electron.IpcRendererEvent, p: PublishProgress) => callback(p);
-      ipcRenderer.on(CHANNELS.PUBLISH_PROGRESS, handler);
-      return () => ipcRenderer.removeListener(CHANNELS.PUBLISH_PROGRESS, handler);
+    cancel: (): Promise<void> => ipcRenderer.invoke(CHANNELS.EXPORT_CANCEL),
+    onProgress: (callback: (progress: ExportProgress) => void) => {
+      const handler = (_e: Electron.IpcRendererEvent, p: ExportProgress) => callback(p);
+      ipcRenderer.on(CHANNELS.EXPORT_PROGRESS, handler);
+      return () => ipcRenderer.removeListener(CHANNELS.EXPORT_PROGRESS, handler);
     },
   },
   wiki: {

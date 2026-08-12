@@ -61,13 +61,8 @@ export const CHANNELS = {
   APP_WINDOW_TOGGLE_FULLSCREEN: 'app:windowToggleFullscreen',
   APP_WINDOW_IS_FULLSCREEN: 'app:windowIsFullscreen',
   EXPORT_BUILD: 'export:build',
-  PUBLISH_PREFLIGHT: 'publish:preflight',
-  PUBLISH_TO_WEB: 'publish:toWeb',
-  PUBLISH_CANCEL: 'publish:cancel',
-  PUBLISH_TEST_CONNECTION: 'publish:testConnection',
-  PUBLISH_CHECK_CREDENTIALS: 'publish:checkCredentials',
-  PUBLISH_IMPORT_CREDENTIALS: 'publish:importCredentials',
-  PUBLISH_PROGRESS: 'publish:progress',
+  EXPORT_CANCEL: 'export:cancel',
+  EXPORT_PROGRESS: 'export:progress',
   WIKI_SEARCH: 'wiki:search',
   WIKI_OPEN_PDF: 'wiki:openPdf',
   WIKI_INDEX_REPORT: 'wiki:indexReport',
@@ -470,69 +465,11 @@ export interface ExportResult {
   skippedPhotos: number;
 }
 
-export interface PublishPreflightInput {
-  rootFolderId: string;
-  scopes: string[];
-  sheltersRoot: string;
-}
-
-export interface PublishDiffItem {
-  fileName: string;
-  shelterSlug: string;
-  updated?: string;
-  priorUpdated?: string;
-  driveFileId?: string | null;
-}
-
-export interface PublishDiff {
-  newCount: number;
-  updatedCount: number;
-  deleteCount: number;
-  unchangedCount: number;
-  shelterCount: number;
-  markerCount: number;
-  historyToUploadCount: number;
-  historyUnchangedCount: number;
-  toUpload: PublishDiffItem[];
-  toUpdate: PublishDiffItem[];
-  toDelete: PublishDiffItem[];
-}
-
-export interface PublishToWebInput {
-  _confirm: true;
-}
-
-export interface PublishProgress {
-  stage: 'building' | 'fetching' | 'deleting' | 'uploading' | 'manifest';
-  /** Count of upload operations completed so far. Uploads only — excludes unchanged photos and deletes. */
+export interface ExportProgress {
+  stage: 'building' | 'zipping' | 'saving';
   current: number;
-  /** Total files to upload = new photos + updated photos + changed history files + 1 manifest. */
   total: number;
-  /** What kind of file the current upload is. Absent for non-upload stages (building/deleting). */
-  itemKind?: 'photo' | 'history' | 'manifest';
-  /** Whether the current upload creates a new Drive file or updates an existing one. */
-  action?: 'create' | 'update';
-  /** Basename or relative path of the current file. */
-  fileName?: string;
-  /** Number of files being removed from Drive, for the 'deleting' stated message. */
-  deleteCount?: number;
-}
-
-export interface PublishResult {
-  shelterCount: number;
-  photosUploaded: number;
-  photosUpdated: number;
-  photosSkipped: number;
-  photosFailed: number;
-  photosMissing: number;
-  skippedBuildPhotos: number;
-  manifestWritten: boolean;
-  manifestError?: string;
-}
-
-export interface ConnectionTestResult {
-  ok: boolean;
-  message: string;
+  shelterName?: string;
 }
 
 // The two Claude models already wired into scripts/lib/llm_client.py (DEFAULT_MODEL/ESCALATION_MODEL).
@@ -674,15 +611,8 @@ export interface ElectronAPI {
   };
   export: {
     build: () => Promise<ExportResult>;
-  };
-  publish: {
-    preflight: (input: PublishPreflightInput) => Promise<PublishDiff | { error: string }>;
-    toWeb: () => Promise<PublishResult | { error: string }>;
     cancel: () => Promise<void>;
-    testConnection: (input: Pick<PublishPreflightInput, 'rootFolderId' | 'scopes'>) => Promise<ConnectionTestResult | { error: string }>;
-    checkCredentials: () => Promise<{ exists: boolean; path: string }>;
-    importCredentials: () => Promise<{ ok: boolean; path: string; message?: string } | null>;
-    onProgress: (callback: (progress: PublishProgress) => void) => () => void;
+    onProgress: (callback: (progress: ExportProgress) => void) => () => void;
   };
   wiki: {
     search: (query: string, collections?: string[]) => Promise<WikiSearchResult[]>;

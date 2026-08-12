@@ -13,6 +13,7 @@ import type { Builder } from '../../types/builder';
 import type { ShelterCategory } from '../../types/shelter-category';
 import type { Photo } from '../../types/photo';
 import type { Shelter } from '../../types/shelter';
+import type { ExportProgress } from '@shared/ipc-types';
 
 export interface MapMarkerEntry {
   id: number | null;
@@ -124,7 +125,6 @@ function buildHistoryEntry(
 function buildPhotoEntries(
   shelterPhotos: Record<string, unknown>[],
   resolvedSheltersRoot: string,
-  tmpShelterDir: string,
   tmpDir: string,
   shelterId: number,
 ): { entries: PhotoEntry[]; skipped: number } {
@@ -133,8 +133,9 @@ function buildPhotoEntries(
   for (const p of shelterPhotos) {
     const fileName = p.file_name as string;
     if (!fs.existsSync(path.join(resolvedSheltersRoot, fileName))) { skipped++; continue; }
-    fs.mkdirSync(tmpShelterDir, { recursive: true });
-    fs.copyFileSync(path.join(resolvedSheltersRoot, fileName), path.join(tmpDir, fileName));
+    const destPath = path.join(tmpDir, fileName);
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    fs.copyFileSync(path.join(resolvedSheltersRoot, fileName), destPath);
     entries.push({
       id: p.id as number,
       photographer: (p.photographer as string) ?? '',
@@ -254,7 +255,6 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
     const { entries: photoEntries, skipped } = buildPhotoEntries(
       photosByShelter.get(shelterId) ?? [],
       resolvedSheltersRoot,
-      tmpShelterDir,
       tmpDir,
       shelterId,
     );
@@ -297,7 +297,7 @@ export async function buildManifest(repoRoot: string, tmpDir: string, sheltersRo
 // shelters.json — the Export button's output (spec 020-shelter-export-json).
 // Built through src/factories/ + src/types/, independent of buildManifest()
 // above: every shelter/photo, no show_on_web/include_in_post filtering, and
-// a fully-nested shape via makeShelter. Not consumed by Publish.
+// a fully-nested shape via makeShelter.
 // ---------------------------------------------------------------------------
 
 export interface SheltersJson {
@@ -335,15 +335,15 @@ function copyHistoryFile(
 function copyPhotoFiles(
   rows: PhotoRow[],
   resolvedSheltersRoot: string,
-  tmpShelterDir: string,
   tmpDir: string,
 ): { photos: Photo[]; skipped: number } {
   const photos: Photo[] = [];
   let skipped = 0;
   for (const row of rows) {
     if (!fs.existsSync(path.join(resolvedSheltersRoot, row.file_name))) { skipped++; continue; }
-    fs.mkdirSync(tmpShelterDir, { recursive: true });
-    fs.copyFileSync(path.join(resolvedSheltersRoot, row.file_name), path.join(tmpDir, row.file_name));
+    const destPath = path.join(tmpDir, row.file_name);
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    fs.copyFileSync(path.join(resolvedSheltersRoot, row.file_name), destPath);
     photos.push(makePhoto(row));
   }
   return { photos, skipped };
@@ -358,7 +358,13 @@ function groupByShelterId<T extends { shelter_id: number }>(rows: T[]): Map<numb
   return grouped;
 }
 
-export async function buildSheltersJson(repoRoot: string, tmpDir: string, sheltersRoot = 'shelters/'): Promise<SheltersJsonResult> {
+export async function buildSheltersJson(
+  repoRoot: string,
+  tmpDir: string,
+  sheltersRoot = 'shelters/',
+  onProgress?: (p: ExportProgress) => void,
+  isCancelled: () => boolean = () => false,
+): Promise<SheltersJsonResult> {
   const db = getDb();
 
   const resolvedSheltersRoot = path.isAbsolute(sheltersRoot)
@@ -413,7 +419,9 @@ export async function buildSheltersJson(repoRoot: string, tmpDir: string, shelte
   let skippedPhotos = 0;
   const shelters: Shelter[] = [];
 
-  for (const row of shelterRows) {
+  for (const [index, row] of shelterRows.entries()) {
+    if (isCancelled()) break;
+
     const slug = row.slug;
     const tmpShelterDir = path.join(tmpDir, slug);
 
@@ -422,7 +430,6 @@ export async function buildSheltersJson(repoRoot: string, tmpDir: string, shelte
     const { photos, skipped } = copyPhotoFiles(
       photosByShelter.get(row.id) ?? [],
       resolvedSheltersRoot,
-      tmpShelterDir,
       tmpDir,
     );
     totalPhotos += photos.length;
@@ -455,6 +462,8 @@ export async function buildSheltersJson(repoRoot: string, tmpDir: string, shelte
       show_on_web: row.show_on_web,
       history,
     }, relations));
+
+    onProgress?.({ stage: 'building', current: index + 1, total: shelterRows.length, shelterName: row.name });
   }
 
   const manifest: SheltersJson = { shelters, architectures, shelterCategories, builders };

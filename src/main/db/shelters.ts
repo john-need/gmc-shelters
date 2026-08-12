@@ -1,11 +1,12 @@
 import { getDb } from './connection';
 import { slugify } from '../../shared/slug';
 import type { Shelter, ShelterCreateInput } from '../../shared/ipc-types';
-import type { Shelter as ShelterTableRow } from '../../types/shelter';
+import type { ShelterRow as ShelterTableRow } from '../../factories/shelter';
 
 // SELECT_SHELTERS joins in resolved lookup names and an aggregate photo count
 // on top of the raw `shelters` row — those aren't shelters-table columns.
 type ShelterRow = ShelterTableRow & {
+  is_extant: number;
   photo_count: number;
   architecture: string | null;
   category: string | null;

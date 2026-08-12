@@ -1,13 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
 import gmcLogo from '../../../../assets/gmc-btv-logo.png';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '../../store';
-import { showToast } from '../../store/uiSlice';
-import { loadStoredPublishing } from '../../publishSettings';
-import { loadStoredPaths } from '../../pathSettings';
-import type { PublishDiff, PublishProgress, PublishResult } from '@shared/ipc-types';
-import PublishModal from '../PublishModal/PublishModal';
-import type { PublishPhase } from '../PublishModal/PublishModal';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
+import type { ExportProgress, ExportResult } from '@shared/ipc-types';
+import ExportModal from '../ExportModal/ExportModal';
+import type { ExportPhase } from '../ExportModal/ExportModal';
 import { useGuardedNav } from '../NavigationGuard/NavigationGuardProvider';
 
 interface Props {
@@ -15,19 +12,7 @@ interface Props {
   onOpenSettings: (page: string) => void;
 }
 
-const PREFLIGHT_ERROR_MESSAGES: Record<string, string> = {
-  ALREADY_RUNNING: 'A publish is already in progress.',
-  CONFIG_INVALID: 'Publishing configuration is invalid — open Settings › Publishing.',
-  NO_CREDENTIALS: 'credentials.json not found — see operator quickstart.',
-};
-
-const PUBLISH_ERROR_MESSAGES: Record<string, string> = {
-  NO_PREFLIGHT: 'Preflight result missing — please try again.',
-  ALREADY_RUNNING: 'A publish is already in progress.',
-};
-
 export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
-  const dispatch = useDispatch<AppDispatch>();
   const guardedNav = useGuardedNav();
   const count = useSelector((s: RootState) => s.shelters.list.length);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,100 +39,40 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
     onOpenSettings(page);
   };
 
-  // Publish modal state
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalPhase, setModalPhase] = useState<PublishPhase>('loading');
-  const [publishDiff, setPublishDiff] = useState<PublishDiff | null>(null);
-  const [publishProgress, setPublishProgress] = useState<PublishProgress | null>(null);
-  const [publishResult, setPublishResult] = useState<PublishResult | null>(null);
-  const [publishError, setPublishError] = useState<string | null>(null);
-
-  const handlePublish = async () => {
-    const config = loadStoredPublishing();
-    if (!config.ROOT_FOLDER_ID) {
-      dispatch(showToast({ id: 'publish-not-configured', message: 'Publishing not configured — open Settings › Publishing' }));
-      return;
-    }
-
-    setModalPhase('loading');
-    setPublishDiff(null);
-    setPublishResult(null);
-    setPublishError(null);
-    setPublishProgress(null);
-    setModalOpen(true);
-
-    const unsubProgress = window.api.publish.onProgress(setPublishProgress);
-    try {
-      const result = await window.api.publish.preflight({
-        rootFolderId: config.ROOT_FOLDER_ID,
-
-        scopes: config.SCOPES,
-        sheltersRoot: loadStoredPaths().SHELTERS_ROOT,
-      });
-
-      if ('error' in result) {
-        setPublishError(PREFLIGHT_ERROR_MESSAGES[result.error] ?? `Preflight failed: ${result.error}`);
-        setModalPhase('error');
-      } else {
-        setPublishDiff(result);
-        setModalPhase('review');
-      }
-    } catch (err) {
-      setPublishError(err instanceof Error ? err.message : String(err));
-      setModalPhase('error');
-    } finally {
-      unsubProgress();
-    }
-  };
-
-  const handleConfirmPublish = async () => {
-    setModalPhase('publishing');
-    setPublishProgress(null);
-
-    const unsubProgress = window.api.publish.onProgress(setPublishProgress);
-    try {
-      const result = await window.api.publish.toWeb();
-      if ('error' in result) {
-        setPublishError(PUBLISH_ERROR_MESSAGES[result.error] ?? `Publish failed: ${result.error}`);
-        setModalPhase('error');
-      } else {
-        setPublishResult(result);
-        setModalPhase('done');
-      }
-    } catch (err) {
-      setPublishError(err instanceof Error ? err.message : String(err));
-      setModalPhase('error');
-    } finally {
-      unsubProgress();
-    }
-  };
-
-  const handleCancelOrDismiss = async () => {
-    await window.api.publish.cancel().catch(() => {});
-    setModalOpen(false);
-  };
-
-  const [exporting, setExporting] = useState(false);
+  // Export modal state
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportPhase, setExportPhase] = useState<ExportPhase>('exporting');
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
+  const [exportResult, setExportResult] = useState<ExportResult | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const handleExport = async () => {
-    setExporting(true);
-    dispatch(showToast({ id: 'export-building', message: 'Building export…' }));
+    setExportPhase('exporting');
+    setExportProgress(null);
+    setExportResult(null);
+    setExportError(null);
+    setExportModalOpen(true);
+
+    const unsubProgress = window.api.export.onProgress(setExportProgress);
     try {
       const result = await window.api.export.build();
       if (result.cancelled) {
-        dispatch(showToast({ id: 'export-cancelled', message: 'Export cancelled.' }));
+        setExportPhase('cancelled');
       } else {
-        dispatch(showToast({
-          id: 'export-success',
-          message: `Saved ${result.savedTo} (${result.skippedPhotos} photos skipped)`,
-        }));
+        setExportResult(result);
+        setExportPhase('done');
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      dispatch(showToast({ id: 'export-error', message: `Export failed: ${message}` }));
+      setExportError(err instanceof Error ? err.message : String(err));
+      setExportPhase('error');
     } finally {
-      setExporting(false);
+      unsubProgress();
     }
+  };
+
+  const handleExportCancelOrDismiss = async () => {
+    await window.api.export.cancel().catch(() => {});
+    setExportModalOpen(false);
   };
 
   return (
@@ -174,18 +99,11 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
 
         <div className="header-divider" />
 
-        <button className="btn" onClick={handleExport} disabled={exporting}>
+        <button className="btn" onClick={handleExport} disabled={exportModalOpen}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 11v6c0 1.7 4 3 9 3s9-1.3 9-3v-6"/>
           </svg>
           Export
-        </button>
-
-        <button className="btn rust" onClick={handlePublish} disabled={modalOpen}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>
-          </svg>
-          Publish to web
         </button>
 
         {/* Settings cog */}
@@ -203,21 +121,6 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
           {menuOpen && (
             <div className="settings-menu">
               <div className="settings-menu-header">Settings</div>
-              <button className="settings-menu-item" onClick={() => openPage('publishing')}>
-                <span className="ico">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
-                </span>
-                <span className="text">
-                  <span className="title">Publishing</span>
-                  <span className="sub">Site &amp; deploy</span>
-                </span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', color: 'var(--ink-4)' }}>
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
               <button className="settings-menu-item" onClick={() => openPage('architectures')}>
                 <span className="ico">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -315,15 +218,13 @@ export default function AppHeader({ onNewShelter, onOpenSettings }: Props) {
         </button>
       </header>
 
-      {modalOpen && (
-        <PublishModal
-          phase={modalPhase}
-          diff={publishDiff}
-          onCancel={handleCancelOrDismiss}
-          onPublish={handleConfirmPublish}
-          progress={publishProgress}
-          result={publishResult}
-          error={publishError}
+      {exportModalOpen && (
+        <ExportModal
+          phase={exportPhase}
+          progress={exportProgress}
+          result={exportResult}
+          error={exportError}
+          onCancel={handleExportCancelOrDismiss}
         />
       )}
     </>

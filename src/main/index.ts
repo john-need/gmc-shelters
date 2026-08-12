@@ -11,7 +11,6 @@ import { registerMapMarkerHandlers } from './ipc/map-markers';
 import { registerArchitectureHandlers } from './ipc/architectures';
 import { registerCategoryHandlers } from './ipc/categories';
 import { registerExportHandlers } from './ipc/export';
-import { registerPublishHandlers } from './ipc/publish';
 import { registerWikiSearchHandlers } from './ipc/wiki-search';
 import { registerAiSettingsHandlers } from './ipc/ai-settings';
 import { registerCollectionsHandlers } from './ipc/collections';
@@ -167,7 +166,6 @@ if (!app.requestSingleInstanceLock()) {
     registerArchitectureHandlers();
     registerCategoryHandlers();
     registerExportHandlers();
-    registerPublishHandlers();
     registerWikiSearchHandlers();
     registerAiSettingsHandlers();
     registerResearchWebSearchHandlers();

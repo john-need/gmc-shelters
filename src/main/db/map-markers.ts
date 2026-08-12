@@ -1,7 +1,7 @@
 import type Database from 'better-sqlite3';
 import { getDb } from './connection';
 import type { MapMarker, MapMarkerCreateInput } from '../../shared/ipc-types';
-import type { MapMarker as MapMarkerRow } from '../../types/map-marker';
+import type { MapMarkerRow } from '../../factories/map-marker';
 
 function rowToMapMarker(row: MapMarkerRow): MapMarker {
   return {

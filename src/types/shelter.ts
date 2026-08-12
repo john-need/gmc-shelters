@@ -20,7 +20,7 @@ export interface Shelter {
   created: string;
   updated: string;
   category: ShelterCategory | null;
-  showOnWeb: Boolean;
+  showOnWeb: boolean;
   history: string | null;
   photos: Photo[];
   sources: Source[];

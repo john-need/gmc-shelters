@@ -310,6 +310,19 @@ describe('buildManifest', () => {
     expect(result.manifest.shelters[0].photos).toHaveLength(0);
   });
 
+  it('copies a photo whose file_name has a nested subfolder (e.g. slug/photos/x.jpg)', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photos/nested.jpg', include_in_post: 1 });
+
+    const nestedDir = path.join(repoRoot, 'shelters', 'test-shelter', 'photos');
+    fs.mkdirSync(nestedDir, { recursive: true });
+    fs.writeFileSync(path.join(nestedDir, 'nested.jpg'), 'fake');
+
+    const result = await buildManifest(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(fs.existsSync(path.join(tmpDir, 'test-shelter', 'photos', 'nested.jpg'))).toBe(true);
+  });
+
   it('skips photo with include_in_post=1 but absent from disk', async () => {
     const shelterId = insertShelter({ slug: 'test-shelter' });
     insertPhoto(shelterId, { file_name: 'missing.jpg', include_in_post: 1 });
@@ -566,6 +579,23 @@ describe('buildSheltersJson', () => {
     expect(fs.readFileSync(copiedPhotoPath, 'utf-8')).toBe('fake-bytes');
   });
 
+  // Regression: some photo file_names have a nested subfolder (slug/photos/x.jpg), not just
+  // slug/x.jpg. copyPhotoFiles must create that full destination directory tree, not just the
+  // top-level shelter folder, or fs.copyFileSync throws ENOENT — this was never exercised by the
+  // old, filtered buildManifest() but surfaces immediately once every shelter/photo is exported.
+  it('copies a photo whose file_name has a nested subfolder (e.g. slug/photos/x.jpg)', async () => {
+    const shelterId = insertShelter({ slug: 'test-shelter' });
+    insertPhoto(shelterId, { file_name: 'test-shelter/photos/nested.jpg' });
+
+    const nestedDir = path.join(repoRoot, 'shelters', 'test-shelter', 'photos');
+    fs.mkdirSync(nestedDir, { recursive: true });
+    fs.writeFileSync(path.join(nestedDir, 'nested.jpg'), 'fake');
+
+    const result = await buildSheltersJson(repoRoot, tmpDir);
+    expect(result.manifest.shelters[0].photos).toHaveLength(1);
+    expect(fs.existsSync(path.join(tmpDir, 'test-shelter', 'photos', 'nested.jpg'))).toBe(true);
+  });
+
   // FR-011: history .md file still copied into the shelter's folder
   it('copies the shelter history .md file into tmpDir/{slug}/ and records its path', async () => {
     insertShelter({ slug: 'test-shelter' });
@@ -628,5 +658,32 @@ describe('buildSheltersJson', () => {
     expect(result.manifest.shelters[0].photos[0].fileName).toBe('test-shelter/present.jpg');
     expect(result.skippedPhotos).toBe(1);
     expect(result.photoCount).toBe(1);
+  });
+
+  it('reports building progress once per shelter, with an increasing current out of the total shelter count', async () => {
+    insertShelter({ slug: 'shelter-a', name: 'Shelter A' });
+    insertShelter({ slug: 'shelter-b', name: 'Shelter B' });
+    insertShelter({ slug: 'shelter-c', name: 'Shelter C' });
+
+    const events: { stage: string; current: number; total: number; shelterName?: string }[] = [];
+    await buildSheltersJson(repoRoot, tmpDir, 'shelters/', (p) => events.push(p));
+
+    const buildingEvents = events.filter((e) => e.stage === 'building');
+    expect(buildingEvents).toHaveLength(3);
+    expect(buildingEvents.map((e) => e.current)).toEqual([1, 2, 3]);
+    expect(buildingEvents.every((e) => e.total === 3)).toBe(true);
+    expect(buildingEvents.map((e) => e.shelterName)).toEqual(['Shelter A', 'Shelter B', 'Shelter C']);
+  });
+
+  it('stops processing further shelters once isCancelled returns true', async () => {
+    insertShelter({ slug: 'shelter-a' });
+    insertShelter({ slug: 'shelter-b' });
+    insertShelter({ slug: 'shelter-c' });
+
+    let calls = 0;
+    const isCancelled = () => { calls += 1; return calls > 1; }; // cancel after the 1st shelter starts
+
+    const result = await buildSheltersJson(repoRoot, tmpDir, 'shelters/', undefined, isCancelled);
+    expect(result.manifest.shelters.length).toBeLessThan(3);
   });
 });

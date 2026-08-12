@@ -1,7 +1,7 @@
 # ADR 0005 — Two-phase publish IPC: preflight holds state, confirm consumes it
 
 **Date**: 2026-05-27  
-**Status**: Accepted
+**Status**: Superseded (2026-08-12)
 
 ## Context
 

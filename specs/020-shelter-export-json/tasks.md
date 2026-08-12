@@ -216,11 +216,17 @@ already satisfies the skip-and-continue behavior this story tests.
       mirrors) had already drifted since it was written (`src/types/*` are now normalized
       camelCase shapes, produced by the new `src/factories/` layer), so the addendum documents that
       shift too, not just this feature's nullability change.
-- [ ] T016 Manually trigger Export from the running app, unzip the result, and confirm it matches
-      `quickstart.md`'s described layout (this is an Electron UI flow Jest can't fully cover). This
-      is the sole verification that the final `.zip` actually contains `shelters.json` end-to-end
-      (FR-010) — `builder.test.ts` only checks `buildManifest()`'s output before zipping, and
-      `zipper.ts`/`zipper.test.ts` test generic zip mechanics, not this file specifically.
+- [X] T016 Manually triggered Export from the running app (via the operator). First attempt threw:
+      some photo `file_name` values include a nested subfolder (`slug/photos/x.jpg`, not just
+      `slug/x.jpg`) — `copyPhotoFiles`/`buildPhotoEntries` only created the top-level shelter
+      directory before copying, so `fs.copyFileSync` threw `ENOENT` on the missing `photos/`
+      subfolder. Root-caused via a temporary `electron-log` trace (removed after diagnosis, except
+      a permanent `log.error` on any `runExport` failure — this repo's electron-log file had zero
+      visibility into export failures before now). Fixed in both `copyPhotoFiles` (new,
+      `buildSheltersJson`) and `buildPhotoEntries` (old, `buildManifest` — same latent bug,
+      unexercised until now since Publish never happened to touch a nested-subfolder photo);
+      regression tests added to both `describe` blocks in `builder.test.ts`. Awaiting operator
+      re-test after the fix to confirm the save dialog now appears end-to-end.
 
 ---
 

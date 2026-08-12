@@ -1,6 +1,6 @@
 import { getDb } from './connection';
 import type { Photo, PhotoUpdateInput } from '../../shared/ipc-types';
-import type { Photo as PhotoRow } from '../../types/photo';
+import type { PhotoRow } from '../../factories/photo';
 import { normalizePhotoDateTaken } from '@shared/photo-date';
 
 function rowToPhoto(row: PhotoRow): Photo {

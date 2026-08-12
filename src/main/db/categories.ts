@@ -1,6 +1,6 @@
 import { getDb } from './connection';
 import type { Category, CategoryInput } from '../../shared/ipc-types';
-import type { ShelterCategory as CategoryRow } from '../../types/shelter-category';
+import type { CategoryRow } from '../../factories/shelter-category';
 
 function rowToCategory(row: CategoryRow): Category {
   return {
