@@ -12,6 +12,7 @@ import MarkerDetailPanel from './MarkerDetailPanel';
 import MarkerFormPanel from './MarkerFormPanel';
 import MarkerRow from './MarkerRow';
 import MarkerMapPane from './MarkerMapPane';
+import ConfirmDialog from './ConfirmDialog';
 
 const EMPTY_MARKERS: MapMarker[] = [];
 
@@ -50,6 +51,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -224,6 +226,13 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
     if (editId === markerId) cancelForm();
   }
 
+  async function confirmDelete() {
+    if (pendingDeleteId == null) return;
+    const markerId = pendingDeleteId;
+    setPendingDeleteId(null);
+    await handleDelete(markerId);
+  }
+
   function handleRowClick(id: number, lat: number, lng: number) {
     if (mode !== 'idle') return; // editing/adding: row selection is disabled, pins set location instead
     const isSelecting = selectedId !== id;
@@ -275,7 +284,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
               selected={m.id === selectedId}
               onRowClick={handleRowClick}
               onEdit={startEdit}
-              onDelete={handleDelete}
+              onDelete={setPendingDeleteId}
             />
           ))}
         </div>
@@ -285,7 +294,7 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
             selectedMarker={selectedMarker}
             selectedIndex={selectedIndex}
             onEdit={startEdit}
-            onDelete={handleDelete}
+            onDelete={setPendingDeleteId}
           />
         ) : (
           <MarkerFormPanel
@@ -311,6 +320,14 @@ export default function MapMarkersTab({ shelterId, shelter }: Props) {
         mapContainerRef={mapContainerRef}
         onToggleShowAll={() => setShowAll((v) => !v)}
       />
+      {pendingDeleteId != null && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this map marker?"
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }
