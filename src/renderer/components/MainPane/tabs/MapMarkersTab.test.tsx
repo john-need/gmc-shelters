@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import mapMarkersReducer, { createMarker, deleteMarker } from '../../../store/mapMarkersSlice';
@@ -244,6 +244,8 @@ describe('MapMarkersTab', () => {
       makeMarker({ id: 3, name: 'Site C', start_year: 1990, end_year: null, change_type: 'Renamed', is_extant: true }),
     ];
 
+    beforeEach(() => jest.clearAllMocks());
+
     it('renders all markers', () => {
       const store = makeStore(markers);
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
@@ -257,6 +259,32 @@ describe('MapMarkersTab', () => {
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
       expect(screen.getByText(/44\.1234/)).toBeInTheDocument();
       expect(screen.getByText(/71\.5678/)).toBeInTheDocument();
+    });
+
+    it('confirms before deleting a map marker', () => {
+      const store = makeStore([makeMarker({ id: 7 })]);
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getByTitle('Delete'));
+
+      const dialog = screen.getByRole('dialog', { name: /confirm/i });
+      expect(dialog).toBeInTheDocument();
+      expect(screen.getByText('Are you sure you want to delete this map marker?')).toBeInTheDocument();
+      expect(window.api.mapMarkers.delete).not.toHaveBeenCalled();
+
+      fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }));
+
+      expect(window.api.mapMarkers.delete).toHaveBeenCalledWith(7);
+    });
+
+    it('does not delete a map marker when confirmation is cancelled', () => {
+      const store = makeStore([makeMarker()]);
+      render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
+
+      fireEvent.click(screen.getByTitle('Delete'));
+      fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+      expect(window.api.mapMarkers.delete).not.toHaveBeenCalled();
     });
 
     it('displays year ranges', () => {
@@ -492,6 +520,7 @@ describe('MapMarkersTab', () => {
       const store = makeStore([marker]);
       render(<Provider store={store}><MapMarkersTab {...defaultProps} /></Provider>);
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }));
       await screen.findByText(/no map markers/i);
       expect(store.getState().mapMarkers.byShelter[10]).toHaveLength(0);
     });
